@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Book Source Selection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@300;400;500;600&amp;family=Material+Icons+Round&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#6B7280", // Muted slate/gray for a calm read, serving as 'primary' accent
+              "background-light": "#F9FAFB", // Very light gray/white
+              "background-dark": "#111827", // Dark gray almost black
+              "paper-light": "#FFFFFF",
+              "paper-dark": "#1F2937",
+              "accent-sage": "#84A98C", // Soft sage green for subtle highlights
+              "accent-clay": "#D4A373", // Soft clay/paper color
+            },
+            fontFamily: {
+              display: ["'Libre Baskerville'", "serif"],
+              sans: ["'Inter'", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "12px",
+              'xl': "1rem",
+              '2xl': "1.5rem",
+              '3xl': "2rem",
+            },
+            boxShadow: {
+              'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+              'sheet': '0 -10px 40px -10px rgba(0, 0, 0, 0.1)',
+            }
+          },
+        },
+      };
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-gray-800 dark:text-gray-100 h-screen w-full flex justify-center items-center overflow-hidden transition-colors duration-300 relative">
+<div class="absolute inset-0 z-0 opacity-40 dark:opacity-20 pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[40%] bg-blue-100 dark:bg-blue-900 rounded-full blur-[100px] opacity-40"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[50%] bg-amber-50 dark:bg-amber-900 rounded-full blur-[120px] opacity-30"></div>
+</div>
+<main class="relative z-10 w-full max-w-md h-full sm:h-[850px] bg-background-light dark:bg-background-dark sm:rounded-[3rem] sm:border-[8px] sm:border-gray-200 dark:sm:border-gray-800 shadow-2xl overflow-hidden flex flex-col">
+<div class="h-12 w-full flex items-center justify-between px-6 pt-2 select-none">
+<span class="text-xs font-semibold text-gray-900 dark:text-white">9:41</span>
+<div class="flex items-center space-x-1">
+<span class="material-icons-round text-base text-gray-900 dark:text-white">signal_cellular_alt</span>
+<span class="material-icons-round text-base text-gray-900 dark:text-white">wifi</span>
+<span class="material-icons-round text-base text-gray-900 dark:text-white">battery_full</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col p-6 space-y-6 opacity-30 dark:opacity-20 pointer-events-none filter blur-sm transform scale-95 origin-top transition-all">
+<div class="flex justify-between items-center">
+<h1 class="font-display text-2xl font-bold text-gray-900 dark:text-white">Library</h1>
+<div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+</div>
+<div class="w-full aspect-[4/5] bg-gray-200 dark:bg-gray-800 rounded-2xl animate-pulse"></div>
+<div class="space-y-4">
+<div class="h-20 w-full bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+<div class="h-20 w-full bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+</div>
+</div>
+<div class="absolute inset-0 z-50 flex items-end justify-center bg-black/20 dark:bg-black/50 backdrop-blur-[2px]">
+<div class="w-full bg-paper-light dark:bg-paper-dark rounded-t-[2rem] shadow-sheet p-6 pb-10 transform transition-transform duration-300 ease-out translate-y-0 relative">
+<div class="w-full flex justify-center mb-6">
+<div class="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+</div>
+<div class="text-center mb-8">
+<h2 class="font-display text-2xl font-bold text-gray-900 dark:text-white mb-2">Start Learning</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 font-light max-w-xs mx-auto">
+                        Choose a source to begin your personalized learning journey.
+                    </p>
+</div>
+<div class="space-y-4">
+<button class="group w-full flex items-center p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-soft active:scale-[0.98]">
+<div class="flex-shrink-0 w-14 h-14 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors">
+<span class="material-icons-round text-3xl">local_library</span>
+</div>
+<div class="ml-4 text-left flex-1">
+<h3 class="font-semibold text-gray-900 dark:text-white text-base">Public Library</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-snug">Explore thousands of timeless classics and public domain works.</p>
+</div>
+<div class="ml-2 text-gray-300 dark:text-gray-600">
+<span class="material-icons-round">chevron_right</span>
+</div>
+</button>
+<button class="group w-full flex items-center p-4 bg-gray-50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-2xl transition-all duration-200 shadow-sm hover:shadow-soft active:scale-[0.98]">
+<div class="flex-shrink-0 w-14 h-14 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/40 transition-colors">
+<span class="material-icons-round text-3xl">cloud_upload</span>
+</div>
+<div class="ml-4 text-left flex-1">
+<h3 class="font-semibold text-gray-900 dark:text-white text-base">Upload PDF</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-snug">Import your own documents and let AI generate insights.</p>
+</div>
+<div class="ml-2 text-gray-300 dark:text-gray-600">
+<span class="material-icons-round">chevron_right</span>
+</div>
+</button>
+</div>
+<div class="mt-8 text-center">
+<button class="text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors py-2 px-4 rounded-lg">
+                        Cancel
+                    </button>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 h-20 pb-6 flex justify-around items-center z-40">
+<button class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+<span class="material-icons-round text-2xl">home</span>
+<span class="text-[10px] mt-1 font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full h-full text-primary dark:text-white">
+<span class="material-icons-round text-2xl">add_circle_outline</span>
+<span class="text-[10px] mt-1 font-medium">Add</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+<span class="material-icons-round text-2xl">bookmark_border</span>
+<span class="text-[10px] mt-1 font-medium">Saved</span>
+</button>
+</div>
+</main>
+<div class="fixed top-6 right-6 z-50">
+<button class="p-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-full shadow-lg border border-gray-100 dark:border-gray-700 hover:scale-105 transition-transform" onclick="document.documentElement.classList.toggle('dark')">
+<span class="material-icons-round text-xl dark:hidden">dark_mode</span>
+<span class="material-icons-round text-xl hidden dark:inline">light_mode</span>
+</button>
+</div>
+
+</body></html>

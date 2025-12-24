@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Book Learning App - Entry Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B5E3C", // Deep leather brown/warm earth tone
+                        "background-light": "#FDFBF7", // Soft cream/parchment
+                        "background-dark": "#1C1917", // Very dark warm grey (almost black leather)
+                        "paper-light": "#F4F1EA",
+                        "paper-dark": "#292524",
+                        "ink-light": "#2D2A26",
+                        "ink-dark": "#E7E5E4",
+                        "accent-light": "#D4C5B0",
+                        "accent-dark": "#44403C",
+                    },
+                    fontFamily: {
+                        display: ["Crimson Pro", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                        'xl': '1rem',
+                        '2xl': '1.5rem',
+                    },
+                    backgroundImage: {
+                        'parchment-texture': "url('data:image/svg+xml,%3Csvg width=\\'100%\\' height=\\'100%\\' viewBox=\\'0 0 100 100\\' xmlns=\\'http://www.w3.org/2000/svg\\'%3E%3Cfilter id=\\'noise\\'%3E%3CfeTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.8\\' numOctaves=\\'4\\' stitchTiles=\\'stitch\\'/%3E%3C/filter%3E%3Crect width=\\'100%\\' height=\\'100%\\' filter=\\'url(%23noise)\\' opacity=\\'0.04\\'/%3E%3C/svg%3E')",
+                    }
+                },
+            },
+        };
+    </script>
+<style>@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-400 { animation-delay: 0.4s; }@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col justify-between relative overflow-hidden font-sans transition-colors duration-500">
+<div class="absolute inset-0 pointer-events-none z-0 bg-parchment-texture mix-blend-multiply dark:mix-blend-overlay opacity-60"></div>
+<div class="absolute top-[-10%] right-[-20%] w-96 h-96 bg-accent-light dark:bg-accent-dark rounded-full blur-3xl opacity-30 dark:opacity-20 animate-float"></div>
+<div class="absolute bottom-[20%] left-[-10%] w-72 h-72 bg-primary blur-3xl opacity-10 dark:opacity-20 animate-float delay-200"></div>
+<main class="relative z-10 flex-1 flex flex-col items-center justify-center px-8 pt-20 pb-10 text-center max-w-md mx-auto w-full">
+<div class="mb-12 relative animate-fade-in">
+<div class="w-24 h-32 bg-white dark:bg-paper-dark rounded-r-xl rounded-l-sm shadow-xl border-l-4 border-primary transform -rotate-6 flex items-center justify-center relative overflow-hidden">
+<div class="space-y-2 w-full px-4 opacity-30">
+<div class="h-1 bg-ink-light dark:bg-ink-dark rounded w-3/4"></div>
+<div class="h-1 bg-ink-light dark:bg-ink-dark rounded w-full"></div>
+<div class="h-1 bg-ink-light dark:bg-ink-dark rounded w-5/6"></div>
+<div class="h-1 bg-ink-light dark:bg-ink-dark rounded w-full"></div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background-light/50 dark:to-background-dark/50"></div>
+</div>
+<div class="absolute top-2 left-2 w-24 h-32 bg-paper-light dark:bg-stone-800 rounded-r-xl rounded-l-sm shadow-lg border-l-4 border-primary/50 -z-10 transform rotate-3"></div>
+</div>
+<h1 class="font-display text-5xl md:text-6xl text-ink-light dark:text-ink-dark font-normal leading-tight tracking-tight mb-6 animate-fade-in delay-200">
+            Read by <br/>
+<span class="italic text-primary">Scrolling</span>
+</h1>
+<p class="text-lg text-ink-light/70 dark:text-ink-dark/70 font-light leading-relaxed max-w-xs animate-fade-in delay-400">
+            Books, reimagined for the way we consume content. 
+            Experience knowledge in a calm, vertical flow.
+        </p>
+</main>
+<footer class="relative z-10 w-full max-w-md mx-auto px-6 pb-12 animate-fade-in delay-400">
+<button class="group w-full bg-primary hover:bg-primary/90 text-white font-medium text-lg py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between relative overflow-hidden">
+<div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+<span class="relative z-10 pl-2">Begin Reading</span>
+<span class="relative z-10 bg-white/20 rounded-full p-2 group-hover:bg-white/30 transition-colors">
+<span class="material-icons-round text-white text-xl">arrow_forward</span>
+</span>
+</button>
+<div class="mt-6 text-center">
+<a class="text-sm text-ink-light/50 dark:text-ink-dark/50 hover:text-primary dark:hover:text-primary transition-colors" href="#">
+                Restore Purchases
+            </a>
+</div>
+</footer>
+<div class="absolute top-0 w-full h-12 z-20 flex justify-between items-center px-6 text-xs font-medium text-ink-light dark:text-ink-dark opacity-80 pointer-events-none">
+<span>9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-icons-round text-sm">signal_cellular_alt</span>
+<span class="material-icons-round text-sm">wifi</span>
+<span class="material-icons-round text-lg">battery_full</span>
+</div>
+</div>
+
+</body></html>

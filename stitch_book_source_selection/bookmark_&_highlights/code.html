@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bookmark &amp; Highlights</title>
+<!-- Google Fonts: Lexend for UI, Libre Baskerville for Quotes -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1152d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1c2333",
+                        "text-main": "#111318",
+                        "text-muted": "#616f89",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "serif": ["Libre Baskerville", "serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+                        "inner-fold": "inset 2px -2px 4px rgba(0,0,0,0.1)"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Highlight decoration effect */
+        .highlight-text {
+            background-image: linear-gradient(120deg, rgba(17, 82, 212, 0.15) 0%, rgba(17, 82, 212, 0.15) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 0.4em;
+            background-position: 0 88%;
+            text-shadow: 0.05em 0 white, -0.05em 0 white;
+        }
+        .dark .highlight-text {
+            background-image: linear-gradient(120deg, rgba(66, 134, 244, 0.3) 0%, rgba(66, 134, 244, 0.3) 100%);
+            text-shadow: 0.05em 0 #1c2333, -0.05em 0 #1c2333;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display antialiased selection:bg-primary selection:text-white pb-24">
+<!-- Top Header -->
+<header class="sticky top-0 z-50 w-full backdrop-blur-lg bg-background-light/90 dark:bg-background-dark/90 transition-colors duration-200">
+<div class="flex items-center justify-between p-4 pb-2">
+<h1 class="text-xl font-bold tracking-tight text-text-main dark:text-white">Your Collection</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-text-main dark:text-white" style="font-size: 24px;">filter_list</span>
+</button>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center px-5 rounded-full bg-primary text-white shadow-md shadow-primary/20 transition-transform active:scale-95">
+<span class="text-sm font-medium">All</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center px-5 rounded-full bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-muted dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors active:scale-95">
+<span class="text-sm font-medium">Bookmarks</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center px-5 rounded-full bg-white dark:bg-card-dark border border-gray-200 dark:border-gray-700 text-text-muted dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors active:scale-95">
+<span class="text-sm font-medium">Highlights</span>
+</button>
+</div>
+</header>
+<!-- Main Content Feed -->
+<main class="flex flex-col gap-6 px-4 pt-2">
+<!-- Card 1: Highlight -->
+<article class="group relative flex flex-col bg-card-light dark:bg-card-dark rounded-xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+<div class="p-6 pb-4">
+<div class="mb-4 flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-cover bg-center shadow-sm" data-alt="Atomic Habits book cover minimal" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCkW-041U-EwvClgkp98hiMml5thtQvnHQKh1Nj3YgYj7F-APAvJhh6tKpw2TTJnyny8XiqN6U6laBckz3LkZq8laBFYUtKa5YxkOElBtO45AaqpmLL5Ony3iiIVhT4uj88U1ioAqTqvRfnNR7RWJ1HppFKxtJQ0LEL5xD8NzIKpVjhjk1AaB3OQ0_aWAAgPBS2XVCSIHmJVQZMcCCNHq3aHptEZ67RPpDNHqgleGcGaC096P0puOKH91J-84HdH3YEngnF8BanhO8');"></div>
+<div>
+<p class="text-xs font-medium text-text-muted dark:text-slate-400 uppercase tracking-wider">James Clear</p>
+<h3 class="text-sm font-bold text-text-main dark:text-white leading-tight">Atomic Habits</h3>
+</div>
+<span class="ml-auto material-symbols-outlined text-primary" style="font-size: 20px;">format_quote</span>
+</div>
+<blockquote class="relative">
+<p class="font-serif text-xl leading-relaxed text-text-main dark:text-gray-100">
+<span class="highlight-text">You do not rise to the level of your goals. You fall to the level of your systems.</span>
+</p>
+</blockquote>
+</div>
+<!-- Action Bar -->
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-4 py-3 bg-gray-50/50 dark:bg-white/5">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-text-muted dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">share</span>
+<span class="text-xs font-medium">Share</span>
+</button>
+<button class="flex items-center gap-1.5 text-text-muted dark:text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+<span class="text-xs font-medium">Remove</span>
+</button>
+</div>
+<button class="flex items-center justify-center h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">
+                    Page 24
+                </button>
+</div>
+</article>
+<!-- Card 2: Bookmark (Visual Folded Corner) -->
+<article class="group relative flex flex-col bg-card-light dark:bg-card-dark rounded-xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+<!-- Folded Corner Graphic -->
+<div class="absolute top-0 right-0 z-10 drop-shadow-md">
+<div class="w-0 h-0 border-l-[3rem] border-b-[3rem] border-l-transparent border-b-primary/90 rounded-bl-lg"></div>
+<span class="material-symbols-outlined absolute top-4 right-1.5 text-white transform rotate-45" style="font-size: 18px;">bookmark</span>
+</div>
+<div class="flex flex-col sm:flex-row h-full">
+<!-- Image Section -->
+<div class="w-full sm:w-1/3 h-48 sm:h-auto relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Stack of vintage books artistic blur" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDg7Nj8jedKPNgAFYtg3_m8kp8eest1YOb_9y-_wa4RmpL2NNrndTgI3Fdcx6VeGC1YNhL_pU4PHJfg2o8Njrk7H8xCcT_KAlrkP6oEgdQ4k1n4q4-VEVz2VDVODYonFEhXruRqvQnI-8J4OfkZDpb1sBvmh4HOk1WC2enCSfem0gtafayIvU2CJss8p1sDeiIMV5Fpg40zvJPtmgC1fmtu2TnYmxls_ZRTmFal8DHYVfRbxV7U_8QHmeEuxvTz09HXA-OfydKvkH4');"></div>
+<div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/60 to-transparent"></div>
+<div class="absolute bottom-3 left-3 sm:bottom-4 sm:left-4">
+<span class="inline-flex items-center rounded-md bg-white/20 backdrop-blur-md px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-white/30">
+                            Chapter 4
+                        </span>
+</div>
+</div>
+<!-- Content Section -->
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div class="space-y-2">
+<div>
+<p class="text-xs font-medium text-text-muted dark:text-slate-400 uppercase tracking-wider mb-1">Yuval Noah Harari</p>
+<h3 class="text-lg font-bold text-text-main dark:text-white leading-tight">Sapiens: A Brief History of Humankind</h3>
+</div>
+<p class="text-sm text-text-muted dark:text-slate-300 line-clamp-3 leading-relaxed">
+                            The Agricultural Revolution was history's biggest fraud. Who was responsible? Neither kings, nor priests, nor merchants. The culprits were a handful of plant species, including wheat, rice, and potatoes.
+                        </p>
+</div>
+<div class="mt-5 flex items-center justify-between">
+<span class="text-xs text-text-muted dark:text-slate-500 font-medium">Saved 2 days ago</span>
+<button class="flex items-center justify-center h-9 px-4 rounded-lg bg-primary text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-colors">
+                            Resume
+                        </button>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 3: Highlight -->
+<article class="group relative flex flex-col bg-card-light dark:bg-card-dark rounded-xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+<div class="p-6 pb-4">
+<div class="mb-4 flex items-center gap-3">
+<div class="h-10 w-10 rounded-lg bg-cover bg-center shadow-sm" data-alt="Psychology of money abstract finance art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCn0ogIQCgk9UPuOciJBbbO0Qa8ZPTZe7-EQJDXwRQf-A2qO4-AM8A_sO0fScyZqZifavlJdU6w40FGbxu_MQewDxALIgxJu9JOjK3qLJUVLnPAyv5swsSXcH1h38REJZwRqL5_O-ztZmVfDrj48TSh5xG85xnEnzZhMiFV-YLRbq_iK_xij6ZrmgCl6w8EHdGkYmF5yhAQovkCb_un2BwUxb535Nc8UPL_xHfvES06oEJ66F3Lhef36spSgJDnLKhkynsiLyzsHHU');"></div>
+<div>
+<p class="text-xs font-medium text-text-muted dark:text-slate-400 uppercase tracking-wider">Morgan Housel</p>
+<h3 class="text-sm font-bold text-text-main dark:text-white leading-tight">The Psychology of Money</h3>
+</div>
+<span class="ml-auto material-symbols-outlined text-primary" style="font-size: 20px;">format_quote</span>
+</div>
+<blockquote class="relative">
+<p class="font-serif text-xl leading-relaxed text-text-main dark:text-gray-100">
+                        Spending money to show people how much money you have is the <span class="highlight-text">fastest way to have less money.</span>
+</p>
+</blockquote>
+</div>
+<!-- Action Bar -->
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-4 py-3 bg-gray-50/50 dark:bg-white/5">
+<div class="flex gap-4">
+<button class="flex items-center gap-1.5 text-text-muted dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">share</span>
+<span class="text-xs font-medium">Share</span>
+</button>
+</div>
+<button class="flex items-center justify-center h-8 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold transition-colors">
+                    Page 88
+                </button>
+</div>
+</article>
+<!-- Card 4: Bookmark -->
+<article class="group relative flex flex-col bg-card-light dark:bg-card-dark rounded-xl shadow-soft overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+<div class="absolute top-0 right-0 z-10 drop-shadow-md">
+<div class="w-0 h-0 border-l-[3rem] border-b-[3rem] border-l-transparent border-b-primary/90 rounded-bl-lg"></div>
+<span class="material-symbols-outlined absolute top-4 right-1.5 text-white transform rotate-45" style="font-size: 18px;">bookmark</span>
+</div>
+<div class="flex flex-col sm:flex-row h-full">
+<div class="w-full sm:w-1/3 h-48 sm:h-auto relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Open book on wooden table reading view" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBwEZI2F7gglqfh4ZOe2RJ0yT0E8vH0KgEjslUsX9lNH-aN0ya-gi0IjSU58JGfdscNQXup5JTL1aw2hbs896p4owvXai9AkgYIHsOPLJN1nRzNi4pQyTKircFL5iwxzTFyYm8HixGC2n2rwoiU2cDCAnwIiBQvAxDe-71Y1Iuz52mxGPtMYR3Em0YIYWlQIIDeHKUC56t9d86DifNTEw9LIBQxarnGpsMJMOorz0o-c6a7DcVDzTVsUBjXptqYUpPjp3vU0Hqyjfk');"></div>
+<div class="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/60 to-transparent"></div>
+</div>
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div class="space-y-2">
+<div>
+<p class="text-xs font-medium text-text-muted dark:text-slate-400 uppercase tracking-wider mb-1">Ryan Holiday</p>
+<h3 class="text-lg font-bold text-text-main dark:text-white leading-tight">The Obstacle Is the Way</h3>
+</div>
+<p class="text-sm text-text-muted dark:text-slate-300 line-clamp-3 leading-relaxed">
+                            The impediment to action advances action. What stands in the way becomes the way.
+                        </p>
+</div>
+<div class="mt-5 flex items-center justify-between">
+<span class="text-xs text-text-muted dark:text-slate-500 font-medium">Saved 5 days ago</span>
+<button class="flex items-center justify-center h-9 px-4 rounded-lg bg-primary text-white text-sm font-bold shadow-sm hover:bg-blue-700 transition-colors">
+                            Resume
+                        </button>
+</div>
+</div>
+</div>
+</article>
+</main>
+<!-- Bottom Navigation Bar (Floating) -->
+<nav class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[400px] z-50">
+<div class="flex items-center justify-between bg-white dark:bg-[#1C2333] backdrop-blur-md rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-2 px-6">
+<button class="flex flex-col items-center gap-1 p-2 text-text-muted dark:text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">home</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-text-muted dark:text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">search</span>
+</button>
+<div class="relative -top-6">
+<button class="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-white shadow-xl shadow-primary/40 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 28px;">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 p-2 text-primary">
+<span class="material-symbols-outlined fill-current" style="font-size: 24px;">bookmarks</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-text-muted dark:text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">person</span>
+</button>
+</div>
+</nav>
+</body></html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Visual Reveal Interaction</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1152d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom smooth reveal animation utility */
+        .reveal-image {
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        /* When the trigger is active (pressed), reveal the image */
+        #reveal-trigger:active ~ .reveal-target {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        /* Mobile touch simulation on desktop: allow clicking the whole container for demo purposes if needed, 
+           but specifically binding to the ID ensures the 'designated area' requirement is met */
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gray-200 flex items-center justify-center min-h-screen p-4 font-display">
+<!-- Device Frame Simulation -->
+<div class="relative flex h-[850px] w-full max-w-[400px] flex-col overflow-hidden bg-background-light dark:bg-background-dark shadow-2xl rounded-[3rem] ring-8 ring-black/5 dark:ring-white/5">
+<!-- ========================================== -->
+<!-- INTERACTION LOGIC (CSS ONLY)               -->
+<!-- ========================================== -->
+<!-- 
+             We place the trigger button visibly at the bottom, but functionally we can use a hidden checkbox 
+             or simply use the :active state of the button to affect sibling elements.
+             Here, the button is placed first in the DOM to act as a 'peer' or trigger for subsequent siblings,
+             but we use flex order-last to position it visually at the bottom.
+        -->
+<!-- 1. The Trigger Button (Visually appearing at bottom via order-10) -->
+<button class="peer order-10 z-30 mb-12 mt-auto mx-auto group relative flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-gray-800 shadow-sm hover:shadow-md active:scale-95 transition-all duration-300 rounded-2xl cursor-pointer" id="reveal-trigger">
+<div class="flex items-center gap-3 relative z-10">
+<span class="material-symbols-outlined text-primary group-active:text-primary/80 transition-colors" style="font-size: 24px;">visibility</span>
+<span class="text-[#111318] dark:text-white font-bold text-sm tracking-wide uppercase">Press to Imagine</span>
+</div>
+<!-- Subtle glow ring -->
+<div class="absolute inset-0 rounded-2xl border border-primary/10 group-hover:border-primary/30 transition-colors"></div>
+</button>
+<!-- 2. The Revealed Image Layer (Target) -->
+<!-- Positioned absolute to cover background, initially hidden -->
+<div class="reveal-target absolute inset-0 z-0 opacity-0 pointer-events-none transform scale-100 origin-center transition-all duration-700 ease-in-out">
+<!-- Actual Image -->
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Abstract visualization of neural networks with glowing blue synapses and connections on a dark background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCHmvyzK6mIOAEuUnAPDFgbYWBugCsyMcaUdYDCg7W3cMlc_ysFKJqKJjW5KEFqOSxl0Rf2iDvy3bf5zDL3Ujm1zf-6n4PHk7djkGapebQYVjCtge-iB0UFFslON5I_j1a6dmcMJf6MsZjyfn2iVo_Jmi7wVM07hoOtLZMvqh3-svd9SQiFPnw_fuLdLYRngke9iQMCyNpxvq1qBDkdKHChGnctb6VEmsva8BUB_Ch-frK5aCIqAh4a9hSMgHjJfgm6O1FzesVM340");'>
+</div>
+<!-- Gradient Overlay (Scrim) to ensure text remains readable -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-light/90 via-background-light/40 to-background-light/90 dark:from-background-dark/95 dark:via-background-dark/40 dark:to-background-dark/90"></div>
+<div class="absolute inset-0 backdrop-blur-[2px]"></div>
+</div>
+<!-- 3. Page Header / Indicators -->
+<div class="relative z-20 w-full px-6 pt-6 pb-2 order-1">
+<div class="flex w-full flex-row items-center justify-center gap-2">
+<div class="h-1.5 flex-1 rounded-full bg-primary shadow-sm shadow-primary/20"></div>
+<div class="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+<div class="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+</div>
+</div>
+<!-- 4. Top Navigation Bar -->
+<div class="relative z-20 flex w-full items-center justify-between px-6 py-4 order-2">
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[#111318] dark:text-white">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+<div class="text-xs font-bold uppercase tracking-[0.2em] text-primary/80">Chapter 1</div>
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-[#111318] dark:text-white">
+<span class="material-symbols-outlined text-[24px]">more_vert</span>
+</button>
+</div>
+<!-- 5. Main Content Area -->
+<div class="relative z-20 flex flex-col justify-center flex-1 px-8 text-center order-3 pb-8">
+<!-- Category Tag -->
+<div class="mx-auto mb-6 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-fit">
+<span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Deep Learning</span>
+</div>
+<!-- Headline -->
+<h1 class="text-[#111318] dark:text-white tracking-tight text-[34px] font-bold leading-[1.2] mb-6 drop-shadow-sm transition-colors duration-700 peer-active:text-white">
+                The Architecture of Neural Networks
+            </h1>
+<!-- Decorative divider -->
+<div class="h-1 w-12 bg-primary/20 mx-auto rounded-full mb-8"></div>
+<!-- Body Text -->
+<p class="text-[#111318]/70 dark:text-white/70 text-lg font-light leading-[1.7] drop-shadow-sm transition-colors duration-700 peer-active:text-gray-100">
+                Like a vast digital brain, layers of nodes connect and fire, mimicking the synapses of biological thought to process the unseen patterns of our world.
+            </p>
+</div>
+<!-- 6. Footer Actions -->
+<div class="relative z-20 w-full px-8 pb-8 order-11">
+<div class="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-6">
+<!-- Hint text -->
+<span class="text-xs text-gray-400 dark:text-gray-500">2 min read</span>
+<div class="flex items-center gap-4">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-primary hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined text-[22px]">bookmark_border</span>
+</button>
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-primary hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined text-[22px]">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

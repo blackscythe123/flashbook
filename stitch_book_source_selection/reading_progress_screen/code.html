@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reading Progress Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1152d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(17, 82, 212, 0.3)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar hiding for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111318] dark:text-white antialiased transition-colors duration-300">
+<!-- Main Mobile Container -->
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-30 flex items-center justify-between p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<button class="text-[#111318] dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex items-center justify-end gap-2">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-transparent text-[#111318] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-transparent text-[#111318] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 flex flex-col items-center w-full px-6 pb-32">
+<!-- Book Cover Art Section -->
+<div class="relative w-40 aspect-[2/3] mt-6 mb-8 group perspective-1000">
+<!-- Decorative blurred background -->
+<div class="absolute -inset-4 bg-gradient-to-tr from-primary/20 via-purple-500/10 to-transparent rounded-full blur-xl opacity-100 dark:opacity-40"></div>
+<!-- The Book Cover -->
+<div class="relative h-full w-full rounded-lg shadow-[0_10px_30px_-5px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_30px_-5px_rgba(0,0,0,0.5)] overflow-hidden bg-gray-200 dark:bg-gray-800 transform transition-transform duration-500 hover:scale-[1.02] hover:-translate-y-1">
+<div class="w-full h-full bg-center bg-cover" data-alt="Minimalist artistic book cover featuring abstract shapes representing growth and mindfulness" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDfA-e46pUSz3JxbCq6zeFZPwK2t6iYYNGYhqyWuOq_glU4sV1M9rbSWB6yhXBM7htBQMtFkEnlDn1RPTjDT5jIq8RYPnxeUV591w2k0QPufRTFMhCzUeWyphKH9dJ4j0dTtlwoRwWgpBHp5cigMJdRHiBCbI4wb5ArkQFQThA3ODF6CqYnjWGCleD9FNhaqet8aCpWg_l9_KZrl9pWNySP2rjxFDFTfCSWJz3pKOw0wX-T1FqXUufCzyl9J0nr_D14YlTPL9ZeMAI");'></div>
+<!-- Subtle sheen effect overlay -->
+<div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+</div>
+<!-- Headline Stats -->
+<div class="flex flex-col items-center gap-1 mb-8 w-full animate-fade-in-up">
+<h1 class="text-[#111318] dark:text-white text-[42px] font-bold leading-none tracking-tight">62%</h1>
+<p class="text-[#111318] dark:text-gray-200 text-lg font-medium">Completed</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-normal text-center mt-2 max-w-[260px]">
+                    You’ve completed 5 out of 8 chapters. You're on a roll!
+                </p>
+</div>
+<!-- Progress Details Card -->
+<div class="w-full bg-white dark:bg-[#1c2433] rounded-2xl p-5 shadow-soft dark:shadow-none border border-gray-100 dark:border-gray-800 mb-6">
+<div class="flex justify-between items-end mb-3">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold text-primary uppercase tracking-wider">Current Chapter</span>
+<h3 class="text-lg font-bold text-[#111318] dark:text-white leading-tight">The Turning Point</h3>
+</div>
+<span class="text-xs font-medium text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-md">Chapter 5</span>
+</div>
+<!-- Progress Bar -->
+<div class="relative h-2.5 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
+<div class="absolute top-0 left-0 h-full bg-primary rounded-full" style="width: 62%;"></div>
+<!-- Shimmer effect on progress bar -->
+<div class="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+</div>
+<div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">schedule</span> 12 mins left</span>
+<span>Page 145 / 234</span>
+</div>
+</div>
+<!-- AI Summary / Insight Pill -->
+<div class="w-full flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 border border-indigo-100 dark:border-indigo-800/30">
+<div class="size-10 shrink-0 rounded-full bg-white dark:bg-indigo-950 flex items-center justify-center shadow-sm text-indigo-600 dark:text-indigo-400">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-indigo-800 dark:text-indigo-300 mb-0.5">Quick Recap</span>
+<p class="text-xs text-indigo-900/70 dark:text-indigo-200/70 leading-relaxed line-clamp-2">
+                        You learned about the "Focus Flow" technique in the last session. Ready to apply it?
+                    </p>
+</div>
+</div>
+<!-- Stats Grid (Optional Extra Context) -->
+<div class="grid grid-cols-2 gap-4 w-full mt-6">
+<div class="flex flex-col items-center justify-center p-4 rounded-xl bg-white dark:bg-[#1c2433] border border-gray-100 dark:border-gray-800">
+<span class="material-symbols-outlined text-orange-500 mb-2">local_fire_department</span>
+<span class="text-lg font-bold text-[#111318] dark:text-white">4 Days</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Streak</span>
+</div>
+<div class="flex flex-col items-center justify-center p-4 rounded-xl bg-white dark:bg-[#1c2433] border border-gray-100 dark:border-gray-800">
+<span class="material-symbols-outlined text-green-500 mb-2">bookmark_added</span>
+<span class="text-lg font-bold text-[#111318] dark:text-white">12</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Highlights</span>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom CTA Area -->
+<!-- Gradient overlay for smooth transition -->
+<div class="fixed bottom-0 left-0 right-0 w-full pointer-events-none z-40">
+<!-- Gradient fade -->
+<div class="h-24 w-full bg-gradient-to-t from-background-light via-background-light/90 to-transparent dark:from-background-dark dark:via-background-dark/90 dark:to-transparent"></div>
+<!-- Actual Button Container -->
+<div class="bg-background-light dark:bg-background-dark w-full px-6 pb-8 pt-2 pointer-events-auto flex flex-col gap-3 max-w-md mx-auto">
+<button class="group relative w-full overflow-hidden rounded-xl bg-primary p-4 transition-all hover:bg-blue-700 active:scale-[0.98]">
+<div class="relative flex items-center justify-center gap-2 font-bold text-white text-lg">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Continue Reading</span>
+</div>
+</button>
+<button class="w-full text-center text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-[#111318] dark:hover:text-white transition-colors py-2">
+                    View Table of Contents
+                </button>
+</div>
+</div>
+</div>
+<style>
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+    </style>
+</body></html>

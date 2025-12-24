@@ -1,0 +1,28 @@
+{
+  "books": [
+    {
+      "id": "atomic_habits_001",
+      "title": "Atomic Habits",
+      "author": "James Clear",
+      "coverUrl": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
+      "description": "Tiny changes, remarkable results. An easy and proven way to build good habits and break bad ones.",
+      "source": "publicDomain"
+    },
+    {
+      "id": "sapiens_001",
+      "title": "Sapiens",
+      "author": "Yuval Noah Harari",
+      "coverUrl": "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400",
+      "description": "A Brief History of Humankind",
+      "source": "publicDomain"
+    },
+    {
+      "id": "psychology_money_001",
+      "title": "The Psychology of Money",
+      "author": "Morgan Housel",
+      "coverUrl": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400",
+      "description": "Timeless lessons on wealth, greed, and happiness.",
+      "source": "publicDomain"
+    }
+  ]
+}

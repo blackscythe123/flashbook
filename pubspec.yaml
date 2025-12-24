@@ -1,0 +1,36 @@
+name: flashbook
+description: "Instagram-style scrolling interaction with a calm, book-reading aura."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # State Management
+  provider: ^6.1.2
+  
+  # UI Enhancements
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  
+  # File Picking (for PDF upload mock)
+  file_picker: ^8.1.6
+  
+  # Local Storage
+  shared_preferences: ^2.3.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/data/
+    - assets/images/

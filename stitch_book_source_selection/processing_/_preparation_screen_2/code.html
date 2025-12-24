@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Processing Book</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6", // Calm Blue from diagrams
+                        "background-light": "#FDFBF7", // Warm off-white paper tone
+                        "background-dark": "#111827", // Deep charcoal/slate for night reading
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1F2937",
+                        "text-main-light": "#292524", // Stone 800
+                        "text-main-dark": "#E7E5E4", // Stone 200
+                        "text-muted-light": "#78716C", // Stone 500
+                        "text-muted-dark": "#A8A29E", // Stone 400
+                    },
+                    fontFamily: {
+                        serif: ["Merriweather", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                },
+            },
+        };
+    </script>
+<style>.book-loader {
+            --color: #3B82F6;--bg: #FDFBF7;
+            --page-color: #ffffff;
+            --page-color-dark: #334155;
+            width: 80px;
+            height: 60px;
+            position: relative;
+            margin: 0 auto;
+            perspective: 600px;}
+        .dark .book-loader {
+            --bg: #111827;
+        }
+        .book-page {
+            width: 40px;
+            height: 60px;
+            background: var(--page-color);
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform-origin: 0% 50%;
+            border-radius: 2px 6px 6px 2px;
+            transform-style: preserve-3d;
+            border: 1px solid #e5e7eb;}
+        .dark .book-page {
+            background: var(--page-color-dark);
+            border-color: #475569;
+        }.book-page:nth-child(1) {
+            animation: pageTurn 2.4s cubic-bezier(0, .39, 1, .68) 2s infinite;
+        }
+        .book-page:nth-child(2) {
+            animation: pageTurn 2.4s cubic-bezier(0, .39, 1, .68) 1.6s infinite;
+        }
+        .book-page:nth-child(3) {
+            animation: pageTurn 2.4s cubic-bezier(0, .39, 1, .68) 1.2s infinite;
+        }.book-page.static-page {
+            z-index: -1;
+        }
+        .book-page.static-page-left {
+            left: 0;
+            right: auto;
+            transform-origin: 100% 50%;
+            border-radius: 6px 2px 2px 6px;
+            border-right: none;
+        }
+        @keyframes pageTurn {
+            0% {
+                transform: rotateY(0deg);
+                opacity: 1;
+                z-index: 5;
+            }
+            15% {background-color: #f8fafc;
+            }
+            50% {background-color: #e2e8f0;
+            }
+            100% {
+                transform: rotateY(-180deg);
+                opacity: 0; 
+                z-index: 5;
+            }
+        }
+        .dark .book-page:nth-child(1),
+        .dark .book-page:nth-child(2),
+        .dark .book-page:nth-child(3) {animation-name: pageTurnDark;
+        }
+        @keyframes pageTurnDark {
+            0% { transform: rotateY(0deg); opacity: 1; }
+            50% { background-color: #475569; }
+            100% { transform: rotateY(-180deg); opacity: 0; }
+        }.progress-stripes {
+            background-image: linear-gradient(
+                45deg, 
+                rgba(255, 255, 255, 0.15) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(255, 255, 255, 0.15) 50%, 
+                rgba(255, 255, 255, 0.15) 75%, 
+                transparent 75%, 
+                transparent
+            );
+            background-size: 1rem 1rem;
+            animation: moveStripes 1s linear infinite;
+        }
+        @keyframes moveStripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 1rem 0; }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark h-screen w-full flex flex-col items-center justify-center transition-colors duration-500 overflow-hidden relative selection:bg-primary selection:text-white">
+<div class="absolute top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+<div class="absolute bottom-0 right-0 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+<div class="relative z-10 w-full max-w-md px-8 flex flex-col items-center text-center space-y-10">
+<div class="flex items-center justify-center h-32 w-full animate-fade-in-up">
+<div class="book-loader">
+<div class="book-page static-page static-page-left bg-white dark:bg-slate-700 shadow-sm border border-gray-200 dark:border-slate-600"></div>
+<div class="book-page static-page bg-white dark:bg-slate-700 shadow-sm border border-gray-200 dark:border-slate-600"></div>
+<div class="book-page shadow-sm bg-white dark:bg-slate-600"></div>
+<div class="book-page shadow-sm bg-white dark:bg-slate-600"></div>
+<div class="book-page shadow-sm bg-white dark:bg-slate-600"></div>
+</div>
+</div>
+<div class="space-y-4 animate-fade-in-up" style="animation-delay: 0.2s;">
+<h1 class="font-serif text-2xl md:text-3xl text-text-main-light dark:text-text-main-dark leading-snug">
+                Preparing your book<br/>for reading...
+            </h1>
+<p class="font-sans text-sm text-text-muted-light dark:text-text-muted-dark max-w-xs mx-auto">
+                Our AI is analyzing the structure, generating flashcards, and curating summaries just for you.
+            </p>
+</div>
+<div class="w-full space-y-3 animate-fade-in-up" style="animation-delay: 0.4s;">
+<div class="w-full h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full w-2/3 bg-primary rounded-full progress-stripes shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+</div>
+<div class="h-6 overflow-hidden relative">
+<div class="flex flex-col items-center transition-transform duration-500" id="status-text-container">
+<span class="text-xs font-medium text-primary tracking-wide uppercase py-1">Parsing PDF Structure...</span>
+<span class="text-xs font-medium text-primary tracking-wide uppercase py-1 hidden">Refining Typography...</span>
+<span class="text-xs font-medium text-primary tracking-wide uppercase py-1 hidden">Generating Insights...</span>
+<span class="text-xs font-medium text-primary tracking-wide uppercase py-1 hidden">Finalizing Experience...</span>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-8 text-center animate-fade-in-up" style="animation-delay: 0.6s;">
+<p class="text-[10px] text-text-muted-light dark:text-text-muted-dark opacity-50 uppercase tracking-widest font-sans">
+            AI-Powered Reading Engine
+        </p>
+</div>
+<script>
+        const texts = [
+            "Parsing PDF Structure...",
+            "Analyzing Core Arguments...",
+            "Generating Flashcards...", 
+            "Creating Visual Summaries...",
+            "Polishing Reading View..."
+        ];
+        const container = document.getElementById('status-text-container');
+        let index = 0;
+        // Clear initial static content and setup dynamic
+        container.innerHTML = `<span class="text-xs font-medium text-primary tracking-wide uppercase transition-opacity duration-300 opacity-100">${texts[0]}</span>`;
+        setInterval(() => {
+            index = (index + 1) % texts.length;
+            const span = container.querySelector('span');
+            // Fade out
+            span.classList.remove('opacity-100');
+            span.classList.add('opacity-0');
+            setTimeout(() => {
+                span.innerText = texts[index];
+                // Fade in
+                span.classList.remove('opacity-0');
+                span.classList.add('opacity-100');
+            }, 300);
+        }, 2500);
+    </script>
+
+</body></html>

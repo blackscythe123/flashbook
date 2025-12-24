@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Learning Feed</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Merriweather:ital,wght@0,300;0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1152d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                        "paper": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "serif": ["Merriweather", "serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
+                },
+            },
+        }
+    </script>
+<!-- Custom Utilities -->
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .text-balance {
+            text-wrap: balance;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111318] overflow-hidden antialiased selection:bg-primary/20 selection:text-primary">
+<!-- Top Navigation (Floating) -->
+<header class="fixed top-0 left-0 w-full z-30 px-5 pt-14 pb-4 pointer-events-none transition-opacity duration-300">
+<div class="flex items-center justify-between">
+<button class="pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-full bg-white/80 dark:bg-black/20 backdrop-blur-sm text-[#111318] dark:text-white shadow-sm hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<div class="pointer-events-auto flex flex-col items-center bg-white/80 dark:bg-black/20 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-sm">
+<span class="text-[#616f89] dark:text-gray-300 text-[10px] font-bold tracking-widest uppercase font-display">Atomic Habits</span>
+</div>
+<button class="pointer-events-auto flex size-10 shrink-0 items-center justify-center rounded-full bg-white/80 dark:bg-black/20 backdrop-blur-sm text-[#111318] dark:text-white shadow-sm hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">format_size</span>
+</button>
+</div>
+</header>
+<!-- Scroll Snap Container (Vertical Feed) -->
+<main class="h-screen w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar scroll-smooth">
+<!-- CARD 1: ACTIVE READING STATE -->
+<section class="relative h-screen w-full snap-start flex flex-col items-center justify-center p-3 pt-24 pb-24 md:p-6 md:pt-28 md:pb-28">
+<!-- Card Surface -->
+<div class="relative w-full h-full max-w-md bg-paper dark:bg-[#1a202c] rounded-2xl shadow-soft flex flex-col overflow-hidden">
+<!-- Progress Line at very top of card -->
+<div class="w-full h-1 bg-gray-100 dark:bg-gray-800">
+<div class="h-full bg-primary w-[35%] rounded-r-full"></div>
+</div>
+<!-- Scrollable Content Inside Card -->
+<div class="flex-1 overflow-y-auto no-scrollbar p-6 md:p-8">
+<!-- Meta Tag -->
+<div class="flex items-center justify-center mb-5">
+<span class="text-primary text-[11px] font-bold tracking-[0.15em] uppercase border border-primary/20 px-3 py-1 rounded-full bg-primary/5">Key Concept</span>
+</div>
+<!-- Headline -->
+<h2 class="text-[#111318] dark:text-white font-display text-2xl md:text-3xl font-bold leading-tight text-center text-balance mb-8">
+                        The Power of Tiny Gains
+                    </h2>
+<!-- Main Body Text (Serif) -->
+<article class="prose prose-lg dark:prose-invert mx-auto">
+<p class="font-serif text-[#111318]/90 dark:text-gray-200 text-lg md:text-xl leading-[1.8] mb-6">
+                            Improving by 1 percent isn't particularly notable—sometimes it isn't even noticeable—but it can be far more meaningful, especially in the long run.
+                        </p>
+<!-- Visual/Quote Break -->
+<div class="my-8 pl-5 border-l-4 border-primary/40">
+<p class="font-serif text-xl md:text-2xl italic font-medium text-[#111318] dark:text-white leading-normal">
+                                "Habits are the compound interest of self-improvement."
+                            </p>
+</div>
+<p class="font-serif text-[#111318]/90 dark:text-gray-200 text-lg md:text-xl leading-[1.8] mb-8">
+                            The difference a tiny improvement can make over time is astounding. If you can get 1 percent better each day for one year, you'll end up thirty-seven times better by the time you're done.
+                        </p>
+</article>
+<!-- Divider -->
+<div class="w-full h-px bg-gray-100 dark:bg-gray-800 my-6"></div>
+<!-- Takeaway Card Component (Embedded) -->
+<div class="bg-background-light dark:bg-background-dark/50 rounded-xl p-4 flex gap-4 items-center">
+<div class="flex-1 flex flex-col gap-1">
+<p class="text-[#111318] dark:text-white text-xs font-bold uppercase tracking-wider text-opacity-60">Takeaway</p>
+<p class="text-[#111318] dark:text-gray-200 text-sm font-display font-medium leading-relaxed">
+                                Small daily adjustments compound into massive results over time. Focus on the trajectory, not the position.
+                            </p>
+</div>
+<div class="w-16 h-16 shrink-0 bg-cover bg-center rounded-lg shadow-inner" data-alt="Abstract gradient illustration representing exponential growth curve" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCH6AiPzRqtsojAzC3FCS-l1lwgxVT-jQyB86_pj4W0MNIKQlmcqirBnWuLUMBVeFI0zGtnyAp-LP1PfMHMHBwbH6Wpi4t8syOqGD0DTOJ5sUvrLq8rqlRa25XWI71OknKL5ZHkQc83qafVAZNyQkPwNWw-wyKaSI2ChNdP0dIB3QdUsvjYl7zjyRWj2RPDuj3aeg1uQTL6g9HSzDOytaaxES6uI_sucmNJ7Lr6zoCrC779IvdfOO3fho7Q7WMf8n2RSupBBh0kmhs');">
+</div>
+</div>
+<!-- Bottom Spacer -->
+<div class="h-8"></div>
+</div>
+<!-- Bottom Fade Overlay for content (hinting there is more or ending nicely) -->
+<div class="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white dark:from-[#1a202c] to-transparent pointer-events-none"></div>
+</div>
+</section>
+<!-- CARD 2: NEXT ITEM PREVIEW -->
+<section class="relative h-screen w-full snap-start flex flex-col items-center justify-center p-3 pt-24 pb-24 md:p-6 md:pt-28 md:pb-28">
+<div class="relative w-full h-full max-w-md bg-paper dark:bg-[#1a202c] rounded-2xl shadow-soft flex flex-col items-center justify-center text-center p-8 opacity-95">
+<span class="material-symbols-outlined text-primary text-5xl mb-6 opacity-20">auto_stories</span>
+<p class="text-[#616f89] text-sm font-bold tracking-widest uppercase mb-4">Chapter 2</p>
+<h2 class="text-[#111318] dark:text-white font-display text-3xl font-bold mb-4">Forget About Goals</h2>
+<p class="font-serif text-lg text-gray-500 max-w-xs">Focus on systems instead. Goals are about the results you want to achieve. Systems are about the processes that lead to those results.</p>
+<div class="mt-12 flex flex-col items-center gap-2 text-primary/60 animate-pulse">
+<span class="text-xs font-medium uppercase tracking-wide">Swipe to read</span>
+<span class="material-symbols-outlined">keyboard_arrow_up</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Floating Progress (Fixed) -->
+<div class="fixed bottom-8 left-0 w-full z-40 flex justify-center pointer-events-none">
+<div class="pointer-events-auto bg-[#1a1d24] dark:bg-white text-white dark:text-[#1a1d24] pl-5 pr-5 py-3 rounded-full flex items-center shadow-2xl shadow-black/20 ring-1 ring-white/10 max-w-[90%] md:max-w-fit transition-transform active:scale-95">
+<!-- Chapter Info -->
+<div class="flex flex-col mr-5">
+<span class="text-[10px] font-bold opacity-60 uppercase tracking-widest font-display">Chapter 1</span>
+<span class="text-xs font-bold whitespace-nowrap font-display">The Fundamentals</span>
+</div>
+<!-- Divider -->
+<div class="w-px h-6 bg-white/20 dark:bg-black/10 mr-4"></div>
+<!-- Flow Status -->
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] opacity-80">style</span>
+<div class="flex flex-col gap-1 w-20">
+<div class="flex justify-between text-[9px] font-bold opacity-60 uppercase tracking-wider">
+<span>Flow</span>
+<span>35%</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-white/20 dark:bg-black/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full w-[35%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

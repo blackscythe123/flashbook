@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Learning Insight Overlay</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3056D3", 
+                        "paper": "#FDFBF7", 
+                        "surface": "#FFFFFF",
+                        "ink": "#1F2937",
+                        "subtle": "#6B7280",
+                        "skeleton": "#E5E7EB",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-paper font-display antialiased overflow-hidden text-ink">
+<div class="relative h-screen w-full flex flex-col overflow-hidden">
+<div class="flex-1 flex flex-col relative z-0">
+<div class="flex items-center bg-paper p-4 pb-2 justify-between shrink-0 border-b border-gray-100">
+<div class="text-ink flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-ink text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Chapter 4: Neural Networks</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-lg h-12 bg-transparent text-ink">
+<span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto bg-paper p-4">
+<div class="flex flex-col gap-6">
+<div class="h-4 w-3/4 bg-skeleton rounded mb-2"></div>
+<div class="h-4 w-full bg-skeleton/70 rounded mb-2"></div>
+<div class="h-4 w-5/6 bg-skeleton/70 rounded mb-6"></div>
+<div class="grid grid-cols-2 gap-3">
+<div class="flex flex-col gap-3">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg shadow-sm" data-alt="Abstract neural network visualization with blue nodes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbO6pnfvVp8FQWRzKr6XSTNui-wAmq1ogI4Hdz4ARH_MPSRewCod46lGG8LPE1UB11GQQXIPve9giK0VuEjGwjPJggBfXYtCcPOMf-jSd2v1UmR89gqPrX9HnGUu-SX3Kr5TeawhPBcTuEwO7baVdbF3WGSVqjxFoVWheXI12xxiYcI0HeMSK0soDsDBAMlrZLq4DxsIBBGfRg4k7izQuwEm0JjLKUUDuVTHc0urKFbcQLTurtcA0fBSYrMTtMN6Mz8OnBEPbVuTk");'>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg shadow-sm" data-alt="Digital brain structure with glowing connections" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBByKSw3B6FKMEDDiadqkrd7jkZ5ixJS5EKcnx9AvoKeRztDE-FL8GntwXoOd-5wicu90ySzS5sCX1bXaSp0kK4stepFkqWOnFry2QAT6930_z9wgSbUIyeXTcpwpwJBqYE3iXgt6IHp9a_cCf7U_lyWgyWMuevKj6tN4jkxLpGoUNPuy7ucYYB8gbjG3kXnTGp8Df3e_DGhmd3suTTZpaY0HuUbOFZE4jZS8T3OeR7PZOiHHeA83gNWQXwQox3rEsJs8JsjbRZXgg");'>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg shadow-sm" data-alt="Futuristic data stream flowing vertically" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA2PIbkw_IskevtNfd5P5Zk75UJ-tfq7h8TBpuBI288fuYQPo_I9MQSA6ZkWwY-nErh2WzGWLGMkA3EYhgzTdE_Io7G2_viyJ7RW19Xg6MMR5BKtRmmwr619PHF2weOqEMvf_yqRLHrLPgRyFoL5CIRljn26q9EI302EzgOMJiIczirejjG9vCMA45b123zRelxkysFYPWGbTQGBP24uWdio3fKXzAxeSwCw8xnDPeGgeAx2-Dvg-133s4ApnG5Ow-xOyaAsjf5Kes");'>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg shadow-sm" data-alt="Deep learning concept art with geometric shapes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAmm-4ccpgnojBVrtO2zjTF7FT5ocvi4B4hdt9qobL_2biBd092WSlfqyO32wCrEKYpF7kBHGksSRVe8oyIxrR7iIjqwWQ_VpgcEcwYBQrRubzIEFAaH0c5NnpLattS-w7IrQNDSqSRoWSde5qBSBZu3EJqmdFQ116wSPaMq2LGqD22R0PSXL_DBJ2GlEEiC-p2-LdqHv2VtJ8EE60LihOs07TxDDML_d-3oRoVTBFtBGJ1xXOPqlwlrwc2eK7bVko1V3ltyylzhbo");'>
+</div>
+</div>
+</div>
+<div class="h-4 w-full bg-skeleton/70 rounded mt-4"></div>
+<div class="h-4 w-2/3 bg-skeleton/70 rounded"></div>
+</div>
+</div>
+</div>
+<div class="absolute inset-0 z-50 flex flex-col items-center justify-center p-6">
+<div class="absolute inset-0 bg-paper/85 backdrop-blur-md transition-all duration-300"></div>
+<div class="relative w-full max-w-sm transform transition-all duration-300 ease-out scale-100 opacity-100 translate-y-0">
+<div class="flex flex-col items-center gap-6 rounded-2xl border border-gray-100 bg-surface p-8 shadow-xl shadow-gray-200/50">
+<div class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">auto_awesome</span>
+</div>
+<div class="flex flex-col items-center gap-3 text-center">
+<p class="text-ink text-xl font-bold leading-tight tracking-tight">Smart Structure</p>
+<p class="text-subtle text-base font-normal leading-relaxed">
+                            This book was structured using AI to optimize your learning flow and retention. Enjoy a smarter reading experience.
+                        </p>
+</div>
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 bg-primary hover:bg-primary/90 transition-colors text-white text-base font-bold leading-normal shadow-lg shadow-primary/20">
+<span class="truncate">Continue Learning</span>
+</button>
+</div>
+<p class="mt-6 text-subtle text-sm font-medium leading-normal text-center cursor-pointer hover:text-ink transition-colors opacity-80">
+                    Tap anywhere outside to dismiss
+                </p>
+</div>
+</div>
+</div>
+
+</body></html>

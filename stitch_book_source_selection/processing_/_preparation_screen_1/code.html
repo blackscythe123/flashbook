@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upgrade Premium</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6", // Calm Blue
+                        "background-light": "#FDFBF7", // Warm off-white paper tone
+                        "background-dark": "#111827", // Deep charcoal/slate
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1F2937",
+                        "text-main-light": "#292524", // Stone 800
+                        "text-main-dark": "#E7E5E4", // Stone 200
+                        "text-muted-light": "#78716C", // Stone 500
+                        "text-muted-dark": "#9CA3AF", // Gray 400
+                        "accent-gold": "#D97706", // Muted gold for premium feel
+                    },
+                    fontFamily: {
+                        serif: ["Merriweather", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        body {min-height: 100vh;
+            min-height: 100dvh; 
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background: rgba(31, 41, 55, 0.6);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark transition-colors duration-500 overflow-hidden relative selection:bg-primary selection:text-white font-sans antialiased">
+<div class="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+<div class="absolute bottom-0 right-0 w-80 h-80 bg-accent-gold/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+<div class="relative z-10 w-full h-full max-w-md mx-auto flex flex-col p-6 md:p-8">
+<div class="flex justify-end pt-2 pb-4">
+<button aria-label="Close" class="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200 text-text-muted-light dark:text-text-muted-dark group">
+<span class="material-symbols-outlined text-[24px] group-hover:scale-110 transition-transform">close</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col justify-center space-y-8 md:space-y-12">
+<div class="text-center space-y-4">
+<div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-primary/10 to-accent-gold/10 text-primary mb-2 shadow-sm">
+<span class="material-symbols-outlined filled text-[24px]">auto_awesome</span>
+</div>
+<h1 class="font-serif text-3xl md:text-4xl text-text-main-light dark:text-text-main-dark leading-tight">
+                    Enrich your<br/>reading journey
+                </h1>
+<p class="font-sans text-sm md:text-base text-text-muted-light dark:text-text-muted-dark max-w-xs mx-auto leading-relaxed">
+                    Unlock the full depth of every book with our premium learning tools.
+                </p>
+</div>
+<div class="space-y-5 px-2">
+<div class="flex items-center gap-5 p-4 rounded-2xl glass-panel border border-white/40 dark:border-white/5 shadow-soft hover:scale-[1.02] transition-transform duration-300">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+</div>
+<div class="flex flex-col">
+<span class="font-serif text-base font-medium text-text-main-light dark:text-text-main-dark">Illustrated explanations</span>
+<span class="text-xs text-text-muted-light dark:text-text-muted-dark mt-0.5">Understand complex ideas visually</span>
+</div>
+</div>
+<div class="flex items-center gap-5 p-4 rounded-2xl glass-panel border border-white/40 dark:border-white/5 shadow-soft hover:scale-[1.02] transition-transform duration-300 delay-75">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-500">
+<span class="material-symbols-outlined text-[20px]">play_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-serif text-base font-medium text-text-main-light dark:text-text-main-dark">Short visual clips</span>
+<span class="text-xs text-text-muted-light dark:text-text-muted-dark mt-0.5">Cinematic summaries on the go</span>
+</div>
+</div>
+<div class="flex items-center gap-5 p-4 rounded-2xl glass-panel border border-white/40 dark:border-white/5 shadow-soft hover:scale-[1.02] transition-transform duration-300 delay-100">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined text-[20px]">wifi_off</span>
+</div>
+<div class="flex flex-col">
+<span class="font-serif text-base font-medium text-text-main-light dark:text-text-main-dark">Offline reading</span>
+<span class="text-xs text-text-muted-light dark:text-text-muted-dark mt-0.5">Your library, available anywhere</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-8 pb-4 space-y-4 text-center">
+<button class="w-full py-4 rounded-xl bg-text-main-light dark:bg-white text-white dark:text-black font-medium text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group">
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"></div>
+<span class="relative">Start Premium Experience</span>
+</button>
+<div class="flex justify-center items-center gap-4 text-xs text-text-muted-light dark:text-text-muted-dark font-medium tracking-wide">
+<button class="hover:text-primary transition-colors">Restore Purchases</button>
+<span class="w-1 h-1 rounded-full bg-gray-300 dark:bg-gray-700"></span>
+<button class="hover:text-primary transition-colors">Terms</button>
+</div>
+</div>
+</div>
+
+</body></html>
