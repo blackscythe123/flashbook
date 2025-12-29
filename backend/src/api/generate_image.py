@@ -41,19 +41,19 @@ class ImageResponse(BaseModel):
     "/generateImage",
     response_model=ImageResponse,
     summary="Generate an image from a prompt",
-    description="Returns a URL that generates an image when accessed. Uses Pollinations.ai."
+    description="Returns a URL that generates an image. Uses Gemini (Imagen 3) if available, with Pollinations.ai fallback."
 )
 async def generate_image(request: ImageRequest) -> ImageResponse:
     """
     Generate an image URL from a text prompt.
     
-    The returned URL will generate the image on-demand when accessed.
-    This is a free service and doesn't require API keys.
+    Primary: Gemini (Imagen 3) - Returns a local URL to the generated image.
+    Fallback: Pollinations.ai - Returns a dynamic URL that generates on access.
     """
     try:
         service = get_image_service()
         
-        image_url = service.generate_image_url(
+        image_url = await service.generate_image_url(
             prompt=request.prompt,
             width=request.width,
             height=request.height,

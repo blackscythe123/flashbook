@@ -10,9 +10,17 @@ import base64
 import time
 import urllib.parse
 import hashlib
+import os
 from typing import Optional
 from pathlib import Path
 import uuid
+
+try:
+    from google import genai
+    from google.genai import types
+    HAS_GEMINI = True
+except ImportError:
+    HAS_GEMINI = False
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +43,19 @@ class ImageGenerationService:
         self._genai_client = None
         self._images_dir: Optional[Path] = None
         self._setup_images_dir()
+        
+        if HAS_GEMINI:
+            api_key = os.getenv("GEMINI_API_KEY")
+            if api_key:
+                try:
+                    self._genai_client = genai.Client(api_key=api_key)
+                    logger.info("Gemini Image Client initialized successfully")
+                except Exception as e:
+                    logger.error(f"Failed to initialize Gemini Image Client: {e}")
+            else:
+                logger.warning("GEMINI_API_KEY not found, Gemini image generation disabled")
+        else:
+            logger.warning("google-genai package not found, Gemini image generation disabled")
     
     def _setup_images_dir(self):
         """Create directory for storing generated images."""
@@ -60,6 +81,69 @@ class ImageGenerationService:
     def _get_seed_from_prompt(self, prompt: str) -> int:
         """Generate a consistent seed from prompt for reproducible images."""
         return int(hashlib.md5(prompt.encode()).hexdigest()[:8], 16) % 1000000
+
+    async def generate_gemini_image(
+        self,
+        prompt: str,
+        width: int = 512,
+        height: int = 768,
+        style: str = "anime",
+        book_title: str = "",
+        character_context: str = ""
+    ) -> Optional[str]:
+        """
+        Generate an image using Google's Gemini (Imagen 3) model.
+        Returns the URL path to the saved image or None if generation fails.
+        """
+        if not self._genai_client:
+            return None
+
+        try:
+            await self._wait_for_gemini_rate_limit()
+            
+            # Enhance prompt
+            enhanced_prompt = f"{style} style. {prompt}"
+            if character_context:
+                enhanced_prompt += f" Characters: {character_context}"
+            if book_title:
+                enhanced_prompt += f" Context: from {book_title}"
+            
+            # Truncate if too long (Imagen limit)
+            if len(enhanced_prompt) > 400:
+                enhanced_prompt = enhanced_prompt[:400]
+
+            logger.info(f"Generating Gemini image for: {enhanced_prompt[:50]}...")
+            
+            # Generate image
+            response = self._genai_client.models.generate_images(
+                model='imagen-3.0-generate-001',
+                prompt=enhanced_prompt,
+                config=types.GenerateImagesConfig(
+                    number_of_images=1,
+                    aspect_ratio="3:4",  # Closest to 512x768
+                    safety_filter_level="block_only_high",
+                    person_generation="allow_adult",
+                )
+            )
+
+            if response.generated_images:
+                image = response.generated_images[0]
+                
+                # Save image
+                filename = f"gemini_{uuid.uuid4()}.png"
+                filepath = self._images_dir / filename
+                
+                with open(filepath, "wb") as f:
+                    f.write(image.image.image_bytes)
+                
+                # Return relative URL
+                return f"/static/images/{filename}"
+            
+            return None
+
+        except Exception as e:
+            logger.error(f"Gemini image generation failed: {e}")
+            return None
     
     def generate_pollinations_url(
         self,
@@ -113,19 +197,20 @@ class ImageGenerationService:
         url = f"{self.PICSUM_URL}/seed/{seed}/{width}/{height}"
         return url
     
-    def generate_image_url(
+    async def generate_image_url(
         self,
         prompt: str,
         width: int = 512,
         height: int = 768,
         seed: Optional[int] = None,
-        style: str = "anime",
+        style: str = "anime/novel",
         book_title: str = "",
         character_context: str = ""
     ) -> str:
         """
         Generate an image URL from a prompt.
-        Primary: Pollinations.ai (AI-generated)
+        Primary: Gemini (Imagen 3)
+        Secondary: Pollinations.ai (AI-generated)
         Fallback: Picsum (reliable placeholder)
         
         Args:
@@ -140,6 +225,14 @@ class ImageGenerationService:
         Returns:
             URL string for the image
         """
+        # Try Gemini first
+        if self._genai_client:
+            gemini_url = await self.generate_gemini_image(
+                prompt, width, height, style, book_title, character_context
+            )
+            if gemini_url:
+                return gemini_url
+
         # Use Pollinations for AI-generated images
         url = self.generate_pollinations_url(prompt, width, height, style, book_title, character_context)
         logger.info(f"Generated Pollinations URL for: {prompt[:50]}...")

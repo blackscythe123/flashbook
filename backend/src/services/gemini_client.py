@@ -6,6 +6,7 @@ Handles all AI interactions with structured prompts and response parsing.
 import json
 import logging
 from typing import Optional
+import os
 
 import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
