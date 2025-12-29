@@ -1,0 +1,22 @@
+# Flashbook AI Backend - Python Dependencies
+# ==========================================
+
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Data validation
+pydantic==2.10.4
+
+# Google Gemini AI
+google-generativeai==0.8.3
+
+# PDF Processing
+pypdf==3.17.4
+python-multipart==0.0.6
+
+# Environment management
+python-dotenv==1.0.1
+
+# Production server (for Cloud Run)
+gunicorn==23.0.0

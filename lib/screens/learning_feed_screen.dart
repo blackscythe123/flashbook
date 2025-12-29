@@ -5,7 +5,9 @@ import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
+import '../services/services.dart';
 import '../widgets/learning_card.dart';
+import '../widgets/backend_url_dialog.dart';
 import 'progress_screen.dart';
 
 /// Learning Feed Screen - the CORE experience.
@@ -69,6 +71,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     chapterIndex: indices.chapterIndex,
                     blockIndex: indices.blockIndex,
                   );
+
+                  // Trigger lazy loading for upcoming chapters
+                  bookProvider.onChapterViewed(indices.chapterIndex);
                 },
                 itemBuilder: (context, index) {
                   final block = allBlocks[index];
@@ -158,6 +163,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   );
                 },
               ),
+
+              const SizedBox(width: 8),
+
+              // Mode indicator & settings
+              _buildModeIndicator(context),
             ],
           ),
         ),
@@ -182,6 +192,67 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
           child: Icon(icon, size: 20, color: AppColors.inkLight),
         ),
       ),
+    );
+  }
+
+  Widget _buildModeIndicator(BuildContext context) {
+    return Consumer<ApiConfig>(
+      builder: (context, apiConfig, child) {
+        final isLive = !apiConfig.isDemoMode && apiConfig.isConnected;
+
+        return GestureDetector(
+          onTap: () async {
+            // Show backend URL dialog to reconfigure
+            final result = await showBackendUrlDialog(context);
+            if (result == true && context.mounted) {
+              // If connected to live API, show confirmation
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Connected to AI backend!'),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color:
+                  isLive
+                      ? Colors.green.withValues(alpha: 0.15)
+                      : Colors.orange.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color:
+                    isLive
+                        ? Colors.green.withValues(alpha: 0.3)
+                        : Colors.orange.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isLive ? Icons.cloud_done : Icons.cloud_off,
+                  size: 14,
+                  color: isLive ? Colors.green[700] : Colors.orange[700],
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isLive ? 'LIVE' : 'DEMO',
+                  style: GoogleFonts.inter(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: isLive ? Colors.green[700] : Colors.orange[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

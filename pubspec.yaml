@@ -13,6 +13,9 @@ dependencies:
   # State Management
   provider: ^6.1.2
   
+  # HTTP Client for backend API
+  http: ^1.2.2
+  
   # UI Enhancements
   google_fonts: ^6.2.1
   flutter_animate: ^4.5.0

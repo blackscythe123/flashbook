@@ -1,7 +1,10 @@
+import 'dart:convert' show utf8;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 import '../theme/app_colors.dart';
 import '../state/state.dart';
 import '../services/services.dart';
@@ -111,9 +114,9 @@ class BookSourceScreen extends StatelessWidget {
                     icon: Icons.cloud_upload_rounded,
                     iconColor: AppColors.accentGold,
                     iconBgColor: AppColors.accentGold.withValues(alpha: 0.1),
-                    title: 'Upload PDF',
+                    title: 'Upload Document',
                     subtitle:
-                        'Import your own documents and let AI generate insights.',
+                        'Import .pdf or .txt files. PDF text extraction is now supported.',
                     onTap: () => _selectUploadPdf(context),
                   )
                   .animate()
@@ -237,33 +240,128 @@ class BookSourceScreen extends StatelessWidget {
     );
   }
 
-  void _selectUploadPdf(BuildContext context) {
-    // Mock PDF upload - show snackbar and proceed with demo book
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('PDF upload simulated for demo'),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
-
-    // Use demo book for hackathon
+  void _selectUploadPdf(BuildContext context) async {
+    final apiConfig = context.read<ApiConfig>();
     final bookProvider = context.read<BookProvider>();
-    final books = MockBookService.getPublicDomainBooks();
-    if (books.isNotEmpty) {
-      bookProvider.selectBook(books.first);
+
+    // Check if in live mode
+    if (!apiConfig.isConnected || apiConfig.isDemoMode) {
+      // Demo mode - use mock book
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Demo mode: Using sample book. Connect to backend for real PDF processing.',
+          ),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      final books = MockBookService.getPublicDomainBooks();
+      if (books.isNotEmpty) {
+        bookProvider.selectBook(books.first);
+      }
+
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder:
+              (context, animation, secondaryAnimation) =>
+                  const ProcessingScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+      return;
     }
 
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder:
-            (context, animation, secondaryAnimation) =>
-                const ProcessingScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
-    );
+    // Live mode - pick actual file
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'txt'],
+        withData: true, // Always get bytes for cross-platform support
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        String filePath = file.name;
+
+        if (file.extension?.toLowerCase() == 'pdf') {
+          // Handle PDF via backend
+          await bookProvider.uploadPdf(
+            path: kIsWeb ? null : file.path,
+            bytes: file.bytes,
+            filename: file.name,
+          );
+          if (bookProvider.errorMessage != null) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(bookProvider.errorMessage!),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+        } else {
+          // Handle Text files locally
+          String? textContent;
+          if (file.bytes != null) {
+            try {
+              textContent = String.fromCharCodes(file.bytes!);
+            } catch (e) {
+              debugPrint('BookSourceScreen: Error decoding bytes: $e');
+              textContent = utf8.decode(file.bytes!, allowMalformed: true);
+            }
+          }
+
+          if (textContent == null || textContent.isEmpty) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Could not read file content.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+            return;
+          }
+          bookProvider.setUploadedPdfContent(filePath, textContent);
+        }
+
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder:
+                  (context, animation, secondaryAnimation) =>
+                      const ProcessingScreen(),
+              transitionsBuilder: (
+                context,
+                animation,
+                secondaryAnimation,
+                child,
+              ) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 400),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('BookSourceScreen: Error picking file: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error picking file: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

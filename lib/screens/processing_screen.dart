@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../state/state.dart';
+import '../services/services.dart';
 import 'learning_feed_screen.dart';
 
 /// Processing screen - shows while book is being processed.
@@ -38,7 +39,10 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       duration: const Duration(seconds: 4),
     );
 
-    _startProcessing();
+    // Start processing after the first frame to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startProcessing();
+    });
   }
 
   @override
@@ -48,13 +52,52 @@ class _ProcessingScreenState extends State<ProcessingScreen>
   }
 
   void _startProcessing() async {
-    // Animate through processing steps
-    for (int i = 0; i < _processingSteps.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 800));
-      if (mounted) {
-        setState(() {
-          _currentStep = i;
-        });
+    final bookProvider = context.read<BookProvider>();
+    final progressProvider = context.read<ReadingProgressProvider>();
+    final apiConfig = context.read<ApiConfig>();
+
+    // Check if we have uploaded content to process
+    final hasUploadedContent = bookProvider.hasUploadedPdf;
+    final isLiveMode = apiConfig.isConnected && !apiConfig.isDemoMode;
+
+    if (hasUploadedContent && isLiveMode) {
+      // Process uploaded PDF with real backend
+      debugPrint('ProcessingScreen: Processing uploaded content with LIVE API');
+
+      // Update steps for live processing
+      setState(() {
+        _currentStep = 0;
+      });
+
+      // Start actual processing in background
+      final uploadPath = bookProvider.uploadedPdfPath ?? 'uploaded.txt';
+      final uploadContent = bookProvider.uploadedPdfContent;
+
+      // Process with API - this is handled in BookProvider
+      await bookProvider.processUploadedPdf(
+        uploadPath,
+        textContent: uploadContent,
+      );
+
+      // Animate through remaining steps quickly
+      for (int i = 0; i < _processingSteps.length; i++) {
+        if (mounted) {
+          setState(() => _currentStep = i);
+          await Future.delayed(const Duration(milliseconds: 300));
+        }
+      }
+    } else {
+      // Demo mode - animate through steps and use mock book
+      debugPrint('ProcessingScreen: Using DEMO mode');
+
+      // Animate through processing steps
+      for (int i = 0; i < _processingSteps.length; i++) {
+        await Future.delayed(const Duration(milliseconds: 800));
+        if (mounted) {
+          setState(() {
+            _currentStep = i;
+          });
+        }
       }
     }
 
@@ -62,10 +105,6 @@ class _ProcessingScreenState extends State<ProcessingScreen>
     await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
-      // Initialize reading progress
-      final bookProvider = context.read<BookProvider>();
-      final progressProvider = context.read<ReadingProgressProvider>();
-
       if (bookProvider.currentBook != null) {
         progressProvider.initializeProgress(bookProvider.currentBook!);
       }
