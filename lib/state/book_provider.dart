@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/services.dart';
@@ -14,6 +15,7 @@ class BookProvider extends ChangeNotifier {
   String? _errorMessage;
   String? _uploadedPdfPath;
   String? _uploadedPdfContent;
+  Uint8List? _uploadedPdfBytes; // Store PDF bytes for preview
 
   // API integration
   ApiConfig? _apiConfig;
@@ -26,9 +28,18 @@ class BookProvider extends ChangeNotifier {
   String? _currentBookId;
   String? _currentBookTitle;
 
+  // Loading state for chapters
+  bool _isLoadingChapter = false;
+  int? _loadingChapterIndex;
+  DateTime? _loadingStartTime;
+  String? _loadingError;
+
   // Rate limiting - 5 requests per minute = 1 every 12 seconds
   DateTime? _lastApiCall;
   static const _minApiInterval = Duration(seconds: 13);
+
+  // Chapter window size (show only 3 chapters at a time)
+  static const _chapterWindowSize = 3;
 
   // Getters
   Book? get currentBook => _currentBook;
@@ -40,6 +51,31 @@ class BookProvider extends ChangeNotifier {
       _uploadedPdfPath != null && _uploadedPdfContent != null;
   String? get uploadedPdfPath => _uploadedPdfPath;
   String? get uploadedPdfContent => _uploadedPdfContent;
+  Uint8List? get uploadedPdfBytes => _uploadedPdfBytes;
+
+  // Loading state getters
+  bool get isLoadingChapter => _isLoadingChapter;
+  int? get loadingChapterIndex => _loadingChapterIndex;
+  String? get loadingError => _loadingError;
+
+  /// Get estimated wait time in seconds
+  int get estimatedWaitSeconds {
+    if (_loadingStartTime == null || !_isLoadingChapter) return 0;
+    final elapsed = DateTime.now().difference(_loadingStartTime!).inSeconds;
+    // Estimate ~15 seconds per chapter
+    return (15 - elapsed).clamp(0, 30);
+  }
+
+  /// Check if a chapter is available (processed)
+  bool isChapterAvailable(int index) {
+    return _processedChapters.contains(index);
+  }
+
+  /// Get total available chapters count
+  int get availableChaptersCount => _processedChapters.length;
+
+  /// Get total chunks count
+  int get totalChunksCount => _rawChunks.length;
 
   /// Check if using live API mode
   bool get isLiveMode =>
@@ -118,7 +154,7 @@ class BookProvider extends ChangeNotifier {
       );
 
       if (response != null && response.blocks.isNotEmpty) {
-        final blocks = _convertBlocksToLearningBlocks(
+        final blocks = await _convertBlocksToLearningBlocks(
           response.blocks,
           chapter.id,
         );
@@ -184,35 +220,98 @@ class BookProvider extends ChangeNotifier {
   }
 
   /// Convert API blocks to LearningBlocks
-  List<LearningBlock> _convertBlocksToLearningBlocks(
+  Future<List<LearningBlock>> _convertBlocksToLearningBlocks(
     List<ContentBlock> apiBlocks,
     String chapterId,
-  ) {
-    return apiBlocks.asMap().entries.map((entry) {
-      final idx = entry.key;
-      final block = entry.value;
-      return LearningBlock(
-        id: '${chapterId}_$idx',
-        tag: _mapBlockTypeToTag(block.type),
-        headline: _extractHeadline(block),
-        content: block.text,
-        takeaway: block.type == 'takeaway' ? block.text : null,
-        estimatedReadTime: _estimateReadTime(block.text),
+  ) async {
+    final blocks = <LearningBlock>[];
+
+    // Get book title for image context
+    final bookTitle = _currentBookTitle ?? _currentBook?.title ?? '';
+
+    // Extract character names from blocks for context
+    final characterNames = <String>{};
+    for (final block in apiBlocks) {
+      // Simple extraction of capitalized words that might be names
+      final namePattern = RegExp(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b');
+      characterNames.addAll(
+        namePattern.allMatches(block.body).map((m) => m.group(0)!),
       );
-    }).toList();
+    }
+    final characterContext = characterNames.take(5).join(', ');
+
+    for (var idx = 0; idx < apiBlocks.length; idx++) {
+      final block = apiBlocks[idx];
+
+      // Generate image if needed
+      String? imageUrl;
+      if (block.imageHint &&
+          block.imagePrompt.isNotEmpty &&
+          _apiClient != null) {
+        try {
+          imageUrl = await _apiClient!.generateImageUrl(
+            prompt: block.imagePrompt,
+            style: 'anime',
+            bookTitle: bookTitle,
+            characterContext: characterContext,
+          );
+          debugPrint('BookProvider: Generated image for block $idx');
+        } catch (e) {
+          debugPrint('BookProvider: Failed to generate image: $e');
+        }
+      }
+
+      // Use new fields, fallback to legacy
+      final slideTitle =
+          block.slideTitle.isNotEmpty
+              ? block.slideTitle
+              : _mapBlockTypeToTag(block.type);
+      final headline =
+          block.headline.isNotEmpty ? block.headline : _extractHeadline(block);
+      final body = block.body.isNotEmpty ? block.body : block.text;
+
+      blocks.add(
+        LearningBlock(
+          id: '${chapterId}_$idx',
+          tag: slideTitle,
+          headline: headline,
+          content: body,
+          takeaway: block.type == 'takeaway' ? body : null,
+          imageUrl: imageUrl,
+          estimatedReadTime: _estimateReadTime(body),
+        ),
+      );
+    }
+
+    return blocks;
   }
 
   /// Map backend block type to UI tag
   String _mapBlockTypeToTag(String type) {
     switch (type) {
+      case 'scene':
+        return 'SCENE';
+      case 'reveal':
+        return 'REVEAL';
+      case 'emotion':
+        return 'EMOTION';
+      case 'tension':
+        return 'TENSION';
+      case 'insight':
+        return 'INSIGHT';
+      case 'quote':
+        return 'QUOTE';
+      case 'visual':
+        return 'VISUAL';
+      case 'lyric_scroll':
+        return 'DEEP READ';
+      // Legacy types
       case 'core_idea':
         return 'CORE IDEA';
       case 'explanation':
         return 'EXPLANATION';
       case 'example':
         return 'EXAMPLE';
-      case 'insight':
-        return 'INSIGHT';
       case 'takeaway':
         return 'TAKEAWAY';
       case 'nuance':
@@ -221,24 +320,27 @@ class BookProvider extends ChangeNotifier {
         return 'CONTRAST';
       case 'reflection':
         return 'REFLECTION';
-      case 'lyric_scroll':
-        return 'DEEP READ';
       default:
-        return type.toUpperCase();
+        return type.toUpperCase().replaceAll('_', ' ');
     }
   }
 
   /// Extract headline from block (first sentence or type-based)
   String _extractHeadline(ContentBlock block) {
-    if (block.text.isEmpty) return block.type.toUpperCase();
-    final firstSentenceEnd = block.text.indexOf('. ');
+    // Prefer headline field
+    if (block.headline.isNotEmpty) return block.headline;
+
+    final text = block.body.isNotEmpty ? block.body : block.text;
+    if (text.isEmpty) return block.type.toUpperCase();
+
+    final firstSentenceEnd = text.indexOf('. ');
     if (firstSentenceEnd > 0 && firstSentenceEnd < 100) {
-      return block.text.substring(0, firstSentenceEnd + 1);
+      return text.substring(0, firstSentenceEnd + 1);
     }
-    if (block.text.length <= 80) {
-      return block.text;
+    if (text.length <= 80) {
+      return text;
     }
-    return '${block.text.substring(0, 77)}...';
+    return '${text.substring(0, 77)}...';
   }
 
   /// Estimate read time in seconds
@@ -400,10 +502,10 @@ class BookProvider extends ChangeNotifier {
   Future<void> _processChaptersInWindow(int currentChapter) async {
     final chaptersToProcess = <int>[];
 
-    // Window: current + 2 ahead
+    // Window: current + (windowSize - 1) ahead
     for (
       int i = currentChapter;
-      i <= currentChapter + 2 && i < _rawChunks.length;
+      i < currentChapter + _chapterWindowSize && i < _rawChunks.length;
       i++
     ) {
       if (!_processedChapters.contains(i) && !_processingChapters.contains(i)) {
@@ -416,7 +518,9 @@ class BookProvider extends ChangeNotifier {
       return;
     }
 
-    debugPrint('BookProvider: Processing chapters $chaptersToProcess');
+    debugPrint(
+      'BookProvider: Processing chapters $chaptersToProcess (window size: $_chapterWindowSize)',
+    );
 
     for (final chapterIndex in chaptersToProcess) {
       await _processChapter(chapterIndex);
@@ -432,16 +536,51 @@ class BookProvider extends ChangeNotifier {
     }
 
     _processingChapters.add(chapterIndex);
+    _isLoadingChapter = true;
+    _loadingChapterIndex = chapterIndex;
+    _loadingStartTime = DateTime.now();
+    _loadingError = null;
+    notifyListeners();
+
     final chunk = _rawChunks[chapterIndex];
     final chapterNum = chapterIndex + 1;
 
-    debugPrint('BookProvider: Processing chapter $chapterNum...');
+    debugPrint(
+      'BookProvider: Processing chapter $chapterNum (${chunk.length} chars)...',
+    );
+
+    // Validate chunk before sending - API requires 100-15000 chars
+    if (chunk.trim().length < 100) {
+      debugPrint(
+        'BookProvider: Chunk too short (${chunk.length} chars), using fallback',
+      );
+      if (_currentBook != null) {
+        final updatedChapters = List<Chapter>.from(_currentBook!.chapters);
+        updatedChapters[chapterIndex] = _createFallbackChapter(
+          chapterIndex,
+          chunk,
+        );
+        _currentBook = _currentBook!.copyWith(chapters: updatedChapters);
+      }
+      _processedChapters.add(chapterIndex);
+      _processingChapters.remove(chapterIndex);
+      _isLoadingChapter = _processingChapters.isNotEmpty;
+      if (!_isLoadingChapter) {
+        _loadingChapterIndex = null;
+        _loadingStartTime = null;
+      }
+      notifyListeners();
+      return;
+    }
+
+    // Truncate if too long
+    final validChunk = chunk.length > 15000 ? chunk.substring(0, 15000) : chunk;
 
     try {
       await _waitForRateLimit();
 
       final response = await _apiClient?.generateSummary(
-        textChunk: chunk,
+        textChunk: validChunk,
         mode: 'chapter',
         bookId: _currentBookId!,
         chapterTitle: 'Chapter $chapterNum',
@@ -450,7 +589,7 @@ class BookProvider extends ChangeNotifier {
       Chapter newChapter;
 
       if (response != null && response.blocks.isNotEmpty) {
-        final blocks = _convertBlocksToLearningBlocks(
+        final blocks = await _convertBlocksToLearningBlocks(
           response.blocks,
           '${_currentBookId}_ch$chapterNum',
         );
@@ -478,12 +617,12 @@ class BookProvider extends ChangeNotifier {
         final updatedChapters = List<Chapter>.from(_currentBook!.chapters);
         updatedChapters[chapterIndex] = newChapter;
         _currentBook = _currentBook!.copyWith(chapters: updatedChapters);
-        notifyListeners();
       }
 
       _processedChapters.add(chapterIndex);
     } catch (e) {
       debugPrint('BookProvider: Error processing chapter $chapterNum: $e');
+      _loadingError = 'Error generating content. Using original text...';
       if (_currentBook != null) {
         final updatedChapters = List<Chapter>.from(_currentBook!.chapters);
         updatedChapters[chapterIndex] = _createFallbackChapter(
@@ -491,11 +630,16 @@ class BookProvider extends ChangeNotifier {
           chunk,
         );
         _currentBook = _currentBook!.copyWith(chapters: updatedChapters);
-        notifyListeners();
       }
       _processedChapters.add(chapterIndex);
     } finally {
       _processingChapters.remove(chapterIndex);
+      _isLoadingChapter = _processingChapters.isNotEmpty;
+      if (!_isLoadingChapter) {
+        _loadingChapterIndex = null;
+        _loadingStartTime = null;
+      }
+      notifyListeners();
     }
   }
 
@@ -532,6 +676,7 @@ class BookProvider extends ChangeNotifier {
     const maxChunks = 15;
     const targetChunkSize = 5000;
     const minChunkSize = 2000;
+    const apiMinChunkSize = 100; // Backend requires at least 100 chars
 
     final chunks = <String>[];
     final sections = text.split(
@@ -572,7 +717,11 @@ class BookProvider extends ChangeNotifier {
       }
     }
 
-    return chunks.isEmpty ? [text] : chunks;
+    // Filter out chunks that are too small for the API (< 100 chars)
+    final validChunks =
+        chunks.where((c) => c.trim().length >= apiMinChunkSize).toList();
+
+    return validChunks.isEmpty ? [text] : validChunks;
   }
 
   /// Upload PDF and extract text via backend
@@ -586,6 +735,11 @@ class BookProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Store PDF bytes for preview
+      if (bytes != null) {
+        _uploadedPdfBytes = Uint8List.fromList(bytes);
+      }
+
       if (isLiveMode && _apiClient != null) {
         final text = await _apiClient!.extractTextFromPdf(
           filePath: path,

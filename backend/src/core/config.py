@@ -4,15 +4,30 @@ Loads environment variables and defines system limits.
 """
 
 import os
+from pathlib import Path
 from functools import lru_cache
 from typing import Optional
+
+# Load .env file from backend directory
+try:
+    from dotenv import load_dotenv
+    # Find the backend directory (where .env is located)
+    backend_dir = Path(__file__).parent.parent.parent
+    env_path = backend_dir / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"Loaded .env from: {env_path}")
+    else:
+        print(f".env not found at: {env_path}")
+except ImportError:
+    print("python-dotenv not installed, using system environment variables only")
 
 
 class Settings:
     """Application settings loaded from environment variables."""
     
     # Gemini API
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "AIzaSyCiHQqbN0YGVyD2LDFK5SIsWDRzvtxb7Fc")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
     
     # Text limits (characters)

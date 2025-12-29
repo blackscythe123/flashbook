@@ -21,15 +21,23 @@ class SummaryMode(str, Enum):
 
 class BlockType(str, Enum):
     """Types of content blocks in the output."""
+    # Story-focused types
+    SCENE = "scene"
+    REVEAL = "reveal"
+    EMOTION = "emotion"
+    TENSION = "tension"
+    INSIGHT = "insight"
+    QUOTE = "quote"
+    VISUAL = "visual"
+    LYRIC_SCROLL = "lyric_scroll"
+    # Legacy types (for backwards compatibility)
     CORE_IDEA = "core_idea"
     EXPLANATION = "explanation"
     EXAMPLE = "example"
-    INSIGHT = "insight"
     TAKEAWAY = "takeaway"
     NUANCE = "nuance"
     CONTRAST = "contrast"
     REFLECTION = "reflection"
-    LYRIC_SCROLL = "lyric_scroll"
 
 
 # ============================================================
@@ -90,17 +98,36 @@ class ContentBlock(BaseModel):
         ...,
         description="The semantic type of this block"
     )
+    slide_title: str = Field(
+        default="",
+        max_length=30,
+        description="1-2 word slide title (e.g., 'PLOT TWIST', 'INNER CONFLICT')"
+    )
+    headline: str = Field(
+        default="",
+        max_length=100,
+        description="Short punchy headline (5-10 words)"
+    )
+    body: str = Field(
+        default="",
+        description="Main narrative content of the block"
+    )
     text: str = Field(
         default="",
-        description="Main text content of the block"
+        description="Legacy field - use body instead"
     )
     lyric_lines: List[str] = Field(
         default_factory=list,
-        description="Timed reading lines for lyric_scroll blocks"
+        description="Flowing text lines for lyric_scroll blocks"
     )
     image_hint: bool = Field(
         default=False,
-        description="Whether this block suggests an illustration"
+        description="Whether this block should have an illustration"
+    )
+    image_prompt: str = Field(
+        default="",
+        max_length=500,
+        description="Detailed prompt for image generation if image_hint is true"
     )
 
 
@@ -165,9 +192,13 @@ class ErrorResponse(BaseModel):
 class GeminiOutputBlock(BaseModel):
     """Schema for parsing Gemini's raw block output."""
     type: str
-    text: str = ""
+    slide_title: str = ""
+    headline: str = ""
+    body: str = ""
+    text: str = ""  # Legacy field
     lyric_lines: List[str] = []
     image_hint: bool = False
+    image_prompt: str = ""
 
 
 class GeminiOutput(BaseModel):

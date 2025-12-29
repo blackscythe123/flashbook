@@ -10,12 +10,14 @@ Entry point for local development and Cloud Run deployment.
 import logging
 import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
-from src.api import summary_router, extract_router
+from src.api import summary_router, extract_router, image_router
 from src.core.config import get_settings
 
 # ============================================================
@@ -154,6 +156,13 @@ async def health():
 # Summary generation routes
 app.include_router(summary_router, tags=["Summary Generation"])
 app.include_router(extract_router, tags=["Text Extraction"])
+app.include_router(image_router, tags=["Image Generation"])
+
+# Static files for generated images
+static_dir = Path(__file__).parent / "static"
+static_dir.mkdir(exist_ok=True)
+(static_dir / "images").mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
 # ============================================================

@@ -79,6 +79,15 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   final block = allBlocks[index];
                   final chapter = bookProvider.getChapterForBlock(block.id);
 
+                  // Check if this block's chapter is still loading
+                  final chapterIndex = book.chapters.indexWhere(
+                    (c) => c.id == chapter?.id,
+                  );
+                  final isLoading =
+                      chapterIndex != -1 &&
+                      bookProvider.isLoadingChapter &&
+                      bookProvider.loadingChapterIndex == chapterIndex;
+
                   return LearningCard(
                     block: block,
                     chapter: chapter,
@@ -86,6 +95,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     progress: (index + 1) / allBlocks.length,
                     isFirst: index == 0,
                     isLast: index == allBlocks.length - 1,
+                    isLoading: isLoading || block.tag == 'LOADING',
                   );
                 },
               ),

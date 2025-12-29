@@ -10,6 +10,7 @@ pydantic==2.10.4
 
 # Google Gemini AI
 google-generativeai==0.8.3
+google-genai==1.0.0
 
 # PDF Processing
 pypdf==3.17.4

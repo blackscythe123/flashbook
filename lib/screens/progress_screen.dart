@@ -37,8 +37,8 @@ class ProgressScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        // Book cover
-                        _buildBookCover(book.coverUrl)
+                        // PDF Preview Card (WhatsApp style)
+                        _buildPdfPreviewCard(context, bookProvider)
                             .animate()
                             .fadeIn(duration: 600.ms)
                             .scale(
@@ -115,75 +115,167 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBookCover(String? coverUrl) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Glow effect
-        Container(
-          width: 180,
-          height: 240,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: RadialGradient(
-              colors: [
-                AppColors.primary.withValues(alpha: 0.2),
-                Colors.transparent,
+  /// Build PDF preview card like WhatsApp document preview
+  Widget _buildPdfPreviewCard(BuildContext context, BookProvider bookProvider) {
+    final pdfPath = bookProvider.uploadedPdfPath;
+    final book = bookProvider.currentBook;
+    final isPdf = pdfPath?.toLowerCase().endsWith('.pdf') ?? false;
+    final pdfBytes = bookProvider.uploadedPdfBytes;
+
+    // Extract filename from path
+    String fileName = book?.title ?? 'Uploaded Book';
+    if (pdfPath != null) {
+      fileName = pdfPath.split('/').last.split('\\').last;
+    }
+
+    // Get actual file size from bytes, fallback to content length
+    String sizeStr;
+    if (pdfBytes != null) {
+      final sizeBytes = pdfBytes.length;
+      if (sizeBytes >= 1024 * 1024) {
+        sizeStr = '${(sizeBytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+      } else {
+        sizeStr = '${(sizeBytes / 1024).toStringAsFixed(1)} KB';
+      }
+    } else {
+      final contentLength = bookProvider.uploadedPdfContent?.length ?? 0;
+      sizeStr = '${(contentLength / 1024).toStringAsFixed(1)} KB (text)';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // PDF Icon / Thumbnail
+          Container(
+            width: 72,
+            height: 90,
+            decoration: BoxDecoration(
+              color: isPdf ? Colors.red.shade50 : Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isPdf ? Colors.red.shade200 : Colors.blue.shade200,
+                width: 1,
+              ),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // File type icon
+                Icon(
+                  isPdf
+                      ? Icons.picture_as_pdf_rounded
+                      : Icons.description_rounded,
+                  size: 36,
+                  color: isPdf ? Colors.red.shade400 : Colors.blue.shade400,
+                ),
+                // File extension badge
+                Positioned(
+                  bottom: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isPdf ? Colors.red.shade400 : Colors.blue.shade400,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      isPdf ? 'PDF' : 'TXT',
+                      style: GoogleFonts.inter(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-        ),
 
-        // Book cover
-        Container(
-          width: 160,
-          height: 220,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.grey[200],
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child:
-              coverUrl != null
-                  ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      coverUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (context, error, stackTrace) =>
-                              _buildPlaceholderCover(),
+          const SizedBox(width: 16),
+
+          // File info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  fileName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.inkLight,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.insert_drive_file_outlined,
+                      size: 14,
+                      color: AppColors.textMuted,
                     ),
-                  )
-                  : _buildPlaceholderCover(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlaceholderCover() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.3),
-            AppColors.accentSage.withValues(alpha: 0.3),
-          ],
-        ),
-      ),
-      child: Icon(
-        Icons.auto_stories_rounded,
-        size: 48,
-        color: AppColors.primary.withValues(alpha: 0.5),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$sizeStr • ${bookProvider.totalChunksCount} chapters',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Status indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.accentSage.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle_rounded,
+                        size: 12,
+                        color: AppColors.accentSage,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Ready to read',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.accentSage,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

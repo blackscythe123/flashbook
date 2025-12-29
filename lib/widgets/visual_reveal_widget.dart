@@ -3,13 +3,18 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 
-/// Visual Reveal Widget - tap/long-press to reveal image overlay.
+/// Visual Reveal Widget - Auto-reveals image with fade after 3 seconds.
 /// Features smooth fade animation.
 /// Design inspired by the Figma visual_reveal_interaction template.
 class VisualRevealWidget extends StatefulWidget {
   final String imageUrl;
+  final Duration autoRevealDelay;
 
-  const VisualRevealWidget({super.key, required this.imageUrl});
+  const VisualRevealWidget({
+    super.key,
+    required this.imageUrl,
+    this.autoRevealDelay = const Duration(seconds: 3),
+  });
 
   @override
   State<VisualRevealWidget> createState() => _VisualRevealWidgetState();
@@ -17,7 +22,6 @@ class VisualRevealWidget extends StatefulWidget {
 
 class _VisualRevealWidgetState extends State<VisualRevealWidget>
     with SingleTickerProviderStateMixin {
-  // ignore: unused_field
   bool _isRevealed = false;
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
@@ -28,7 +32,7 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
     );
 
     _opacityAnimation = Tween<double>(
@@ -37,9 +41,21 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
+      begin: 1.02,
+      end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    // Auto-reveal after delay
+    _startAutoReveal();
+  }
+
+  void _startAutoReveal() {
+    Future.delayed(widget.autoRevealDelay, () {
+      if (mounted && !_isRevealed) {
+        setState(() => _isRevealed = true);
+        _controller.forward();
+      }
+    });
   }
 
   @override
@@ -48,38 +64,20 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
     super.dispose();
   }
 
-  void _onTapDown(TapDownDetails details) {
-    setState(() => _isRevealed = true);
-    _controller.forward();
-  }
-
-  void _onTapUp(TapUpDetails details) {
-    setState(() => _isRevealed = false);
-    _controller.reverse();
-  }
-
-  void _onTapCancel() {
-    setState(() => _isRevealed = false);
-    _controller.reverse();
+  void _revealNow() {
+    if (!_isRevealed) {
+      setState(() => _isRevealed = true);
+      _controller.forward();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      onLongPressStart: (_) {
-        setState(() => _isRevealed = true);
-        _controller.forward();
-      },
-      onLongPressEnd: (_) {
-        setState(() => _isRevealed = false);
-        _controller.reverse();
-      },
+      onTap: _revealNow,
       child: Container(
         width: double.infinity,
-        height: 200,
+        height: 240,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: AppColors.backgroundLight,
@@ -87,10 +85,10 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Placeholder/Button layer
-            _buildRevealButton(),
+            // Placeholder/Button layer (shown before reveal)
+            if (!_isRevealed) _buildRevealButton(),
 
-            // Image layer (revealed on tap)
+            // Image layer (fades in)
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
@@ -104,42 +102,48 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Image
-                    Image.network(
-                      widget.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          child: Center(
-                            child: Icon(
-                              Icons.image_rounded,
+                child: Image.network(
+                  widget.imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.image_not_supported_rounded,
                               size: 48,
                               color: AppColors.primary.withValues(alpha: 0.5),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    // Gradient overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            AppColors.backgroundLight.withValues(alpha: 0.6),
-                            AppColors.backgroundLight.withValues(alpha: 0.2),
-                            AppColors.backgroundLight.withValues(alpha: 0.6),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Image unavailable',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -160,20 +164,26 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.05),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.visibility_rounded,
-              color: AppColors.primary,
-              size: 28,
-            ),
-          ),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .scale(
+                begin: const Offset(1, 1),
+                end: const Offset(1.1, 1.1),
+                duration: 1.seconds,
+              ),
           const SizedBox(height: 12),
           Text(
-            'Press to Imagine',
+            'Generating visualization...',
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -183,7 +193,7 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
           ),
           const SizedBox(height: 4),
           Text(
-            'Hold to reveal visualization',
+            'Tap to reveal now',
             style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
           ),
         ],

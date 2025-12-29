@@ -40,25 +40,37 @@ class SummaryResponse {
 /// Content block from backend
 class ContentBlock {
   final String type;
-  final String text;
+  final String slideTitle;
+  final String headline;
+  final String body;
+  final String text; // Legacy field
   final List<String> lyricLines;
   final bool imageHint;
+  final String imagePrompt;
 
   ContentBlock({
     required this.type,
+    this.slideTitle = '',
+    this.headline = '',
+    this.body = '',
     required this.text,
     required this.lyricLines,
     required this.imageHint,
+    this.imagePrompt = '',
   });
 
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     return ContentBlock(
       type: json['type'] as String? ?? 'insight',
-      text: json['text'] as String? ?? '',
+      slideTitle: json['slide_title'] as String? ?? '',
+      headline: json['headline'] as String? ?? '',
+      body: json['body'] as String? ?? json['text'] as String? ?? '',
+      text: json['text'] as String? ?? json['body'] as String? ?? '',
       lyricLines:
           (json['lyric_lines'] as List?)?.map((e) => e as String).toList() ??
           [],
       imageHint: json['image_hint'] as bool? ?? false,
+      imagePrompt: json['image_prompt'] as String? ?? '',
     );
   }
 }
@@ -245,6 +257,51 @@ class BackendApiClient {
       return null;
     } catch (e) {
       debugPrint('BackendApiClient: Failed to get cache stats: $e');
+      return null;
+    }
+  }
+
+  /// Generate image URL from prompt
+  Future<String?> generateImageUrl({
+    required String prompt,
+    int width = 512,
+    int height = 768,
+    String style = 'anime',
+    String bookTitle = '',
+    String characterContext = '',
+  }) async {
+    if (_config.isDemoMode) return null;
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/generateImage');
+      final body = {
+        'prompt': prompt,
+        'width': width,
+        'height': height,
+        'style': style,
+        'book_title': bookTitle,
+        'character_context': characterContext,
+      };
+
+      debugPrint(
+        'BackendApiClient: Generating image for: ${prompt.substring(0, 50.clamp(0, prompt.length))}...',
+      );
+
+      final response = await _httpClient
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return data['image_url'] as String?;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('BackendApiClient: Failed to generate image: $e');
       return null;
     }
   }
