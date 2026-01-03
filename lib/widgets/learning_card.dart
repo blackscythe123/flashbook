@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 import 'package:universal_html/html.dart' as html;
 import 'lyric_flow_widget.dart';
 
@@ -113,26 +113,20 @@ class _LearningCardState extends State<LearningCard> {
         );
       }
 
-      // 2. Download image
+      // Download image bytes
       var response = await http.get(Uri.parse(widget.block.imageUrl!));
 
-      // 3. Save to gallery
-      final result = await ImageGallerySaver.saveImage(
+      // 3. Save to gallery using Gal
+      await Gal.putImageBytes(
         Uint8List.fromList(response.bodyBytes),
-        quality: 100,
         name: "flashbook_${DateTime.now().millisecondsSinceEpoch}",
       );
 
       if (mounted) {
-        final isSuccess =
-            result['isSuccess'] == true ||
-            result == true; // Result format varies
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isSuccess ? 'Image saved to gallery!' : 'Failed to save image.',
-            ),
-            backgroundColor: isSuccess ? Colors.green : Colors.red,
+          const SnackBar(
+            content: Text('Image saved to gallery!'),
+            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
