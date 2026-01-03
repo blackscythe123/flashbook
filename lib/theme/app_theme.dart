@@ -39,7 +39,7 @@ class AppTheme {
 
       // Card theme
       cardTheme: CardThemeData(
-        elevation: 0.0,
+        elevation: 0,
         color: AppColors.surfaceLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

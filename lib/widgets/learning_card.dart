@@ -154,7 +154,7 @@ class _LearningCardState extends State<LearningCard> {
     }
 
     return Container(
-      color: Colors.white,
+      color: _hasImage ? null : Theme.of(context).scaffoldBackgroundColor,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -199,7 +199,7 @@ class _LearningCardState extends State<LearningCard> {
                                 color:
                                     _hasImage
                                         ? Colors.white
-                                        : AppColors.inkLight,
+                                        : Theme.of(context).textTheme.headlineLarge?.color,
                                 height: 1.2,
                                 letterSpacing: -0.5,
                                 shadows:
@@ -229,9 +229,9 @@ class _LearningCardState extends State<LearningCard> {
                               textColor:
                                   _hasImage
                                       ? Colors.white.withValues(alpha: 0.95)
-                                      : AppColors.inkLight.withValues(
+                                      : Theme.of(context).textTheme.bodyLarge?.color?.withValues(
                                         alpha: 0.85,
-                                      ),
+                                      ) ?? AppColors.inkLight.withValues(alpha: 0.85),
                               hasImageBackground: _hasImage,
                             )
                             : Text(
@@ -241,9 +241,9 @@ class _LearningCardState extends State<LearningCard> {
                                 color:
                                     _hasImage
                                         ? Colors.white.withValues(alpha: 0.95)
-                                        : AppColors.inkLight.withValues(
+                                        : Theme.of(context).textTheme.bodyLarge?.color?.withValues(
                                           alpha: 0.85,
-                                        ),
+                                        ) ?? AppColors.inkLight.withValues(alpha: 0.85),
                                 height: 1.8,
                                 shadows:
                                     _hasImage
@@ -312,7 +312,7 @@ class _LearningCardState extends State<LearningCard> {
             ),
         errorWidget:
             (context, url, error) => Container(
-              color: AppColors.backgroundLight,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -320,12 +320,14 @@ class _LearningCardState extends State<LearningCard> {
                     Icon(
                       Icons.broken_image_rounded,
                       size: 48,
-                      color: AppColors.textMuted,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Image unavailable',
-                      style: TextStyle(color: AppColors.textMuted),
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
                     ),
                   ],
                 ),
@@ -344,10 +346,10 @@ class _LearningCardState extends State<LearningCard> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withValues(alpha: 0.4),
-              Colors.black.withValues(alpha: 0.2),
+              Colors.black.withValues(alpha: 0.5),
               Colors.black.withValues(alpha: 0.3),
-              Colors.black.withValues(alpha: 0.6),
+              Colors.black.withValues(alpha: 0.4),
+              Colors.black.withValues(alpha: 0.7),
             ],
             stops: const [0.0, 0.3, 0.6, 1.0],
           ),
@@ -361,7 +363,7 @@ class _LearningCardState extends State<LearningCard> {
     final waitTime = bookProvider.estimatedWaitSeconds;
 
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -380,7 +382,7 @@ class _LearningCardState extends State<LearningCard> {
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: AppColors.inkLight,
+                color: Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
             const SizedBox(height: 12),
@@ -389,7 +391,7 @@ class _LearningCardState extends State<LearningCard> {
                 'Estimated wait: ~$waitTime seconds',
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: AppColors.textMuted,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
               ),
             const SizedBox(height: 8),
@@ -397,7 +399,7 @@ class _LearningCardState extends State<LearningCard> {
               'AI is summarizing this chapter for you',
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppColors.textMuted,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
             if (bookProvider.loadingError != null) ...[
@@ -455,13 +457,13 @@ class _LearningCardState extends State<LearningCard> {
         color:
             _hasImage
                 ? Colors.white.withValues(alpha: 0.2)
-                : AppColors.primary.withValues(alpha: 0.08),
+                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
                   ? Colors.white.withValues(alpha: 0.3)
-                  : AppColors.primary.withValues(alpha: 0.2),
+                  : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Text(
@@ -470,7 +472,7 @@ class _LearningCardState extends State<LearningCard> {
           fontSize: 10,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
-          color: _hasImage ? Colors.white : AppColors.primary,
+          color: _hasImage ? Colors.white : Theme.of(context).colorScheme.primary,
           shadows:
               _hasImage
                   ? [
@@ -492,13 +494,13 @@ class _LearningCardState extends State<LearningCard> {
         color:
             _hasImage
                 ? Colors.white.withValues(alpha: 0.15)
-                : AppColors.backgroundLight,
+                : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
                   ? Colors.white.withValues(alpha: 0.2)
-                  : AppColors.primary.withValues(alpha: 0.1),
+                  : Theme.of(context).dividerColor.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -513,7 +515,7 @@ class _LearningCardState extends State<LearningCard> {
               color:
                   _hasImage
                       ? Colors.white.withValues(alpha: 0.7)
-                      : AppColors.inkLight.withValues(alpha: 0.5),
+                      : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
@@ -522,7 +524,7 @@ class _LearningCardState extends State<LearningCard> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: _hasImage ? Colors.white : AppColors.inkLight,
+              color: _hasImage ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
               shadows:
                   _hasImage
@@ -550,7 +552,7 @@ class _LearningCardState extends State<LearningCard> {
             color:
                 _hasImage
                     ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.grey.withValues(alpha: 0.1),
+                    : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -558,7 +560,7 @@ class _LearningCardState extends State<LearningCard> {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: _hasImage ? Colors.white : AppColors.textMuted,
+              color: _hasImage ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
               shadows:
                   _hasImage
                       ? [
@@ -690,10 +692,12 @@ class _LearningCardState extends State<LearningCard> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: _hasImage ? Colors.black.withValues(alpha: 0.3) : Colors.white,
+      color: _hasImage 
+          ? Colors.black.withValues(alpha: 0.3) 
+          : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
       elevation: _hasImage ? 0 : 2,
-      shadowColor: Colors.black.withValues(alpha: 0.1),
+      shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.1),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
@@ -708,7 +712,7 @@ class _LearningCardState extends State<LearningCard> {
                     ? AppColors.accentGold
                     : (_hasImage
                         ? Colors.white
-                        : AppColors.inkLight.withValues(alpha: 0.6)),
+                        : Theme.of(context).iconTheme.color?.withValues(alpha: 0.6)),
             size: 22,
           ),
         ),
@@ -723,11 +727,14 @@ class _LearningCardState extends State<LearningCard> {
               'Swipe up to continue',
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: AppColors.textMuted,
+                color: Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
             const SizedBox(height: 4),
-            Icon(Icons.keyboard_arrow_up_rounded, color: AppColors.textMuted),
+            Icon(
+              Icons.keyboard_arrow_up_rounded, 
+              color: Theme.of(context).iconTheme.color,
+            ),
           ],
         )
         .animate(onPlay: (c) => c.repeat())

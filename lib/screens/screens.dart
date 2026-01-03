@@ -6,3 +6,4 @@ export 'learning_feed_screen.dart';
 export 'bookmark_screen.dart';
 export 'progress_screen.dart';
 export 'upgrade_screen.dart';
+export 'settings_screen.dart';
