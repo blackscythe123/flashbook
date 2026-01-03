@@ -26,7 +26,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
     'Analyzing book structure...',
     'Extracting key concepts...',
     'Generating learning blocks...',
-    'Creating visual summaries...',
+    'Creating visual summaries...', // This step usually takes the longest (image generation)
     'Optimizing for your learning style...',
     'Almost ready...',
   ];

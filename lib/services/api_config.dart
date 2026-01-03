@@ -48,7 +48,16 @@ class ApiConfig extends ChangeNotifier {
 
   /// Set and save backend URL
   Future<void> setBackendUrl(String? url) async {
-    _backendUrl = url?.trim();
+    // Aggressively clean URL: remove ALL whitespace
+    _backendUrl = url?.replaceAll(RegExp(r'\s+'), '');
+
+    // Auto-fix common typos if possible (optional but helpful)
+    if (_backendUrl != null) {
+      if (_backendUrl!.endsWith('.aop')) {
+        _backendUrl = _backendUrl!.replaceAll('.aop', '.app');
+      }
+    }
+
     _isConnected = false;
     _lastError = null;
 

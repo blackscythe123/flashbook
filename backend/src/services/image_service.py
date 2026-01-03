@@ -1,12 +1,12 @@
 """
 Image generation service using various APIs.
-Primary: Pollinations.ai (free, AI-generated)
-Fallback: Unsplash Source (placeholder images)
+Primary: Gemini 2.5 Flash Image (Nano Banana)
+Fallback: Pollinations.ai (free, AI-generated)
+Fallback: Picsum (placeholder images)
 """
 
 import logging
 import asyncio
-import base64
 import time
 import urllib.parse
 import hashlib
@@ -15,29 +15,35 @@ from typing import Optional
 from pathlib import Path
 import uuid
 
+# Configure basic logging for direct testing
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
+# Try importing Google Gen AI SDK
 try:
     from google import genai
     from google.genai import types
     HAS_GEMINI = True
 except ImportError:
     HAS_GEMINI = False
-
-logger = logging.getLogger(__name__)
-
+    logger.warning("google-genai package not installed. Gemini generation disabled.")
 
 class ImageGenerationService:
     """
     Service for generating images from prompts.
-    Primary: Pollinations.ai (AI-generated)
-    Fallback: Unsplash/Picsum (placeholder images)
+    Primary: Gemini 2.5 Flash Image ("Nano Banana")
+    Secondary: Pollinations.ai (AI-generated)
+    Fallback: Picsum (placeholder images)
     """
     
     POLLINATIONS_URL = "https://image.pollinations.ai/prompt"
     PICSUM_URL = "https://picsum.photos"
     
-    # Rate limiting for Gemini (2 RPM for imagen)
+    # Rate limiting for Gemini
     _last_gemini_call: float = 0
-    _gemini_min_interval: float = 35  # seconds between calls (safe margin)
+    _gemini_min_interval: float = 5  # "Flash" models are faster, reduced wait time
     
     def __init__(self):
         self._genai_client = None
@@ -53,20 +59,36 @@ class ImageGenerationService:
                 except Exception as e:
                     logger.error(f"Failed to initialize Gemini Image Client: {e}")
             else:
-                logger.warning("GEMINI_API_KEY not found, Gemini image generation disabled")
-        else:
-            logger.warning("google-genai package not found, Gemini image generation disabled")
+                logger.warning("GEMINI_API_KEY not found in environment variables.")
     
     def _setup_images_dir(self):
         """Create directory for storing generated images."""
         try:
-            # Store in backend/static/images
-            backend_dir = Path(__file__).parent.parent.parent
-            self._images_dir = backend_dir / "static" / "images"
+            # Robust way to find the 'static' folder relative to the project root
+            base_dir = Path(os.getcwd())
+            
+            # Check common locations for static/images
+            candidates = [
+                base_dir / "backend" / "static" / "images",
+                base_dir / "static" / "images",
+                base_dir / "images"
+            ]
+            
+            for path in candidates:
+                if path.parent.parent.exists(): 
+                    self._images_dir = path
+                    break
+            
+            # Fallback if structure is unknown
+            if not self._images_dir:
+                self._images_dir = base_dir / "static" / "images"
+
             self._images_dir.mkdir(parents=True, exist_ok=True)
-            logger.info(f"Images directory: {self._images_dir}")
+            logger.info(f"Images directory set to: {self._images_dir}")
         except Exception as e:
             logger.error(f"Failed to create images directory: {e}")
+            self._images_dir = Path("/tmp/gen_images")
+            self._images_dir.mkdir(parents=True, exist_ok=True)
     
     async def _wait_for_gemini_rate_limit(self):
         """Wait if needed to respect Gemini rate limits."""
@@ -74,26 +96,21 @@ class ImageGenerationService:
         elapsed = now - self._last_gemini_call
         if elapsed < self._gemini_min_interval:
             wait_time = self._gemini_min_interval - elapsed
-            logger.info(f"Rate limiting: waiting {wait_time:.1f}s")
             await asyncio.sleep(wait_time)
         self._last_gemini_call = time.time()
     
     def _get_seed_from_prompt(self, prompt: str) -> int:
-        """Generate a consistent seed from prompt for reproducible images."""
         return int(hashlib.md5(prompt.encode()).hexdigest()[:8], 16) % 1000000
 
     async def generate_gemini_image(
         self,
         prompt: str,
-        width: int = 512,
-        height: int = 768,
         style: str = "anime",
         book_title: str = "",
         character_context: str = ""
     ) -> Optional[str]:
         """
-        Generate an image using Google's Gemini (Imagen 3) model.
-        Returns the URL path to the saved image or None if generation fails.
+        Generate an image using Gemini 2.5 Flash Image ("Nano Banana").
         """
         if not self._genai_client:
             return None
@@ -101,44 +118,63 @@ class ImageGenerationService:
         try:
             await self._wait_for_gemini_rate_limit()
             
-            # Enhance prompt
-            enhanced_prompt = f"{style} style. {prompt}"
+            # Contextual Prompt
+            enhanced_prompt = f"Create a high quality {style} style illustration. {prompt}"
             if character_context:
                 enhanced_prompt += f" Characters: {character_context}"
             if book_title:
-                enhanced_prompt += f" Context: from {book_title}"
+                enhanced_prompt += f" Context: {book_title}"
+            aspect_ratio = "16:9" # "1:1","2:3","3:2","3:4","4:3","4:5","5:4","9:16","16:9","21:9"
+            resolution = "1K" # "1K", "2K", "4K"    
+            enhanced_prompt = enhanced_prompt[:450]
+            logger.info(f"Attempting Gemini (Nano Banana) generation: {enhanced_prompt[:50]}...")
             
-            # Truncate if too long (Imagen limit)
-            if len(enhanced_prompt) > 400:
-                enhanced_prompt = enhanced_prompt[:400]
-
-            logger.info(f"Generating Gemini image for: {enhanced_prompt[:50]}...")
-            
-            # Generate image
-            response = self._genai_client.models.generate_images(
-                model='imagen-3.0-generate-001',
-                prompt=enhanced_prompt,
-                config=types.GenerateImagesConfig(
-                    number_of_images=1,
-                    aspect_ratio="3:4",  # Closest to 512x768
-                    safety_filter_level="block_only_high",
-                    person_generation="allow_adult",
-                )
+            # --- CHANGED: Using generate_content for Gemini 2.5 Flash Image ---
+            response = self._genai_client.models.generate_content(
+                model=os.getenv("GEMINI_MODEL_Image"), # or 'gemini-2.5-flash-image' if available in your region
+                contents=enhanced_prompt,
+                # config=types.GenerateContentConfig(
+                #     response_modalities=['IMAGE'],
+                #     image_config=types.ImageConfig(
+                #         aspect_ratio=aspect_ratio,
+                #         image_size=resolution
+                #     ),
+                # )
             )
 
-            if response.generated_images:
-                image = response.generated_images[0]
-                
-                # Save image
+            # Handle response (Nano Banana returns inline_data, not generated_images)
+            image_data = None
+            
+            # Check for inline data in parts
+            if response.candidates and response.candidates[0].content.parts:
+                for part in response.candidates[0].content.parts:
+                    if part.inline_data:
+                        image_data = part.inline_data.data
+                        break
+            
+            # Fallback check (sometimes it wraps differently)
+            if not image_data and hasattr(response, 'text') and not response.text:
+                 # If text is empty, check raw parts if available
+                 pass
+
+            if image_data:
+                # Save image locally
                 filename = f"gemini_{uuid.uuid4()}.png"
                 filepath = self._images_dir / filename
                 
+                # Decode if it's base64, otherwise write bytes directly
+                if isinstance(image_data, str):
+                    image_bytes = base64.b64decode(image_data)
+                else:
+                    image_bytes = image_data
+
                 with open(filepath, "wb") as f:
-                    f.write(image.image.image_bytes)
+                    f.write(image_bytes)
                 
-                # Return relative URL
+                logger.info(f"Gemini image saved to {filepath}")
                 return f"/static/images/{filename}"
             
+            logger.warning("Gemini response contained no image data.")
             return None
 
         except Exception as e:
@@ -152,114 +188,78 @@ class ImageGenerationService:
         height: int = 768,
         style: str = "anime",
         book_title: str = "",
-        character_context: str = ""
     ) -> str:
-        """
-        Generate a Pollinations.ai URL for the image.
-        Image is generated on-demand when URL is accessed.
-        """
-        # Clean and simplify the prompt
-        clean_prompt = prompt.replace("'", "").replace('"', "").replace('\n', ' ')
-        clean_prompt = ' '.join(clean_prompt.split())
-        
-        # Truncate if too long
-        if len(clean_prompt) > 200:
-            clean_prompt = clean_prompt[:200]
-        
-        # Build context
-        parts = []
+        clean_prompt = prompt.replace("'", "").replace('"', "").replace('\n', ' ')[:300]
+        style_suffix = f"{style} style illustration high quality"
+        final_prompt = f"{clean_prompt} {style_suffix}"
         if book_title:
-            clean_title = book_title.replace("'", "").replace('"', "")[:50]
-            parts.append(clean_title)
-        
-        # Simple, clean prompt for better results
-        style_suffix = "anime style illustration high quality"
-        
-        if parts:
-            final_prompt = f"{clean_prompt} {' '.join(parts)} {style_suffix}"
-        else:
-            final_prompt = f"{clean_prompt} {style_suffix}"
-        
-        # Use seed for consistent images
+            final_prompt += f" ({book_title})"
+            
         seed = self._get_seed_from_prompt(prompt)
-        
-        encoded_prompt = urllib.parse.quote(final_prompt, safe='')
-        url = f"{self.POLLINATIONS_URL}/{encoded_prompt}?width={width}&height={height}&seed={seed}&nologo=true"
-        return url
+        encoded_prompt = urllib.parse.quote(final_prompt)
+        return f"{self.POLLINATIONS_URL}/{encoded_prompt}?width={width}&height={height}&seed={seed}&nologo=true&model=flux"
     
     def generate_picsum_url(self, prompt: str, width: int = 512, height: int = 768) -> str:
-        """
-        Generate a Picsum placeholder image URL.
-        Uses prompt hash as seed for consistent images.
-        """
         seed = self._get_seed_from_prompt(prompt)
-        # Picsum provides random images, seed ensures consistency
-        url = f"{self.PICSUM_URL}/seed/{seed}/{width}/{height}"
-        return url
+        return f"{self.PICSUM_URL}/seed/{seed}/{width}/{height}"
     
     async def generate_image_url(
         self,
         prompt: str,
         width: int = 512,
         height: int = 768,
-        seed: Optional[int] = None,
-        style: str = "anime/novel",
+        style: str = "anime",
         book_title: str = "",
         character_context: str = ""
     ) -> str:
-        """
-        Generate an image URL from a prompt.
-        Primary: Gemini (Imagen 3)
-        Secondary: Pollinations.ai (AI-generated)
-        Fallback: Picsum (reliable placeholder)
-        
-        Args:
-            prompt: The image description
-            width: Image width
-            height: Image height
-            seed: Random seed
-            style: Style hint
-            book_title: Title of the book for context
-            character_context: Character names and details
-            
-        Returns:
-            URL string for the image
-        """
-        # Try Gemini first
+        # 1. Try Gemini (Nano Banana)
         if self._genai_client:
             gemini_url = await self.generate_gemini_image(
-                prompt, width, height, style, book_title, character_context
+                prompt, style=style, book_title=book_title, character_context=character_context
             )
             if gemini_url:
                 return gemini_url
 
-        # Use Pollinations for AI-generated images
-        url = self.generate_pollinations_url(prompt, width, height, style, book_title, character_context)
-        logger.info(f"Generated Pollinations URL for: {prompt[:50]}...")
-        return url
-    
-    def generate_fallback_url(
-        self,
-        prompt: str,
-        width: int = 512,
-        height: int = 768,
-    ) -> str:
-        """
-        Generate a fallback image URL using Picsum.
-        Used when Pollinations is unavailable.
-        """
-        url = self.generate_picsum_url(prompt, width, height)
-        logger.info(f"Generated Picsum fallback URL for: {prompt[:50]}...")
-        return url
+        # 2. Fallback to Pollinations
+        try:
+            url = self.generate_pollinations_url(prompt, width, height, style, book_title)
+            logger.info(f"Using Pollinations URL: {url[:50]}...")
+            return url
+        except Exception as e:
+            logger.error(f"Pollinations generation failed: {e}")
+            
+        # 3. Last resort
+        return self.generate_picsum_url(prompt, width, height)
 
-
-# Singleton instance
+# Singleton logic
 _service: Optional[ImageGenerationService] = None
 
-
 def get_image_service() -> ImageGenerationService:
-    """Get the singleton image generation service instance."""
     global _service
     if _service is None:
         _service = ImageGenerationService()
     return _service
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    # Find .env
+    env_path = Path(__file__).resolve().parent.parent.parent.parent / '.env'
+    if not env_path.exists():
+         env_path = Path(__file__).resolve().parent.parent.parent / '.env'
+    load_dotenv(env_path)
+    
+    async def test_service():
+        print("--- Starting Image Service Test ---")
+        svc = get_image_service()
+        prompt = "A futuristic cyberpunk detective standing in rain"
+        
+        print(f"\nGenerating image for prompt: '{prompt}'")
+        url = await svc.generate_image_url(prompt)
+        
+        print(f"\nResult URL: {url}")
+        if "/static/" in url:
+            print("SUCCESS: Generated using Gemini.")
+        else:
+            print("FALLBACK: Generated using Pollinations.")
+
+    asyncio.run(test_service())

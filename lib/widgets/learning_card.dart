@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
+import 'package:http/http.dart' as http;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:gal/gal.dart';
+import 'package:universal_html/html.dart' as html;
 import 'lyric_flow_widget.dart';
 
 /// Learning Card widget - Instagram Reels style with image background.
@@ -37,6 +44,106 @@ class LearningCard extends StatefulWidget {
 class _LearningCardState extends State<LearningCard> {
   bool get _hasImage => widget.block.imageUrl != null;
   bool get _needsLyricFlow => widget.block.content.length > 300;
+  bool _isGeneratingImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _triggerLazyImageGeneration();
+  }
+
+  /// Trigger lazy image generation if block has pending prompt
+  void _triggerLazyImageGeneration() {
+    if (widget.block.pendingImagePrompt != null &&
+        widget.block.imageUrl == null &&
+        !_isGeneratingImage) {
+      _isGeneratingImage = true;
+
+      // Generate image in background
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final bookProvider = context.read<BookProvider>();
+        bookProvider.generateImageForBlock(widget.block.id).then((imageUrl) {
+          if (mounted) {
+            setState(() {
+              _isGeneratingImage = false;
+            });
+          }
+        });
+      });
+    }
+  }
+
+  /// Download and save image to gallery
+  Future<void> _downloadImage() async {
+    if (widget.block.imageUrl == null) return;
+
+    try {
+      // 1. WEB IMPLEMENTATION
+      if (kIsWeb) {
+        final anchor =
+            html.AnchorElement(href: widget.block.imageUrl!)
+              ..target = 'blank'
+              ..download =
+                  "flashbook_image_${DateTime.now().millisecondsSinceEpoch}.jpg";
+        html.document.body?.append(anchor);
+        anchor.click();
+        anchor.remove();
+        return;
+      }
+
+      // 2. MOBILE IMPLEMENTATION
+      // Request permissions
+      var status = await Permission.storage.request();
+      if (!status.isGranted) {
+        // Fallback for Android 10+ where specific permission might not be needed or handled differently
+        // But for safety, check if strictly denied
+        if (status.isPermanentlyDenied) {
+          openAppSettings();
+          return;
+        }
+      }
+
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Downloading image...'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+
+      // Download image bytes
+      var response = await http.get(Uri.parse(widget.block.imageUrl!));
+
+      // 3. Save to gallery using Gal
+      await Gal.putImageBytes(
+        Uint8List.fromList(response.bodyBytes),
+        name: "flashbook_${DateTime.now().millisecondsSinceEpoch}",
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image saved to gallery!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error downloading image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +282,7 @@ class _LearningCardState extends State<LearningCard> {
 
           // Floating action buttons (top-right)
           Positioned(
-            top: 100,
+            top: 300,
             right: 12,
             child: _buildFloatingActions(context),
           ),
@@ -191,49 +298,39 @@ class _LearningCardState extends State<LearningCard> {
   /// Full-screen image background
   Widget _buildImageBackground() {
     return Positioned.fill(
-      child: Image.network(
-        widget.block.imageUrl!,
+      child: CachedNetworkImage(
+        imageUrl: widget.block.imageUrl!,
         fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            color: AppColors.backgroundLight,
-            child: Center(
-              child: CircularProgressIndicator(
-                value:
-                    loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                color: AppColors.primary,
+        placeholder:
+            (context, url) => Container(
+              color: AppColors.backgroundLight,
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.broken_image_rounded,
-                    size: 48,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Image unavailable',
-                    style: TextStyle(
+        errorWidget:
+            (context, url, error) => Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.broken_image_rounded,
+                      size: 48,
                       color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Image unavailable',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          );
-        },
       ),
     ).animate().fadeIn(duration: 600.ms);
   }
@@ -506,6 +603,15 @@ class _LearningCardState extends State<LearningCard> {
           ),
           const SizedBox(height: 12),
           // Share
+          // Download (if image exists)
+          if (_hasImage) ...[
+            _buildActionButton(
+              icon: Icons.download_rounded,
+              onTap: _downloadImage,
+            ),
+            const SizedBox(height: 12),
+          ],
+
           _buildActionButton(
             icon: Icons.share_rounded,
             onTap: () {
