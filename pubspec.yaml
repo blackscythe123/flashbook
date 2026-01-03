@@ -27,8 +27,8 @@ dependencies:
   shared_preferences: ^2.3.4
   
   # UUID generation
-  uuid: ^3.0.0
-  cached_network_image: ^3.4.1
+  uuid: 4.5.2
+  cached_network_image: 3.3.1
   
   # Image Downloading
   permission_handler: ^11.3.1
