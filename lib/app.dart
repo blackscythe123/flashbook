@@ -18,7 +18,7 @@ class FlashbookApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ApiConfig()),
         ChangeNotifierProvider(create: (_) => AuthProvider()..initialize()),
-        ChangeNotifierProvider(create: (_) => BookProvider()),
+        ChangeNotifierProvider(create: (_) => BookProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => ReadingProgressProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
       ],

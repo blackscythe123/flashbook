@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
@@ -37,6 +38,34 @@ class LearningCard extends StatefulWidget {
 class _LearningCardState extends State<LearningCard> {
   bool get _hasImage => widget.block.imageUrl != null;
   bool get _needsLyricFlow => widget.block.content.length > 300;
+  bool _isGeneratingImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _triggerLazyImageGeneration();
+  }
+
+  /// Trigger lazy image generation if block has pending prompt
+  void _triggerLazyImageGeneration() {
+    if (widget.block.pendingImagePrompt != null &&
+        widget.block.imageUrl == null &&
+        !_isGeneratingImage) {
+      _isGeneratingImage = true;
+
+      // Generate image in background
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final bookProvider = context.read<BookProvider>();
+        bookProvider.generateImageForBlock(widget.block.id).then((imageUrl) {
+          if (mounted) {
+            setState(() {
+              _isGeneratingImage = false;
+            });
+          }
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,47 +220,37 @@ class _LearningCardState extends State<LearningCard> {
   /// Full-screen image background
   Widget _buildImageBackground() {
     return Positioned.fill(
-      child: Image.network(
-        widget.block.imageUrl!,
+      child: CachedNetworkImage(
+        imageUrl: widget.block.imageUrl!,
         fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            color: AppColors.backgroundLight,
-            child: Center(
-              child: CircularProgressIndicator(
-                value:
-                    loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                        : null,
-                color: AppColors.primary,
+        placeholder:
+            (context, url) => Container(
+              color: AppColors.backgroundLight,
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: AppColors.backgroundLight,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.broken_image_rounded,
-                    size: 48,
-                    color: AppColors.textMuted,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Image unavailable',
-                    style: TextStyle(color: AppColors.textMuted),
-                  ),
-                ],
+        errorWidget:
+            (context, url, error) => Container(
+              color: AppColors.backgroundLight,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.broken_image_rounded,
+                      size: 48,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Image unavailable',
+                      style: TextStyle(color: AppColors.textMuted),
+                    ),
+                  ],
+                ),
               ),
             ),
-          );
-        },
       ),
     ).animate().fadeIn(duration: 600.ms);
   }

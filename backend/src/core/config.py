@@ -27,8 +27,9 @@ class Settings:
     """Application settings loaded from environment variables."""
     
     # Gemini API
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY")
+    GEMINI_MODEL_Text: str = os.getenv("GEMINI_MODEL_Text")
+    GEMINI_MODEL_Image: str = os.getenv("GEMINI_MODEL_Image")
     
     # Text limits (characters)
     MIN_CHUNK_LENGTH: int = int(os.getenv("MIN_CHUNK_LENGTH", "100"))
