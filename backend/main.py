@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.api import summary_router, extract_router, image_router
+from src.api import summary_router, extract_router, image_router, notes_router
 from src.core.config import get_settings
 
 # ============================================================
@@ -159,6 +159,7 @@ async def health():
 app.include_router(summary_router, tags=["Summary Generation"])
 app.include_router(extract_router, tags=["Text Extraction"])
 app.include_router(image_router, tags=["Image Generation"])
+app.include_router(notes_router, tags=["Notes"])
 
 # Static files for generated images
 static_dir = Path(__file__).parent / "static"

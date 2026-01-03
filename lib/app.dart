@@ -21,6 +21,7 @@ class FlashbookApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BookProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => ReadingProgressProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
+        ChangeNotifierProvider(create: (_) => NoteProvider()),
       ],
       child: MaterialApp(
         title: 'Flashbook',

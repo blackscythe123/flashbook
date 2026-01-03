@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 /// App theme configuration with Material 3 design.
-/// Uses serif fonts for headings (calm, book-like feel) and
-/// sans-serif for body text (readability).
 class AppTheme {
   /// Light theme configuration
   static ThemeData get lightTheme {
@@ -23,7 +21,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.backgroundLight,
 
-      // Typography - Serif for display, Sans-serif for body
+      // Typography
       textTheme: _buildTextTheme(Brightness.light),
 
       // AppBar theme
@@ -40,8 +38,8 @@ class AppTheme {
       ),
 
       // Card theme
-      cardTheme: CardTheme(
-        elevation: 0,
+      cardTheme: CardThemeData(
+        elevation: 0.0,
         color: AppColors.surfaceLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -84,7 +82,8 @@ class AppTheme {
 
       // Divider theme
       dividerTheme: DividerThemeData(
-        color: AppColors.inkLight.withValues(alpha: 0.1),
+        // FIXED: Changed .withValues to .withOpacity
+        color: AppColors.inkLight.withOpacity(0.1),
         thickness: 1,
       ),
     );
@@ -121,8 +120,8 @@ class AppTheme {
         ),
       ),
 
-      cardTheme: CardTheme(
-        elevation: 0,
+      cardTheme: CardThemeData(
+        elevation: 0.0,
         color: AppColors.surfaceDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
@@ -161,7 +160,8 @@ class AppTheme {
       ),
 
       dividerTheme: DividerThemeData(
-        color: AppColors.inkDark.withValues(alpha: 0.1),
+        // FIXED: Changed .withValues to .withOpacity
+        color: AppColors.inkDark.withOpacity(0.1),
         thickness: 1,
       ),
     );
@@ -177,7 +177,7 @@ class AppTheme {
             : AppColors.textMutedDark;
 
     return TextTheme(
-      // Display styles - Serif font for headings (book-like feel)
+      // Display styles
       displayLarge: GoogleFonts.libreBaskerville(
         fontSize: 48,
         fontWeight: FontWeight.w400,
@@ -197,7 +197,7 @@ class AppTheme {
         height: 1.3,
       ),
 
-      // Headline styles - Serif
+      // Headline styles
       headlineLarge: GoogleFonts.libreBaskerville(
         fontSize: 24,
         fontWeight: FontWeight.w700,
@@ -217,7 +217,7 @@ class AppTheme {
         height: 1.4,
       ),
 
-      // Title styles - Sans-serif for UI elements
+      // Title styles
       titleLarge: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
@@ -234,7 +234,7 @@ class AppTheme {
         color: textColor,
       ),
 
-      // Body styles - Sans-serif for readability
+      // Body styles
       bodyLarge: GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w400,
