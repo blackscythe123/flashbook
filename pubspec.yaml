@@ -28,6 +28,12 @@ dependencies:
   
   # UUID generation
   uuid: ^3.0.0
+  cached_network_image: ^3.4.1
+  
+  # Image Downloading
+  permission_handler: ^11.3.1
+  gal: ^2.3.0
+  universal_html: ^2.3.0
 
 dev_dependencies:
   flutter_test:

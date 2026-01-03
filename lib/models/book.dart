@@ -127,6 +127,7 @@ class LearningBlock {
   final String? quote;
   final String? takeaway;
   final String? imageUrl;
+  final String? pendingImagePrompt; // Prompt for lazy image generation
   final int estimatedReadTime; // in seconds
 
   const LearningBlock({
@@ -137,6 +138,7 @@ class LearningBlock {
     this.quote,
     this.takeaway,
     this.imageUrl,
+    this.pendingImagePrompt,
     this.estimatedReadTime = 120,
   });
 
@@ -149,6 +151,7 @@ class LearningBlock {
       'quote': quote,
       'takeaway': takeaway,
       'imageUrl': imageUrl,
+      'pendingImagePrompt': pendingImagePrompt,
       'estimatedReadTime': estimatedReadTime,
     };
   }
@@ -162,6 +165,7 @@ class LearningBlock {
       quote: json['quote'] as String?,
       takeaway: json['takeaway'] as String?,
       imageUrl: json['imageUrl'] as String?,
+      pendingImagePrompt: json['pendingImagePrompt'] as String?,
       estimatedReadTime: json['estimatedReadTime'] as int? ?? 120,
     );
   }

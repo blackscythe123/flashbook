@@ -44,7 +44,8 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     logger.info("=" * 50)
     logger.info("Flashbook AI Backend starting...")
-    logger.info(f"Model: {settings.GEMINI_MODEL}")
+    logger.info(f"Model_Text: {settings.GEMINI_MODEL_Text}")
+    logger.info(f"Model_Image: {settings.GEMINI_MODEL_Image}")
     logger.info(f"Debug: {settings.DEBUG}")
     logger.info("=" * 50)
     
@@ -148,7 +149,8 @@ async def health():
     settings = get_settings()
     return {
         "status": "healthy",
-        "model": settings.GEMINI_MODEL,
+        "model_text": settings.GEMINI_MODEL_Text,
+        "model_image": settings.GEMINI_MODEL_Image,
         "api_key_configured": bool(settings.GEMINI_API_KEY),
     }
 

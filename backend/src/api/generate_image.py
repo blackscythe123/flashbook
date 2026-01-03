@@ -58,7 +58,6 @@ async def generate_image(request: ImageRequest) -> ImageResponse:
             width=request.width,
             height=request.height,
             style=request.style,
-            seed=request.seed,
             book_title=request.book_title,
             character_context=request.character_context
         )

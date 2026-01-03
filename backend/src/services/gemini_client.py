@@ -224,7 +224,7 @@ class GeminiClient:
         genai.configure(api_key=self.settings.GEMINI_API_KEY)
         
         self._model = genai.GenerativeModel(
-            model_name=self.settings.GEMINI_MODEL,
+            model_name=self.settings.GEMINI_MODEL_Text,
             system_instruction=SYSTEM_PROMPT,
             generation_config=GenerationConfig(
                 temperature=0.7,
@@ -235,7 +235,7 @@ class GeminiClient:
         )
         
         self._initialized = True
-        logger.info(f"Gemini client initialized with model: {self.settings.GEMINI_MODEL}")
+        logger.info(f"Gemini client initialized with model: {self.settings.GEMINI_MODEL_Text}")
     
     async def generate_summary(self, request: SummaryRequest) -> SummaryResponse:
         """

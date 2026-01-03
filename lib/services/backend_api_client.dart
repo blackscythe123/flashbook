@@ -113,7 +113,7 @@ class BackendApiClient {
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/health');
       final response = await _httpClient
-          .get(url)
+          .get(url, headers: {'ngrok-skip-browser-warning': 'true'})
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -172,7 +172,10 @@ class BackendApiClient {
       final response = await _httpClient
           .post(
             url,
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true',
+            },
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 60));
@@ -207,6 +210,7 @@ class BackendApiClient {
 
     final uri = Uri.parse('${_config.apiBaseUrl}/extractText');
     final request = http.MultipartRequest('POST', uri);
+    request.headers['ngrok-skip-browser-warning'] = 'true';
 
     // Add file
     if (fileBytes != null) {
@@ -248,7 +252,7 @@ class BackendApiClient {
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/cache/stats');
       final response = await _httpClient
-          .get(url)
+          .get(url, headers: {'ngrok-skip-browser-warning': 'true'})
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -290,14 +294,23 @@ class BackendApiClient {
       final response = await _httpClient
           .post(
             url,
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': 'true',
+            },
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return data['image_url'] as String?;
+        final imageUrl = data['image_url'] as String?;
+
+        // If the URL is relative (starts with /), prepend the backend base URL
+        if (imageUrl != null && imageUrl.startsWith('/')) {
+          return '${_config.apiBaseUrl}$imageUrl';
+        }
+        return imageUrl;
       }
       return null;
     } catch (e) {

@@ -289,12 +289,63 @@ class BookSourceScreen extends StatelessWidget {
         String filePath = file.name;
 
         if (file.extension?.toLowerCase() == 'pdf') {
+          // Show loading dialog
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return Dialog(
+                  backgroundColor: AppColors.backgroundLight,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(color: AppColors.primary),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Extracting text from PDF...',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.inkLight,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'This may take a moment depending entirely on file size',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+
           // Handle PDF via backend
-          await bookProvider.uploadPdf(
-            path: kIsWeb ? null : file.path,
-            bytes: file.bytes,
-            filename: file.name,
-          );
+          try {
+            await bookProvider.uploadPdf(
+              path: kIsWeb ? null : file.path,
+              bytes: file.bytes,
+              filename: file.name,
+            );
+          } finally {
+            // Dismiss loading dialog if mounted
+            if (context.mounted) {
+              Navigator.of(context, rootNavigator: true).pop();
+            }
+          }
+
           if (bookProvider.errorMessage != null) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(

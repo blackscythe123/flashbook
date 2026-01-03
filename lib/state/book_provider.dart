@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 
@@ -40,6 +42,15 @@ class BookProvider extends ChangeNotifier {
 
   // Chapter window size (show only 3 chapters at a time)
   static const _chapterWindowSize = 3;
+
+  // SharedPreferences keys for persistence
+  static const _keyCurrentBook = 'current_book';
+  static const _keyRawChunks = 'raw_chunks';
+  static const _keyProcessedChapters = 'processed_chapters';
+  static const _keyCurrentBookId = 'current_book_id';
+  static const _keyCurrentBookTitle = 'current_book_title';
+  static const _keyUploadedPdfPath = 'uploaded_pdf_path';
+  static const _keyUploadedPdfContent = 'uploaded_pdf_content';
 
   // Getters
   Book? get currentBook => _currentBook;
@@ -86,6 +97,11 @@ class BookProvider extends ChangeNotifier {
     _apiConfig = config;
     _apiClient = BackendApiClient(config);
     notifyListeners();
+  }
+
+  /// Initialize provider - load persisted state
+  Future<void> initialize() async {
+    await loadBookState();
   }
 
   /// Load available books from the mock service
@@ -226,39 +242,23 @@ class BookProvider extends ChangeNotifier {
   ) async {
     final blocks = <LearningBlock>[];
 
-    // Get book title for image context
-    final bookTitle = _currentBookTitle ?? _currentBook?.title ?? '';
+    // Variables intentionally removed as they are unused for synchronous processing
+    // Image context is now handled during background generation
 
-    // Extract character names from blocks for context
-    final characterNames = <String>{};
-    for (final block in apiBlocks) {
-      // Simple extraction of capitalized words that might be names
-      final namePattern = RegExp(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\b');
-      characterNames.addAll(
-        namePattern.allMatches(block.body).map((m) => m.group(0)!),
-      );
-    }
-    final characterContext = characterNames.take(5).join(', ');
+    // Track how many images we've generated (limit to 2 initially)
+    // Track how many images we've generated
+    // int imagesGenerated = 0; // No longer used for synchronous generation
+    // const maxInitialImages = 2; // Moved to background processing
 
     for (var idx = 0; idx < apiBlocks.length; idx++) {
       final block = apiBlocks[idx];
 
-      // Generate image if needed
+      // Defer ALL image generation for instant text loading
       String? imageUrl;
-      if (block.imageHint &&
-          block.imagePrompt.isNotEmpty &&
-          _apiClient != null) {
-        try {
-          imageUrl = await _apiClient!.generateImageUrl(
-            prompt: block.imagePrompt,
-            style: 'anime',
-            bookTitle: bookTitle,
-            characterContext: characterContext,
-          );
-          debugPrint('BookProvider: Generated image for block $idx');
-        } catch (e) {
-          debugPrint('BookProvider: Failed to generate image: $e');
-        }
+      String? pendingPrompt;
+
+      if (block.imageHint && block.imagePrompt.isNotEmpty) {
+        pendingPrompt = block.imagePrompt;
       }
 
       // Use new fields, fallback to legacy
@@ -278,6 +278,7 @@ class BookProvider extends ChangeNotifier {
           content: body,
           takeaway: block.type == 'takeaway' ? body : null,
           imageUrl: imageUrl,
+          pendingImagePrompt: pendingPrompt,
           estimatedReadTime: _estimateReadTime(body),
         ),
       );
@@ -494,22 +495,39 @@ class BookProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
 
-    // Process first chapter immediately, then prefetch next 2
-    await _processChaptersInWindow(0);
+    // Save initial state with placeholder chapters
+    await saveBookState();
+
+    // Process ONLY first chapter immediately for instant UI
+    await _processChaptersInWindow(0, immediate: true);
   }
 
-  /// Process chapters in a sliding window around current position (max 3)
-  Future<void> _processChaptersInWindow(int currentChapter) async {
+  /// Process chapters in a sliding window around current position
+  /// If immediate=true, only process current chapter. Otherwise process current + next 2.
+  Future<void> _processChaptersInWindow(
+    int currentChapter, {
+    bool immediate = false,
+  }) async {
     final chaptersToProcess = <int>[];
 
-    // Window: current + (windowSize - 1) ahead
-    for (
-      int i = currentChapter;
-      i < currentChapter + _chapterWindowSize && i < _rawChunks.length;
-      i++
-    ) {
-      if (!_processedChapters.contains(i) && !_processingChapters.contains(i)) {
-        chaptersToProcess.add(i);
+    if (immediate) {
+      // Only process the current chapter for instant loading
+      if (!_processedChapters.contains(currentChapter) &&
+          !_processingChapters.contains(currentChapter) &&
+          currentChapter < _rawChunks.length) {
+        chaptersToProcess.add(currentChapter);
+      }
+    } else {
+      // Window: current + 2 ahead (total 3 chapters)
+      for (
+        int i = currentChapter;
+        i < currentChapter + _chapterWindowSize && i < _rawChunks.length;
+        i++
+      ) {
+        if (!_processedChapters.contains(i) &&
+            !_processingChapters.contains(i)) {
+          chaptersToProcess.add(i);
+        }
       }
     }
 
@@ -519,11 +537,58 @@ class BookProvider extends ChangeNotifier {
     }
 
     debugPrint(
-      'BookProvider: Processing chapters $chaptersToProcess (window size: $_chapterWindowSize)',
+      'BookProvider: Processing chapters $chaptersToProcess (immediate: $immediate)',
     );
 
     for (final chapterIndex in chaptersToProcess) {
       await _processChapter(chapterIndex);
+    }
+
+    // Special handling for initial Chapter 1 load (immediate mode)
+    // We want to WAIT for images to be generated before showing it to the user
+    // to ensure a premium first impression.
+    if (immediate && currentChapter == 0) {
+      debugPrint('BookProvider: Chapter 1 text loaded. Waiting for images...');
+
+      // Find the chapter we just processed
+      final chapter1 = _currentBook?.chapters.firstWhere(
+        (c) => c.number == 1,
+        orElse: () => _currentBook!.chapters[0], // Fallback
+      );
+
+      if (chapter1 != null) {
+        // Await strict image generation for this chapter
+        await _generateImagesForChapterStrict(chapter1);
+      }
+
+      // NOW we unlock the UI
+      debugPrint('BookProvider: Chapter 1 images ready. Unlocking UI.');
+
+      // Trigger background prefetch for next chapters
+      debugPrint(
+        'BookProvider: Chapter 1 fully loaded, prefetching 2 & 3 in background',
+      );
+      _processChaptersInWindow(0, immediate: false);
+    }
+  }
+
+  /// Strictly await image generation for a chapter (used for Chapter 1)
+  Future<void> _generateImagesForChapterStrict(Chapter chapter) async {
+    for (int i = 0; i < chapter.blocks.length; i++) {
+      final block = chapter.blocks[i];
+      if (block.pendingImagePrompt != null && block.imageUrl == null) {
+        try {
+          await generateImageForBlock(block.id);
+          // Small delay to be kind to server
+          if (i < chapter.blocks.length - 1) {
+            await Future.delayed(const Duration(milliseconds: 300));
+          }
+        } catch (e) {
+          debugPrint(
+            'BookProvider: Error generating image for Ch1 block ${block.id}: $e',
+          );
+        }
+      }
     }
   }
 
@@ -620,6 +685,13 @@ class BookProvider extends ChangeNotifier {
       }
 
       _processedChapters.add(chapterIndex);
+
+      // Save state after successful processing
+      await saveBookState();
+
+      // Trigger background image generation for this chapter
+      // This runs without awaiting to allow UI to update instantly
+      _triggerBackgroundBlockProcessing(newChapter);
     } catch (e) {
       debugPrint('BookProvider: Error processing chapter $chapterNum: $e');
       _loadingError = 'Error generating content. Using original text...';
@@ -632,6 +704,9 @@ class BookProvider extends ChangeNotifier {
         _currentBook = _currentBook!.copyWith(chapters: updatedChapters);
       }
       _processedChapters.add(chapterIndex);
+
+      // Save state even after error (fallback chapter created)
+      await saveBookState();
     } finally {
       _processingChapters.remove(chapterIndex);
       _isLoadingChapter = _processingChapters.isNotEmpty;
@@ -640,6 +715,37 @@ class BookProvider extends ChangeNotifier {
         _loadingStartTime = null;
       }
       notifyListeners();
+    }
+  }
+
+  /// Trigger background image generation for a processed chapter
+  /// This allows text to show instantly while images pop in later
+  Future<void> _triggerBackgroundBlockProcessing(Chapter chapter) async {
+    debugPrint(
+      'BookProvider: Triggering background image generation for chapter ${chapter.number}',
+    );
+
+    // Process ALL images in the chapter sequentially
+    // This ensures that for prefetched chapters, all images are ready when the user arrives.
+    // We process sequentially to avoid overwhelming the server.
+
+    for (int i = 0; i < chapter.blocks.length; i++) {
+      final block = chapter.blocks[i];
+      if (block.pendingImagePrompt != null && block.imageUrl == null) {
+        try {
+          // Generate image
+          await generateImageForBlock(block.id);
+
+          // Small delay to be kind to the API/server
+          if (i < chapter.blocks.length - 1) {
+            await Future.delayed(const Duration(milliseconds: 500));
+          }
+        } catch (e) {
+          debugPrint(
+            'BookProvider: Error generating background image for block ${block.id}: $e',
+          );
+        }
+      }
     }
   }
 
@@ -767,14 +873,225 @@ class BookProvider extends ChangeNotifier {
   }
 
   /// Clear current book selection and reset lazy loading state
-  void clearCurrentBook() {
+  Future<void> clearCurrentBook() async {
     _currentBook = null;
     _rawChunks.clear();
     _processedChapters.clear();
     _processingChapters.clear();
     _currentBookId = null;
     _currentBookTitle = null;
+    _uploadedPdfPath = null;
+    _uploadedPdfContent = null;
+    _uploadedPdfBytes = null;
+
+    // Clear persisted state
+    await clearPersistedState();
+
     notifyListeners();
+  }
+
+  /// Save current book state to SharedPreferences
+  Future<void> saveBookState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Save current book as JSON
+      if (_currentBook != null) {
+        await prefs.setString(
+          _keyCurrentBook,
+          jsonEncode(_currentBook!.toJson()),
+        );
+      } else {
+        await prefs.remove(_keyCurrentBook);
+      }
+
+      // Save raw chunks
+      if (_rawChunks.isNotEmpty) {
+        await prefs.setStringList(_keyRawChunks, _rawChunks);
+      } else {
+        await prefs.remove(_keyRawChunks);
+      }
+
+      // Save processed chapters as list of indices
+      if (_processedChapters.isNotEmpty) {
+        await prefs.setStringList(
+          _keyProcessedChapters,
+          _processedChapters.map((i) => i.toString()).toList(),
+        );
+      } else {
+        await prefs.remove(_keyProcessedChapters);
+      }
+
+      // Save metadata
+      if (_currentBookId != null) {
+        await prefs.setString(_keyCurrentBookId, _currentBookId!);
+      } else {
+        await prefs.remove(_keyCurrentBookId);
+      }
+
+      if (_currentBookTitle != null) {
+        await prefs.setString(_keyCurrentBookTitle, _currentBookTitle!);
+      } else {
+        await prefs.remove(_keyCurrentBookTitle);
+      }
+
+      if (_uploadedPdfPath != null) {
+        await prefs.setString(_keyUploadedPdfPath, _uploadedPdfPath!);
+      } else {
+        await prefs.remove(_keyUploadedPdfPath);
+      }
+
+      if (_uploadedPdfContent != null) {
+        await prefs.setString(_keyUploadedPdfContent, _uploadedPdfContent!);
+      } else {
+        await prefs.remove(_keyUploadedPdfContent);
+      }
+
+      debugPrint('BookProvider: State saved to SharedPreferences');
+    } catch (e) {
+      debugPrint('BookProvider: Failed to save state: $e');
+    }
+  }
+
+  /// Load book state from SharedPreferences
+  Future<void> loadBookState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Load current book
+      final bookJson = prefs.getString(_keyCurrentBook);
+      if (bookJson != null) {
+        _currentBook = Book.fromJson(
+          jsonDecode(bookJson) as Map<String, dynamic>,
+        );
+      }
+
+      // Load raw chunks
+      final chunks = prefs.getStringList(_keyRawChunks);
+      if (chunks != null) {
+        _rawChunks = chunks;
+      }
+
+      // Load processed chapters
+      final processedStr = prefs.getStringList(_keyProcessedChapters);
+      if (processedStr != null) {
+        _processedChapters.clear();
+        _processedChapters.addAll(processedStr.map((s) => int.parse(s)));
+      }
+
+      // Load metadata
+      _currentBookId = prefs.getString(_keyCurrentBookId);
+      _currentBookTitle = prefs.getString(_keyCurrentBookTitle);
+      _uploadedPdfPath = prefs.getString(_keyUploadedPdfPath);
+      _uploadedPdfContent = prefs.getString(_keyUploadedPdfContent);
+
+      if (_currentBook != null) {
+        debugPrint('BookProvider: Restored book state: ${_currentBook!.title}');
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('BookProvider: Failed to load state: $e');
+    }
+  }
+
+  /// Generate image for a block on-demand (lazy loading)
+  Future<String?> generateImageForBlock(String blockId) async {
+    if (_currentBook == null || _apiClient == null) return null;
+
+    // Find the block
+    LearningBlock? targetBlock;
+    int chapterIndex = -1;
+    int blockIndex = -1;
+
+    for (var i = 0; i < _currentBook!.chapters.length; i++) {
+      final chapter = _currentBook!.chapters[i];
+      for (var j = 0; j < chapter.blocks.length; j++) {
+        if (chapter.blocks[j].id == blockId) {
+          targetBlock = chapter.blocks[j];
+          chapterIndex = i;
+          blockIndex = j;
+          break;
+        }
+      }
+      if (targetBlock != null) break;
+    }
+
+    if (targetBlock == null || targetBlock.pendingImagePrompt == null) {
+      return null;
+    }
+
+    debugPrint('BookProvider: Generating lazy image for block $blockId');
+
+    try {
+      // Get book context
+      final bookTitle = _currentBookTitle ?? _currentBook?.title ?? '';
+
+      // Generate image
+      final imageUrl = await _apiClient!.generateImageUrl(
+        prompt: targetBlock.pendingImagePrompt!,
+        style: 'anime',
+        bookTitle: bookTitle,
+        characterContext: '',
+      );
+
+      if (imageUrl != null && chapterIndex >= 0 && blockIndex >= 0) {
+        // Update the block with the generated image
+        final updatedChapters = List<Chapter>.from(_currentBook!.chapters);
+        final chapter = updatedChapters[chapterIndex];
+        final updatedBlocks = List<LearningBlock>.from(chapter.blocks);
+
+        updatedBlocks[blockIndex] = LearningBlock(
+          id: targetBlock.id,
+          tag: targetBlock.tag,
+          headline: targetBlock.headline,
+          content: targetBlock.content,
+          quote: targetBlock.quote,
+          takeaway: targetBlock.takeaway,
+          imageUrl: imageUrl,
+          pendingImagePrompt: null, // Clear pending prompt
+          estimatedReadTime: targetBlock.estimatedReadTime,
+        );
+
+        updatedChapters[chapterIndex] = Chapter(
+          id: chapter.id,
+          title: chapter.title,
+          number: chapter.number,
+          blocks: updatedBlocks,
+        );
+
+        _currentBook = _currentBook!.copyWith(chapters: updatedChapters);
+
+        // Save updated state
+        await saveBookState();
+
+        notifyListeners();
+        debugPrint(
+          'BookProvider: Lazy image generated and saved for block $blockId',
+        );
+      }
+
+      return imageUrl;
+    } catch (e) {
+      debugPrint('BookProvider: Failed to generate lazy image: $e');
+      return null;
+    }
+  }
+
+  /// Clear persisted state from SharedPreferences
+  Future<void> clearPersistedState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_keyCurrentBook);
+      await prefs.remove(_keyRawChunks);
+      await prefs.remove(_keyProcessedChapters);
+      await prefs.remove(_keyCurrentBookId);
+      await prefs.remove(_keyCurrentBookTitle);
+      await prefs.remove(_keyUploadedPdfPath);
+      await prefs.remove(_keyUploadedPdfContent);
+      debugPrint('BookProvider: Cleared persisted state');
+    } catch (e) {
+      debugPrint('BookProvider: Failed to clear persisted state: $e');
+    }
   }
 
   /// Get all blocks from current book flattened
