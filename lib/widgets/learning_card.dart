@@ -204,7 +204,7 @@ class _LearningCardState extends State<LearningCard> {
 
           // Floating action buttons (top-right)
           Positioned(
-            top: 100,
+            top: 300,
             right: 12,
             child: _buildFloatingActions(context),
           ),
