@@ -9,6 +9,9 @@ import '../services/services.dart';
 import '../widgets/learning_card.dart';
 import '../widgets/backend_url_dialog.dart';
 import 'progress_screen.dart';
+import 'settings_screen.dart'; 
+// Add this line with your other imports
+import '../theme/theme_provider.dart';
 
 /// Learning Feed Screen - the CORE experience.
 /// Features Instagram-style vertical scrolling with one card per page.
@@ -49,7 +52,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
         final allBlocks = bookProvider.allBlocks;
 
         return Scaffold(
-          backgroundColor: AppColors.backgroundLight,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Stack(
             children: [
               // Main PageView feed
@@ -137,11 +140,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Theme.of(context).cardColor.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                           blurRadius: 10,
                         ),
                       ],
@@ -152,7 +155,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
-                        color: AppColors.textMuted,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -176,6 +179,23 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
 
               const SizedBox(width: 8),
 
+              // Settings button
+              // Theme Toggle Button
+              Builder(
+                builder: (context) {
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+                  return _buildNavButton(
+                    icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                    onTap: () {
+                      // Toggle the theme instantly
+                      context.read<ThemeProvider>().toggleTheme(!isDark);
+                    },
+                  );
+                }
+              ),
+
+              const SizedBox(width: 8),
+
               // Mode indicator & settings
               _buildModeIndicator(context),
             ],
@@ -189,19 +209,27 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.9),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 40,
-          height: 40,
-          alignment: Alignment.center,
-          child: Icon(icon, size: 20, color: AppColors.inkLight),
-        ),
-      ),
+    return Builder(
+      builder: (context) {
+        return Material(
+          color: Theme.of(context).cardColor.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              child: Icon(
+                icon,
+                size: 20,
+                color: Theme.of(context).iconTheme.color,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -285,11 +313,13 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: AppColors.inkLight.withValues(alpha: 0.95),
+              color: Theme.of(context).brightness == Brightness.light
+                  ? AppColors.inkLight.withValues(alpha: 0.95)
+                  : Theme.of(context).cardColor.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -309,7 +339,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.white.withValues(alpha: 0.6)
+                            : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -318,7 +350,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.white
+                            : Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                   ],
@@ -328,7 +362,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   width: 1,
                   height: 24,
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : Theme.of(context).dividerColor.withValues(alpha: 0.3),
                 ),
 
                 // Progress indicator
@@ -337,7 +373,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     Icon(
                       Icons.style_rounded,
                       size: 16,
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : Theme.of(context).iconTheme.color?.withValues(alpha: 0.8),
                     ),
                     const SizedBox(width: 8),
                     Column(
@@ -352,7 +390,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1,
-                                color: Colors.white.withValues(alpha: 0.6),
+                                color: Theme.of(context).brightness == Brightness.light
+                                    ? Colors.white.withValues(alpha: 0.6)
+                                    : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -361,7 +401,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                               style: GoogleFonts.inter(
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white.withValues(alpha: 0.6),
+                                color: Theme.of(context).brightness == Brightness.light
+                                    ? Colors.white.withValues(alpha: 0.6)
+                                    : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
@@ -371,7 +413,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           width: 80,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Theme.of(context).brightness == Brightness.light
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : Theme.of(context).dividerColor.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: FractionallySizedBox(

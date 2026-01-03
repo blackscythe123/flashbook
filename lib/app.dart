@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
+import 'theme/theme_provider.dart';
 import 'state/state.dart';
 import 'screens/screens.dart';
 import 'services/services.dart';
@@ -16,22 +17,27 @@ class FlashbookApp extends StatelessWidget {
     return MultiProvider(
       // Setup all state providers
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ApiConfig()),
         ChangeNotifierProvider(create: (_) => AuthProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => ReadingProgressProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
       ],
-      child: MaterialApp(
-        title: 'Flashbook',
-        debugShowCheckedModeBanner: false,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp(
+            title: 'Flashbook',
+            debugShowCheckedModeBanner: false,
 
-        // Theme configuration
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light, // Force light theme for demo
-        // Initial route
-        home: const AppInitializer(),
+            // Theme configuration
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            // Initial route
+            home: const AppInitializer(),
+          );
+        },
       ),
     );
   }
