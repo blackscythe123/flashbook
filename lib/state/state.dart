@@ -3,3 +3,4 @@ export 'auth_provider.dart';
 export 'book_provider.dart';
 export 'bookmark_provider.dart';
 export 'reading_progress_provider.dart';
+export 'note_provider.dart';

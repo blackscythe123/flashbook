@@ -39,4 +39,6 @@ class AppColors {
   // Gradient colors for decorative elements
   static const Color gradientStart = Color(0xFF3B82F6);
   static const Color gradientEnd = Color(0xFF8B5CF6);
+ // note color
+ static const Color accentBlue = Color(0xFF4C96EB); // <--- Add this line
 }

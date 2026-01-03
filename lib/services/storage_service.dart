@@ -1,4 +1,7 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
+import '../models/note.dart';
 
 /// Storage service for user progress and bookmarks.
 /// Uses mock data for hackathon demo (would use Firestore in production).
@@ -6,6 +9,7 @@ class StorageService {
   // In-memory storage for demo
   final Map<String, ReadingProgress> _progressMap = {};
   final List<Bookmark> _bookmarks = [];
+  List<Note> _notes = [];
 
   // ============================================
   // READING PROGRESS
@@ -67,6 +71,35 @@ class StorageService {
   Future<bool> isBookmarked(String userId, String blockId) async {
     await Future.delayed(const Duration(milliseconds: 50));
     return _bookmarks.any((b) => b.blockId == blockId);
+  }
+
+  // ============================================
+  // NOTES
+  // ============================================
+
+  /// Get all notes
+  Future<List<Note>> getNotes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final notesJson = prefs.getStringList('notes') ?? [];
+      return notesJson
+          .map((json) => Note.fromJson(jsonDecode(json)))
+          .toList();
+    } catch (e) {
+      print('Error loading notes: $e');
+      return [];
+    }
+  }
+
+  /// Save notes to persistent storage
+  Future<void> saveNotes(List<Note> notes) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final notesJson = notes.map((note) => jsonEncode(note.toJson())).toList();
+      await prefs.setStringList('notes', notesJson);
+    } catch (e) {
+      print('Error saving notes: $e');
+    }
   }
 
   // ============================================
