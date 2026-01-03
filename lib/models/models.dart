@@ -3,3 +3,4 @@ export 'book.dart';
 export 'bookmark.dart';
 export 'reading_progress.dart';
 export 'user.dart';
+export 'note.dart';

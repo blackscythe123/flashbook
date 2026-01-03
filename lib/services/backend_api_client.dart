@@ -310,4 +310,175 @@ class BackendApiClient {
   void dispose() {
     _httpClient.close();
   }
+
+  // ============================================
+  // NOTE ENDPOINTS
+  // ============================================
+
+  /// Create a new note
+  Future<Map<String, dynamic>> createNote({
+    required String bookId,
+    required int cardIndex,
+    required String cardTitle,
+    required String noteText,
+  }) async {
+    if (_config.isDemoMode) {
+      throw Exception('Cannot create note in demo mode');
+    }
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/notes/create');
+      final body = {
+        'book_id': bookId,
+        'card_index': cardIndex,
+        'card_title': cardTitle,
+        'note_text': noteText,
+      };
+
+      final response = await _httpClient
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 201) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        throw Exception(
+          'Failed to create note: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      debugPrint('BackendApiClient: Error creating note: $e');
+      rethrow;
+    }
+  }
+
+  /// Get a note by ID
+  Future<Map<String, dynamic>?> getNote(String noteId) async {
+    if (_config.isDemoMode) return null;
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/notes/$noteId');
+      final response = await _httpClient
+          .get(url)
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else if (response.statusCode == 404) {
+        return null;
+      } else {
+        throw Exception('Failed to get note: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('BackendApiClient: Error getting note: $e');
+      return null;
+    }
+  }
+
+  /// Update a note
+  Future<Map<String, dynamic>> updateNote(
+    String noteId,
+    String noteText,
+  ) async {
+    if (_config.isDemoMode) {
+      throw Exception('Cannot update note in demo mode');
+    }
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/notes/$noteId');
+      final body = {'note_text': noteText};
+
+      final response = await _httpClient
+          .put(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        throw Exception(
+          'Failed to update note: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      debugPrint('BackendApiClient: Error updating note: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete a note
+  Future<void> deleteNote(String noteId) async {
+    if (_config.isDemoMode) {
+      throw Exception('Cannot delete note in demo mode');
+    }
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/notes/$noteId');
+      final response = await _httpClient
+          .delete(url)
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 204) {
+        throw Exception(
+          'Failed to delete note: ${response.statusCode} - ${response.body}',
+        );
+      }
+    } catch (e) {
+      debugPrint('BackendApiClient: Error deleting note: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all notes for a book
+  Future<List<Map<String, dynamic>>> getNotesForBook(String bookId) async {
+    if (_config.isDemoMode) return [];
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/notes/book/$bookId');
+      final response = await _httpClient
+          .get(url)
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final notes = data['notes'] as List? ?? [];
+        return notes.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception('Failed to get notes: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('BackendApiClient: Error getting notes for book: $e');
+      return [];
+    }
+  }
+
+  /// Get all notes
+  Future<List<Map<String, dynamic>>> getAllNotes() async {
+    if (_config.isDemoMode) return [];
+
+    try {
+      final url = Uri.parse('${_config.apiBaseUrl}/notes/');
+      final response = await _httpClient
+          .get(url)
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final notes = data['notes'] as List? ?? [];
+        return notes.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception('Failed to get notes: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('BackendApiClient: Error getting all notes: $e');
+      return [];
+    }
+  }
 }

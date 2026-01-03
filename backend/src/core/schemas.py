@@ -207,3 +207,74 @@ class GeminiOutput(BaseModel):
     blocks: List[GeminiOutputBlock]
     visual_slots_used: int = 0
     notes: dict = {}
+
+
+# ============================================================
+# NOTE MODELS
+# ============================================================
+
+class NoteCreateRequest(BaseModel):
+    """Request body for creating a note."""
+    
+    book_id: str = Field(
+        ...,
+        min_length=1,
+        max_length=200,
+        description="ID of the book"
+    )
+    card_index: int = Field(
+        ...,
+        ge=0,
+        description="Index of the card in the feed"
+    )
+    card_title: str = Field(
+        ...,
+        min_length=1,
+        max_length=500,
+        description="Title/headline of the card"
+    )
+    note_text: str = Field(
+        ...,
+        min_length=1,
+        max_length=5000,
+        description="The note content"
+    )
+    
+    @field_validator('note_text')
+    @classmethod
+    def validate_note_text(cls, v: str) -> str:
+        """Ensure note text is not just whitespace."""
+        stripped = v.strip()
+        if len(stripped) < 1:
+            raise ValueError("note_text cannot be empty")
+        return stripped
+
+
+class NoteUpdateRequest(BaseModel):
+    """Request body for updating a note."""
+    
+    note_text: str = Field(
+        ...,
+        min_length=1,
+        max_length=5000,
+        description="The updated note content"
+    )
+
+
+class NoteResponse(BaseModel):
+    """Response body for note operations."""
+    
+    id: str = Field(..., description="Unique note identifier")
+    book_id: str = Field(..., description="ID of the book")
+    card_index: int = Field(..., description="Index of the card")
+    card_title: str = Field(..., description="Title of the card")
+    note_text: str = Field(..., description="Note content")
+    created_at: str = Field(..., description="ISO 8601 timestamp of creation")
+    updated_at: str = Field(..., description="ISO 8601 timestamp of last update")
+
+
+class NotesListResponse(BaseModel):
+    """Response for listing notes."""
+    
+    notes: List[NoteResponse] = Field(default_factory=list)
+    total: int = Field(default=0, ge=0)

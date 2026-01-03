@@ -25,6 +25,9 @@ dependencies:
   
   # Local Storage
   shared_preferences: ^2.3.4
+  
+  # UUID generation
+  uuid: ^3.0.0
 
 dev_dependencies:
   flutter_test:

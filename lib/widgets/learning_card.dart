@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
 import 'lyric_flow_widget.dart';
+import 'note_input_dialog.dart';
 
 /// Learning Card widget - Instagram Reels style with image background.
 /// When image is present, shows it as full background with light overlay.
@@ -482,6 +484,49 @@ class _LearningCardState extends State<LearningCard> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Note
+          Consumer<NoteProvider>(
+            builder: (context, noteProvider, child) {
+              final hasNote = noteProvider.hasNoteForCard(widget.bookTitle, widget.block.id.hashCode);
+              return _buildActionButton(
+                icon: hasNote ? Icons.note : Icons.note_add_outlined,
+                isActive: hasNote,
+                onTap: () {
+                  final existingNote = noteProvider.getNoteForCard(widget.bookTitle, widget.block.id.hashCode);
+                  showDialog(
+                    context: context,
+                    builder: (context) => NoteInputDialog(
+                      cardTitle: widget.block.headline,
+                      initialText: existingNote?.noteText,
+                      onSave: (noteText) {
+                        if (noteText.isNotEmpty) {
+                          if (existingNote != null) {
+                            noteProvider.updateNote(existingNote.id, noteText);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Note updated')),
+                            );
+                          } else {
+                            const uuid = Uuid();
+                            noteProvider.addNote(
+                              id: uuid.v4(),
+                              bookId: widget.bookTitle,
+                              cardIndex: widget.block.id.hashCode,
+                              cardTitle: widget.block.headline,
+                              noteText: noteText,
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Note saved')),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 12),
           // Bookmark
           Consumer<BookmarkProvider>(
             builder: (context, provider, child) {
