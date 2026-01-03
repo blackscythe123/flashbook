@@ -544,13 +544,51 @@ class BookProvider extends ChangeNotifier {
       await _processChapter(chapterIndex);
     }
 
-    // After processing immediate chapter, trigger background prefetch
+    // Special handling for initial Chapter 1 load (immediate mode)
+    // We want to WAIT for images to be generated before showing it to the user
+    // to ensure a premium first impression.
     if (immediate && currentChapter == 0) {
-      debugPrint(
-        'BookProvider: Chapter 1 loaded, prefetching 2 & 3 in background',
+      debugPrint('BookProvider: Chapter 1 text loaded. Waiting for images...');
+
+      // Find the chapter we just processed
+      final chapter1 = _currentBook?.chapters.firstWhere(
+        (c) => c.number == 1,
+        orElse: () => _currentBook!.chapters[0], // Fallback
       );
-      // Don't await - let it run in background
+
+      if (chapter1 != null) {
+        // Await strict image generation for this chapter
+        await _generateImagesForChapterStrict(chapter1);
+      }
+
+      // NOW we unlock the UI
+      debugPrint('BookProvider: Chapter 1 images ready. Unlocking UI.');
+
+      // Trigger background prefetch for next chapters
+      debugPrint(
+        'BookProvider: Chapter 1 fully loaded, prefetching 2 & 3 in background',
+      );
       _processChaptersInWindow(0, immediate: false);
+    }
+  }
+
+  /// Strictly await image generation for a chapter (used for Chapter 1)
+  Future<void> _generateImagesForChapterStrict(Chapter chapter) async {
+    for (int i = 0; i < chapter.blocks.length; i++) {
+      final block = chapter.blocks[i];
+      if (block.pendingImagePrompt != null && block.imageUrl == null) {
+        try {
+          await generateImageForBlock(block.id);
+          // Small delay to be kind to server
+          if (i < chapter.blocks.length - 1) {
+            await Future.delayed(const Duration(milliseconds: 300));
+          }
+        } catch (e) {
+          debugPrint(
+            'BookProvider: Error generating image for Ch1 block ${block.id}: $e',
+          );
+        }
+      }
     }
   }
 
@@ -687,25 +725,26 @@ class BookProvider extends ChangeNotifier {
       'BookProvider: Triggering background image generation for chapter ${chapter.number}',
     );
 
-    // Process first 2 images immediately (but in background)
-    int generatedCount = 0;
-    const immediateBatchSize = 2;
+    // Process ALL images in the chapter sequentially
+    // This ensures that for prefetched chapters, all images are ready when the user arrives.
+    // We process sequentially to avoid overwhelming the server.
 
-    for (final block in chapter.blocks) {
+    for (int i = 0; i < chapter.blocks.length; i++) {
+      final block = chapter.blocks[i];
       if (block.pendingImagePrompt != null && block.imageUrl == null) {
-        // Don't await the entire chain, but await individual image generation to avoid flooding
-        // We use unawaited execution for the whole loop if we wanted total parallelism,
-        // but here we want kindness to our server rate limits.
-
-        if (generatedCount < immediateBatchSize) {
-          // These are "high priority" images
+        try {
+          // Generate image
           await generateImageForBlock(block.id);
-          generatedCount++;
+
+          // Small delay to be kind to the API/server
+          if (i < chapter.blocks.length - 1) {
+            await Future.delayed(const Duration(milliseconds: 500));
+          }
+        } catch (e) {
+          debugPrint(
+            'BookProvider: Error generating background image for block ${block.id}: $e',
+          );
         }
-        // The rest remain pending and will be picked up by UI lazy loading (LearningCard)
-        // or we could continue processing them slowly here.
-        // For now, let's just do the first few to have a nice starting experience,
-        // and let the scrolling trigger the rest via LearningCard._triggerLazyImageGeneration
       }
     }
   }
