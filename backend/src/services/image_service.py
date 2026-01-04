@@ -14,6 +14,7 @@ import os
 from typing import Optional
 from pathlib import Path
 import uuid
+import base64
 
 # Configure basic logging for direct testing
 if __name__ == "__main__":
@@ -130,7 +131,9 @@ class ImageGenerationService:
             logger.info(f"Attempting Gemini (Nano Banana) generation: {enhanced_prompt[:50]}...")
             
             # --- CHANGED: Using generate_content for Gemini 2.5 Flash Image ---
-            response = self._genai_client.models.generate_content(
+            # Run blocking call in a separate thread to avoid blocking the event loop
+            response = await asyncio.to_thread(
+                self._genai_client.models.generate_content,
                 model=os.getenv("GEMINI_MODEL_Image"), # or 'gemini-2.5-flash-image' if available in your region
                 contents=enhanced_prompt,
                 # config=types.GenerateContentConfig(
@@ -158,21 +161,15 @@ class ImageGenerationService:
                  pass
 
             if image_data:
-                # Save image locally
-                filename = f"gemini_{uuid.uuid4()}.png"
-                filepath = self._images_dir / filename
-                
-                # Decode if it's base64, otherwise write bytes directly
+                # Decode if it's base64 string, otherwise it's bytes
                 if isinstance(image_data, str):
                     image_bytes = base64.b64decode(image_data)
                 else:
                     image_bytes = image_data
 
-                with open(filepath, "wb") as f:
-                    f.write(image_bytes)
-                
-                logger.info(f"Gemini image saved to {filepath}")
-                return f"/static/images/{filename}"
+                # Return Data URI for direct frontend usage (Zero RTT)
+                b64_str = base64.b64encode(image_bytes).decode('utf-8')
+                return f"data:image/png;base64,{b64_str}"
             
             logger.warning("Gemini response contained no image data.")
             return None

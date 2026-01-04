@@ -9,6 +9,7 @@ import '../models/models.dart';
 import '../state/state.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data';
+import 'dart:convert'; // For base64Decode
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:gal/gal.dart';
@@ -199,7 +200,9 @@ class _LearningCardState extends State<LearningCard> {
                                 color:
                                     _hasImage
                                         ? Colors.white
-                                        : Theme.of(context).textTheme.headlineLarge?.color,
+                                        : Theme.of(
+                                          context,
+                                        ).textTheme.headlineLarge?.color,
                                 height: 1.2,
                                 letterSpacing: -0.5,
                                 shadows:
@@ -229,9 +232,14 @@ class _LearningCardState extends State<LearningCard> {
                               textColor:
                                   _hasImage
                                       ? Colors.white.withValues(alpha: 0.95)
-                                      : Theme.of(context).textTheme.bodyLarge?.color?.withValues(
-                                        alpha: 0.85,
-                                      ) ?? AppColors.inkLight.withValues(alpha: 0.85),
+                                      : Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.color
+                                              ?.withValues(alpha: 0.85) ??
+                                          AppColors.inkLight.withValues(
+                                            alpha: 0.85,
+                                          ),
                               hasImageBackground: _hasImage,
                             )
                             : Text(
@@ -241,9 +249,14 @@ class _LearningCardState extends State<LearningCard> {
                                 color:
                                     _hasImage
                                         ? Colors.white.withValues(alpha: 0.95)
-                                        : Theme.of(context).textTheme.bodyLarge?.color?.withValues(
-                                          alpha: 0.85,
-                                        ) ?? AppColors.inkLight.withValues(alpha: 0.85),
+                                        : Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge
+                                                ?.color
+                                                ?.withValues(alpha: 0.85) ??
+                                            AppColors.inkLight.withValues(
+                                              alpha: 0.85,
+                                            ),
                                 height: 1.8,
                                 shadows:
                                     _hasImage
@@ -299,6 +312,24 @@ class _LearningCardState extends State<LearningCard> {
 
   /// Full-screen image background
   Widget _buildImageBackground() {
+    // Check for Data URI (Base64)
+    if (widget.block.imageUrl != null &&
+        widget.block.imageUrl!.startsWith('data:')) {
+      try {
+        final base64String = widget.block.imageUrl!.split(',').last;
+        return Positioned.fill(
+          child: Image.memory(
+            base64Decode(base64String),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
+          ).animate().fadeIn(duration: 600.ms),
+        );
+      } catch (e) {
+        debugPrint('Error decoding base64 image: $e');
+        // Fallthrough to error widget if decoding fails
+      }
+    }
+
     return Positioned.fill(
       child: CachedNetworkImage(
         imageUrl: widget.block.imageUrl!,
@@ -310,31 +341,32 @@ class _LearningCardState extends State<LearningCard> {
                 child: CircularProgressIndicator(color: AppColors.primary),
               ),
             ),
-        errorWidget:
-            (context, url, error) => Container(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.broken_image_rounded,
-                      size: 48,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Image unavailable',
-                      style: TextStyle(
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        errorWidget: (context, url, error) => _buildErrorWidget(),
       ),
     ).animate().fadeIn(duration: 600.ms);
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      color: AppColors.backgroundLight,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.broken_image_rounded,
+              size: 48,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Image unavailable',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Gradient overlay for text readability on image backgrounds
@@ -463,7 +495,9 @@ class _LearningCardState extends State<LearningCard> {
           color:
               _hasImage
                   ? Colors.white.withValues(alpha: 0.3)
-                  : Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                  : Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Text(
@@ -472,7 +506,8 @@ class _LearningCardState extends State<LearningCard> {
           fontSize: 10,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
-          color: _hasImage ? Colors.white : Theme.of(context).colorScheme.primary,
+          color:
+              _hasImage ? Colors.white : Theme.of(context).colorScheme.primary,
           shadows:
               _hasImage
                   ? [
@@ -515,7 +550,9 @@ class _LearningCardState extends State<LearningCard> {
               color:
                   _hasImage
                       ? Colors.white.withValues(alpha: 0.7)
-                      : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                      : Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 8),
@@ -524,7 +561,10 @@ class _LearningCardState extends State<LearningCard> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: _hasImage ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+              color:
+                  _hasImage
+                      ? Colors.white
+                      : Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
               shadows:
                   _hasImage
@@ -560,7 +600,10 @@ class _LearningCardState extends State<LearningCard> {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: _hasImage ? Colors.white : Theme.of(context).textTheme.bodySmall?.color,
+              color:
+                  _hasImage
+                      ? Colors.white
+                      : Theme.of(context).textTheme.bodySmall?.color,
               shadows:
                   _hasImage
                       ? [
@@ -586,40 +629,50 @@ class _LearningCardState extends State<LearningCard> {
           // Note
           Consumer<NoteProvider>(
             builder: (context, noteProvider, child) {
-              final hasNote = noteProvider.hasNoteForCard(widget.bookTitle, widget.block.id.hashCode);
+              final hasNote = noteProvider.hasNoteForCard(
+                widget.bookTitle,
+                widget.block.id.hashCode,
+              );
               return _buildActionButton(
                 icon: hasNote ? Icons.note : Icons.note_add_outlined,
                 isActive: hasNote,
                 onTap: () {
-                  final existingNote = noteProvider.getNoteForCard(widget.bookTitle, widget.block.id.hashCode);
+                  final existingNote = noteProvider.getNoteForCard(
+                    widget.bookTitle,
+                    widget.block.id.hashCode,
+                  );
                   showDialog(
                     context: context,
-                    builder: (context) => NoteInputDialog(
-                      cardTitle: widget.block.headline,
-                      initialText: existingNote?.noteText,
-                      onSave: (noteText) {
-                        if (noteText.isNotEmpty) {
-                          if (existingNote != null) {
-                            noteProvider.updateNote(existingNote.id, noteText);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Note updated')),
-                            );
-                          } else {
-                            const uuid = Uuid();
-                            noteProvider.addNote(
-                              id: uuid.v4(),
-                              bookId: widget.bookTitle,
-                              cardIndex: widget.block.id.hashCode,
-                              cardTitle: widget.block.headline,
-                              noteText: noteText,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Note saved')),
-                            );
-                          }
-                        }
-                      },
-                    ),
+                    builder:
+                        (context) => NoteInputDialog(
+                          cardTitle: widget.block.headline,
+                          initialText: existingNote?.noteText,
+                          onSave: (noteText) {
+                            if (noteText.isNotEmpty) {
+                              if (existingNote != null) {
+                                noteProvider.updateNote(
+                                  existingNote.id,
+                                  noteText,
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Note updated')),
+                                );
+                              } else {
+                                const uuid = Uuid();
+                                noteProvider.addNote(
+                                  id: uuid.v4(),
+                                  bookId: widget.bookTitle,
+                                  cardIndex: widget.block.id.hashCode,
+                                  cardTitle: widget.block.headline,
+                                  noteText: noteText,
+                                );
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Note saved')),
+                                );
+                              }
+                            }
+                          },
+                        ),
                   );
                 },
               );
@@ -692,9 +745,10 @@ class _LearningCardState extends State<LearningCard> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: _hasImage 
-          ? Colors.black.withValues(alpha: 0.3) 
-          : Theme.of(context).cardColor,
+      color:
+          _hasImage
+              ? Colors.black.withValues(alpha: 0.3)
+              : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
       elevation: _hasImage ? 0 : 2,
       shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.1),
@@ -712,7 +766,9 @@ class _LearningCardState extends State<LearningCard> {
                     ? AppColors.accentGold
                     : (_hasImage
                         ? Colors.white
-                        : Theme.of(context).iconTheme.color?.withValues(alpha: 0.6)),
+                        : Theme.of(
+                          context,
+                        ).iconTheme.color?.withValues(alpha: 0.6)),
             size: 22,
           ),
         ),
@@ -732,7 +788,7 @@ class _LearningCardState extends State<LearningCard> {
             ),
             const SizedBox(height: 4),
             Icon(
-              Icons.keyboard_arrow_up_rounded, 
+              Icons.keyboard_arrow_up_rounded,
               color: Theme.of(context).iconTheme.color,
             ),
           ],

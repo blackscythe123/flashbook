@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 /// Manages API configuration including backend URL.
 /// Supports both demo mode (mock data) and live mode (real backend).
 class ApiConfig extends ChangeNotifier {
   static const String _backendUrlKey = 'backend_url';
+  // TODO: Replace with your actual Render URL
+  static const String PROD_URL = "http://localhost:8080/";
 
   String? _backendUrl;
   bool _isConnected = false;
@@ -35,7 +38,46 @@ class ApiConfig extends ChangeNotifier {
         : _backendUrl;
   }
 
-  /// Load saved backend URL from storage
+  /// Initialize with Hardcoded Prod URL, fallback to Demo if fails
+  Future<void> initializeWithFallback() async {
+    _isChecking = true;
+    notifyListeners();
+
+    try {
+      debugPrint('ApiConfig: Testing connection to PROD_URL: $PROD_URL');
+
+      // Handle potential trailing slash in PROD_URL
+      final baseUrl =
+          PROD_URL.endsWith('/')
+              ? PROD_URL.substring(0, PROD_URL.length - 1)
+              : PROD_URL;
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/health'))
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        debugPrint('ApiConfig: Connection successful!');
+        _backendUrl = PROD_URL;
+        _isConnected = true;
+        _lastError = null;
+      } else {
+        throw Exception('Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint(
+        'ApiConfig: Connection failed ($e). Falling back to Demo Mode.',
+      );
+      _backendUrl = null; // Demo Mode
+      _isConnected = false;
+      _lastError = 'Connection failed. Using Demo Mode.';
+    } finally {
+      _isChecking = false;
+      notifyListeners();
+    }
+  }
+
+  /// Load saved backend URL from storage (Legacy - kept for reference or dev override)
   Future<void> loadSavedUrl() async {
     try {
       final prefs = await SharedPreferences.getInstance();

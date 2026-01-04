@@ -54,8 +54,6 @@ class AppInitializer extends StatefulWidget {
 
 class _AppInitializerState extends State<AppInitializer> {
   bool _isInitialized = false;
-  bool _showUrlDialog = true;
-  bool _dialogShowing = false; // Prevent multiple dialogs
 
   @override
   void initState() {
@@ -78,82 +76,46 @@ class _AppInitializerState extends State<AppInitializer> {
       progressProvider.setUserId(authProvider.userId);
       bookmarkProvider.setUserId(authProvider.userId);
 
-      // Load any saved API URL
-      await apiConfig.loadSavedUrl();
+      // Attempt Connection to Prod URL (with Fallback)
+      await apiConfig.initializeWithFallback();
 
       // Connect BookProvider to ApiConfig
       bookProvider.setApiConfig(apiConfig);
 
-      setState(() {
-        _isInitialized = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
     }
-  }
-
-  void _onDialogComplete(bool? usedLiveMode) {
-    if (mounted) {
-      setState(() {
-        _showUrlDialog = false;
-        _dialogShowing = false;
-      });
-
-      // Update book provider with API config
-      final apiConfig = context.read<ApiConfig>();
-      final bookProvider = context.read<BookProvider>();
-      bookProvider.setApiConfig(apiConfig);
-    }
-  }
-
-  void _showDialog() {
-    if (_dialogShowing) return; // Prevent multiple dialogs
-    _dialogShowing = true;
-    showBackendUrlDialog(context).then(_onDialogComplete);
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<AuthProvider, ApiConfig>(
       builder: (context, authProvider, apiConfig, child) {
-        // Show loading while auth is initializing
-        if (authProvider.isLoading || !_isInitialized) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        // Show URL dialog on first launch
-        if (_showUrlDialog) {
+        // Show loading while auth is initializing or API is checking
+        if (authProvider.isLoading || !_isInitialized || apiConfig.isChecking) {
           return Scaffold(
-            body: Builder(
-              builder: (context) {
-                // Show dialog after build - use the guard method
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_showUrlDialog && !_dialogShowing) {
-                    _showDialog();
-                  }
-                });
-
-                return Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Theme.of(
-                          context,
-                        ).colorScheme.primary.withValues(alpha: 0.1),
-                        Theme.of(context).colorScheme.surface,
-                      ],
-                    ),
-                  ),
-                  child: const Center(child: CircularProgressIndicator()),
-                );
-              },
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.1),
+                    Theme.of(context).colorScheme.surface,
+                  ],
+                ),
+              ),
+              child: const Center(child: CircularProgressIndicator()),
             ),
           );
         }
 
-        // Show entry screen
+        // Show entry screen directly
         return const EntryScreen();
       },
     );
