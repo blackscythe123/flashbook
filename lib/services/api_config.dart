@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class ApiConfig extends ChangeNotifier {
   static const String _backendUrlKey = 'backend_url';
   // TODO: Replace with your actual Render URL
-  static const String PROD_URL = "http://localhost:8080/";
+  static const String PROD_URL = "https://flashbook-fepc.onrender.com";
 
   String? _backendUrl;
   bool _isConnected = false;

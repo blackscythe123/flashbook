@@ -88,12 +88,5 @@ flutter run
 - Subtle animations (no flashy effects)
 - No social media UI elements
 
-## Demo Notes
-
-- Firebase is mocked for the hackathon demo
-- Book content is pre-populated from mock service
-- PDF upload is simulated
-- Gemini API responses are pre-built
-
-## Built for GDG Hackathon 2024 🚀
+## Built for GDG Hackathon 2025 🚀
 
