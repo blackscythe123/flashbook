@@ -1,0 +1,9 @@
+{
+  "httpMethod": "POST",
+  "path": "/generateSummary",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "{\"text_chunk\": \"Harry Potter woke up early that morning, the sunlight streaming through the dusty window of number four, Privet Drive. He could hear the Dursleys moving about downstairs, the clink of cutlery and Vernon's heavy footsteps. Today felt different somehow. There was a strange tingling in the scar on his forehead — the lightning-bolt shaped scar that had been there as long as he could remember. He pressed his fingers against it, frowning. The feeling passed as quickly as it had come, leaving behind only the familiar weight of being eleven years old and completely ordinary. Or so he believed. He had no idea that everything was about to change.\", \"book_id\": \"test-book-001\", \"chapter_title\": \"Chapter 1: The Boy Who Lived\", \"mode\": \"chapter\"}",
+  "isBase64Encoded": false
+}
