@@ -1,4 +1,4 @@
-# Flashbook - GDG Hackathon Demo
+# Flashbook
 
 📚 **Instagram-style scrolling interaction with a calm, book-reading aura.**
 
@@ -87,6 +87,3 @@ flutter run
 - Generous padding and spacing
 - Subtle animations (no flashy effects)
 - No social media UI elements
-
-## Built for GDG Hackathon 2025 🚀
-
