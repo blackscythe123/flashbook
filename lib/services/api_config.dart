@@ -6,8 +6,9 @@ import 'package:http/http.dart' as http;
 /// Supports both demo mode (mock data) and live mode (real backend).
 class ApiConfig extends ChangeNotifier {
   static const String _backendUrlKey = 'backend_url';
-  // TODO: Replace with your actual Render URL
-  static const String PROD_URL = "https://flashbook-fepc.onrender.com";
+ // NEW (paste your ApiUrl):
+  static const String PROD_URL =
+      "https://hsdyfi2ux5.execute-api.ap-south-1.amazonaws.com/Prod/";
 
   String? _backendUrl;
   bool _isConnected = false;
