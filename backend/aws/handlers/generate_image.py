@@ -55,8 +55,8 @@ def _err(code: int, msg: str) -> dict:
 
 def _call_gemini(prompt: str, style: str, book_title: str, character_context: str) -> bytes | None:
     """Call Gemini image model and return raw PNG bytes, or None on failure."""
-    # MUST use an image-generation capable model, NOT a text-only model
-    model_name = os.environ.get("GEMINI_MODEL_IMAGE", "gemini-3.1-flash-image-preview")
+    # MUST use an image-generation capable model, NOT a text-only one
+    model_name = os.environ.get("GEMINI_MODEL_IMAGE", "gemini-2.0-flash-exp-image-generation")
 
     enhanced = f"Create a high quality {style} style illustration. {prompt}"
     if character_context:
@@ -90,10 +90,10 @@ def _call_gemini(prompt: str, style: str, book_title: str, character_context: st
 
 
 def _upload_to_s3(image_bytes: bytes) -> str:
-    """Upload PNG bytes to S3 and return a pre-signed URL.
+    """Upload PNG bytes to S3 and return a presigned GET URL (7-day expiry).
 
-    Note: Pre-signed URLs expire. We use a longer TTL to avoid images breaking
-    in the app after a short time.
+    CachedNetworkImage on Flutter caches the actual bytes locally, so the URL
+    only needs to work for the initial download.
     """
     bucket = os.environ["IMAGES_BUCKET"]
     key = f"generated/{uuid.uuid4()}.png"
@@ -106,14 +106,12 @@ def _upload_to_s3(image_bytes: bytes) -> str:
         ContentType="image/png",
     )
 
-    # Pre-signed URL — no public bucket policy needed, works with Block Public Access
     url = s3.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket, "Key": key},
-        # SigV4 presigned URLs support up to 7 days.
         ExpiresIn=604800,  # 7 days
     )
-    logger.info(f"Uploaded image to S3, presigned URL generated")
+    logger.info(f"Uploaded image to S3, presigned URL generated: {key}")
     return url
 
 
@@ -133,7 +131,12 @@ def lambda_handler(event, context):
     book_title: str         = body.get("book_title", "")
     character_context: str  = body.get("character_context", "")
 
+    # Log exactly what was received so we can see in CloudWatch
+    logger.info(f"Received prompt ({len(prompt)} chars): '{prompt[:120]}'")
+    logger.info(f"book_title='{book_title}' style='{style}'")
+
     if len(prompt) < 10:
+        logger.warning(f"Prompt too short ({len(prompt)} chars), body keys: {list(body.keys())}")
         return _err(400, "prompt must be at least 10 characters")
 
     try:

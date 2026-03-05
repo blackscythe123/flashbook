@@ -39,6 +39,13 @@ def _err(code: int, msg: str) -> dict:
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+def _get_user_id(event: dict) -> str:
+    """Extract Cognito user sub from JWT claims set by API Gateway authorizer."""
+    try:
+        return event["requestContext"]["authorizer"]["claims"]["sub"]
+    except (KeyError, TypeError):
+        return "anonymous"
+
 
 # ── Handlers ───────────────────────────────────────────────────────────────────
 
@@ -134,8 +141,11 @@ def lambda_handler(event, context):
     except json.JSONDecodeError:
         return _err(400, "Invalid JSON body")
 
+    user_id = _get_user_id(event)
+
     # POST /notes/create
     if method == "POST" and path.rstrip("/").endswith("/create"):
+        body["user_id"] = user_id
         return create_note(body)
 
     # GET /notes/book/{book_id}

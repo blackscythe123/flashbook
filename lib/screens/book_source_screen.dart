@@ -9,6 +9,7 @@ import '../theme/app_colors.dart';
 import '../state/state.dart';
 import '../services/services.dart';
 import 'processing_screen.dart';
+import 'learning_feed_screen.dart';
 
 /// Book source selection screen - bottom sheet modal.
 /// Allows users to choose between public domain books or PDF upload.
@@ -308,7 +309,7 @@ class BookSourceScreen extends StatelessWidget {
                         CircularProgressIndicator(color: AppColors.primary),
                         const SizedBox(height: 24),
                         Text(
-                          'Extracting text from PDF...',
+                          'Uploading PDF to cloud...',
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -317,7 +318,7 @@ class BookSourceScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'This may take a moment depending entirely on file size',
+                          'Uploading to S3 and extracting first 50 pages',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 12,
@@ -332,12 +333,12 @@ class BookSourceScreen extends StatelessWidget {
             );
           }
 
-          // Handle PDF via backend
+          // Upload PDF to S3 → batch extract → Gemini
           try {
-            await bookProvider.uploadPdf(
-              path: kIsWeb ? null : file.path,
-              bytes: file.bytes,
+            await bookProvider.uploadPdfToS3(
+              bytes: file.bytes!,
               filename: file.name,
+              title: file.name.replaceAll('.pdf', ''),
             );
           } finally {
             // Dismiss loading dialog if mounted
@@ -355,6 +356,27 @@ class BookSourceScreen extends StatelessWidget {
                 ),
               );
             }
+            return;
+          }
+
+          // S3 upload + batch extract done → go straight to learning feed
+          if (context.mounted) {
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const LearningFeedScreen(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 400),
+              ),
+            );
             return;
           }
         } else {

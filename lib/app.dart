@@ -5,7 +5,6 @@ import 'theme/theme_provider.dart';
 import 'state/state.dart';
 import 'screens/screens.dart';
 import 'services/services.dart';
-import 'widgets/widgets.dart';
 
 /// Main App widget - root of the application.
 /// Sets up Material theme, providers, and routing.
@@ -15,11 +14,10 @@ class FlashbookApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      // Setup all state providers
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ApiConfig()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()..initialize()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => BookProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => ReadingProgressProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
@@ -30,12 +28,9 @@ class FlashbookApp extends StatelessWidget {
           return MaterialApp(
             title: 'Flashbook',
             debugShowCheckedModeBanner: false,
-
-            // Theme configuration
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
-            // Initial route
             home: const AppInitializer(),
           );
         },
@@ -44,7 +39,7 @@ class FlashbookApp extends StatelessWidget {
   }
 }
 
-/// App initializer - handles auth state, API config, and initial navigation.
+/// App initializer - handles API config, auth state, and initial navigation.
 class AppInitializer extends StatefulWidget {
   const AppInitializer({super.key});
 
@@ -62,40 +57,65 @@ class _AppInitializerState extends State<AppInitializer> {
   }
 
   Future<void> _initializeApp() async {
-    // Wait for auth to initialize
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (mounted) {
+      final apiConfig = context.read<ApiConfig>();
       final authProvider = context.read<AuthProvider>();
+      final bookProvider = context.read<BookProvider>();
       final progressProvider = context.read<ReadingProgressProvider>();
       final bookmarkProvider = context.read<BookmarkProvider>();
-      final apiConfig = context.read<ApiConfig>();
-      final bookProvider = context.read<BookProvider>();
 
-      // Initialize demo data
-      progressProvider.setUserId(authProvider.userId);
-      bookmarkProvider.setUserId(authProvider.userId);
-
-      // Attempt Connection to Prod URL (with Fallback)
+      // 1. Connect to backend
       await apiConfig.initializeWithFallback();
 
-      // Connect BookProvider to ApiConfig
+      // 2. Wire auth → providers
+      authProvider.setApiConfig(apiConfig);
       bookProvider.setApiConfig(apiConfig);
 
+      // 3. Try restoring previous session
+      await authProvider.initialize();
+
+      // 4. If authenticated, wire tokens into API clients
+      if (authProvider.isAuthenticated) {
+        _wireAuth(
+          authProvider,
+          bookProvider,
+          progressProvider,
+          bookmarkProvider,
+          apiConfig,
+        );
+      }
+
       if (mounted) {
-        setState(() {
-          _isInitialized = true;
-        });
+        setState(() => _isInitialized = true);
       }
     }
+  }
+
+  void _wireAuth(
+    AuthProvider auth,
+    BookProvider bookProvider,
+    ReadingProgressProvider progressProvider,
+    BookmarkProvider bookmarkProvider,
+    ApiConfig apiConfig,
+  ) {
+    bookProvider.setTokenGetter(() => auth.idToken);
+    progressProvider.setUserId(auth.userId);
+    bookmarkProvider.setUserId(auth.userId);
+
+    // Give progress provider its own API client for syncing
+    final progressClient = BackendApiClient(apiConfig);
+    progressClient.setTokenGetter(() => auth.idToken);
+    progressProvider.setApiClient(progressClient);
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<AuthProvider, ApiConfig>(
       builder: (context, authProvider, apiConfig, child) {
-        // Show loading while auth is initializing or API is checking
-        if (authProvider.isLoading || !_isInitialized || apiConfig.isChecking) {
+        // Still loading
+        if (!_isInitialized || apiConfig.isChecking) {
           return Scaffold(
             body: Container(
               decoration: BoxDecoration(
@@ -115,8 +135,32 @@ class _AppInitializerState extends State<AppInitializer> {
           );
         }
 
-        // Show entry screen directly
-        return const EntryScreen();
+        // Auth loading
+        if (authProvider.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Not authenticated → login screen
+        if (!authProvider.isAuthenticated) {
+          return const LoginScreen();
+        }
+
+        // Wire auth on login (in case state changed)
+        final bookProvider = context.read<BookProvider>();
+        final progressProvider = context.read<ReadingProgressProvider>();
+        final bookmarkProvider = context.read<BookmarkProvider>();
+        _wireAuth(
+          authProvider,
+          bookProvider,
+          progressProvider,
+          bookmarkProvider,
+          apiConfig,
+        );
+
+        // Authenticated → library
+        return const LibraryScreen();
       },
     );
   }

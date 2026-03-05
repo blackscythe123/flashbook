@@ -30,6 +30,11 @@ class BookProvider extends ChangeNotifier {
   String? _currentBookId;
   String? _currentBookTitle;
 
+  // S3 batch extraction state
+  String? _s3Key;
+  int _totalPages = 0;
+  int _pagesExtracted = 0;
+
   // Loading state for chapters
   bool _isLoadingChapter = false;
   int? _loadingChapterIndex;
@@ -97,6 +102,11 @@ class BookProvider extends ChangeNotifier {
     _apiConfig = config;
     _apiClient = BackendApiClient(config);
     notifyListeners();
+  }
+
+  /// Forward auth token to the API client
+  void setTokenGetter(String? Function() getter) {
+    _apiClient?.setTokenGetter(getter);
   }
 
   /// Initialize provider - load persisted state
@@ -872,6 +882,208 @@ class BookProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Upload PDF to S3 via presigned URL, then batch-extract first pages.
+  Future<void> uploadPdfToS3({
+    required List<int> bytes,
+    required String filename,
+    String title = '',
+  }) async {
+    if (_apiClient == null) {
+      throw Exception('API client not configured');
+    }
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _uploadedPdfBytes = Uint8List.fromList(bytes);
+
+      // 1. Get presigned upload URL
+      debugPrint('BookProvider: Requesting presigned upload URL');
+      final uploadData = await _apiClient!.requestPdfUpload(
+        filename: filename,
+        title: title.isNotEmpty ? title : filename.replaceAll('.pdf', ''),
+      );
+
+      final bookId = uploadData['book_id'] as String;
+      final uploadUrl = uploadData['upload_url'] as String;
+      final s3Key = uploadData['s3_key'] as String;
+
+      // 2. Upload PDF bytes to S3
+      debugPrint('BookProvider: Uploading PDF to S3...');
+      await _apiClient!.uploadPdfToS3(
+        presignedUrl: uploadUrl,
+        fileBytes: bytes,
+      );
+
+      // 3. Confirm upload → backend counts pages
+      debugPrint('BookProvider: Confirming upload...');
+      final confirmData = await _apiClient!.confirmPdfUpload(bookId);
+      final totalPages = (confirmData['total_pages'] as num).toInt();
+
+      // 4. Extract first batch
+      debugPrint('BookProvider: Extracting first batch (pages 0-49)...');
+      final batchData = await _apiClient!.extractBatch(
+        s3Key: s3Key,
+        startPage: 0,
+        pageCount: 50,
+      );
+
+      final text = batchData['text'] as String? ?? '';
+      final endPage = (batchData['end_page'] as num).toInt();
+
+      // Store S3 state
+      _s3Key = s3Key;
+      _totalPages = totalPages;
+      _pagesExtracted = endPage;
+      _currentBookId = bookId;
+      _currentBookTitle =
+          title.isNotEmpty ? title : filename.replaceAll('.pdf', '');
+
+      // Initialize lazy loading with extracted text
+      await _initializeLazyLoading(text, fileName: filename);
+
+      // Update progress on backend
+      await _apiClient!.updateBookProgress(
+        bookId: bookId,
+        pagesExtracted: endPage,
+        status: 'reading',
+      );
+    } catch (e) {
+      _errorMessage = 'Failed to upload PDF: $e';
+      debugPrint('BookProvider: S3 upload error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Resume reading a book from the library (already uploaded to S3).
+  void resumeFromLibrary({
+    required String bookId,
+    required String title,
+    required String s3Key,
+    required int totalPages,
+    required int pagesExtracted,
+    required int currentChapterIndex,
+  }) {
+    _currentBookId = bookId;
+    _currentBookTitle = title;
+    _s3Key = s3Key;
+    _totalPages = totalPages;
+    _pagesExtracted = pagesExtracted;
+
+    // If we have a persisted book that matches, use it
+    if (_currentBook != null && _currentBook!.id == bookId) {
+      debugPrint('BookProvider: Resuming existing book $bookId');
+      notifyListeners();
+      return;
+    }
+
+    // Otherwise start batch extraction from where we left off
+    debugPrint(
+      'BookProvider: Loading book $bookId from S3 (page $pagesExtracted of $totalPages)',
+    );
+    _loadFromS3(startPage: 0, pageCount: 50);
+  }
+
+  /// Load text from S3 and initialize lazy loading
+  Future<void> _loadFromS3({
+    required int startPage,
+    required int pageCount,
+  }) async {
+    if (_apiClient == null || _s3Key == null) return;
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final batchData = await _apiClient!.extractBatch(
+        s3Key: _s3Key!,
+        startPage: startPage,
+        pageCount: pageCount,
+      );
+
+      final text = batchData['text'] as String? ?? '';
+      final endPage = (batchData['end_page'] as num).toInt();
+      _pagesExtracted = endPage;
+
+      await _initializeLazyLoading(text, fileName: _currentBookTitle ?? 'book');
+    } catch (e) {
+      _errorMessage = 'Failed to load pages: $e';
+      debugPrint('BookProvider: S3 load error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Load more pages from S3 when user reaches the end of current content.
+  Future<bool> loadMorePages() async {
+    if (_apiClient == null || _s3Key == null) return false;
+    if (_pagesExtracted >= _totalPages) return false;
+
+    debugPrint('BookProvider: Loading more pages from $_pagesExtracted');
+    try {
+      final batchData = await _apiClient!.extractBatch(
+        s3Key: _s3Key!,
+        startPage: _pagesExtracted,
+        pageCount: 50,
+      );
+
+      final text = batchData['text'] as String? ?? '';
+      final endPage = (batchData['end_page'] as num).toInt();
+      final hasMore = batchData['has_more'] as bool? ?? false;
+      _pagesExtracted = endPage;
+
+      if (text.isNotEmpty) {
+        // Append new chunks
+        final newChunks = _splitTextIntoChunks(text);
+        final existingCount = _rawChunks.length;
+        _rawChunks.addAll(newChunks);
+
+        // Add placeholder chapters for new chunks
+        if (_currentBook != null) {
+          final newChapters = List.generate(newChunks.length, (i) {
+            final chNum = existingCount + i + 1;
+            return Chapter(
+              id: '${_currentBookId}_ch$chNum',
+              title: 'Chapter $chNum',
+              number: chNum,
+              blocks: [
+                LearningBlock(
+                  id: '${_currentBookId}_ch${chNum}_loading',
+                  tag: 'LOADING',
+                  headline: 'Loading Chapter $chNum...',
+                  content: 'AI is processing this chapter. Please wait...',
+                  estimatedReadTime: 30,
+                ),
+              ],
+            );
+          });
+          _currentBook = _currentBook!.copyWith(
+            chapters: [..._currentBook!.chapters, ...newChapters],
+          );
+          notifyListeners();
+        }
+
+        // Update progress on backend
+        if (_currentBookId != null) {
+          _apiClient!.updateBookProgress(
+            bookId: _currentBookId!,
+            pagesExtracted: endPage,
+          );
+        }
+      }
+      return hasMore;
+    } catch (e) {
+      debugPrint('BookProvider: Error loading more pages: $e');
+      return false;
+    }
+  }
+
+  /// Check if more pages are available from S3
+  bool get hasMorePages => _s3Key != null && _pagesExtracted < _totalPages;
+
   /// Clear current book selection and reset lazy loading state
   Future<void> clearCurrentBook() async {
     _currentBook = null;
@@ -883,6 +1095,9 @@ class BookProvider extends ChangeNotifier {
     _uploadedPdfPath = null;
     _uploadedPdfContent = null;
     _uploadedPdfBytes = null;
+    _s3Key = null;
+    _totalPages = 0;
+    _pagesExtracted = 0;
 
     // Clear persisted state
     await clearPersistedState();
