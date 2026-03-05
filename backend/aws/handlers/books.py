@@ -180,6 +180,8 @@ def _update_progress(user_id: str, book_id: str, body: dict) -> dict:
     progress_pct = body.get("progress_pct", 0)
     pages_extracted = body.get("pages_extracted")
     status = body.get("status")
+    # image_urls: dict of { blockId: presignedUrl } for cross-device image caching
+    image_urls = body.get("image_urls")
 
     update_expr = "SET current_chapter_index = :ci, current_block_index = :bi, progress_pct = :pp, last_read_at = :lr"
     expr_values = {
@@ -188,27 +190,31 @@ def _update_progress(user_id: str, book_id: str, body: dict) -> dict:
         ":pp": int(progress_pct) if progress_pct == int(progress_pct) else progress_pct,
         ":lr": _now(),
     }
+    expr_names = {}
 
     if pages_extracted is not None:
         update_expr += ", pages_extracted = :pe"
         expr_values[":pe"] = pages_extracted
 
+    if image_urls is not None and isinstance(image_urls, dict):
+        update_expr += ", image_urls = :iu"
+        expr_values[":iu"] = image_urls
+
     if status is not None:
         update_expr += ", #s = :st"
-        resp = _table().update_item(
-            Key={"user_id": user_id, "book_id": book_id},
-            UpdateExpression=update_expr,
-            ExpressionAttributeNames={"#s": "status"},
-            ExpressionAttributeValues={**expr_values, ":st": status},
-            ReturnValues="ALL_NEW",
-        )
-    else:
-        resp = _table().update_item(
-            Key={"user_id": user_id, "book_id": book_id},
-            UpdateExpression=update_expr,
-            ExpressionAttributeValues=expr_values,
-            ReturnValues="ALL_NEW",
-        )
+        expr_names["#s"] = "status"
+        expr_values[":st"] = status
+
+    kwargs = dict(
+        Key={"user_id": user_id, "book_id": book_id},
+        UpdateExpression=update_expr,
+        ExpressionAttributeValues=expr_values,
+        ReturnValues="ALL_NEW",
+    )
+    if expr_names:
+        kwargs["ExpressionAttributeNames"] = expr_names
+
+    resp = _table().update_item(**kwargs)
 
     logger.info(f"Updated progress for {book_id}: {progress_pct}%")
     return _ok(resp.get("Attributes", {}))
