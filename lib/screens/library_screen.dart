@@ -40,9 +40,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
       final client = BackendApiClient(apiConfig);
       client.setTokenGetter(() => authProvider.idToken);
       final books = await client.getUserBooks();
+      // Filter out incomplete/ghost books (0 pages or still uploading with no title)
+      final validBooks = books.where((b) {
+        final pages = (b['total_pages'] as num?)?.toInt() ?? 0;
+        final status = b['status'] as String? ?? '';
+        return pages > 0 || status == 'uploading';
+      }).toList();
       if (mounted) {
         setState(() {
-          _books = books;
+          _books = validBooks;
           _loading = false;
         });
       }
@@ -71,6 +77,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final totalPages = (book['total_pages'] as num?)?.toInt() ?? 0;
     final pagesExtracted = (book['pages_extracted'] as num?)?.toInt() ?? 0;
     final chapterIndex = (book['current_chapter_index'] as num?)?.toInt() ?? 0;
+    final blockIndex = (book['current_block_index'] as num?)?.toInt() ?? 0;
 
     bookProvider.resumeFromLibrary(
       bookId: bookId,
@@ -79,6 +86,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       totalPages: totalPages,
       pagesExtracted: pagesExtracted,
       currentChapterIndex: chapterIndex,
+      currentBlockIndex: blockIndex,
     );
 
     Navigator.of(context).pushReplacement(
@@ -271,7 +279,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: status == 'ready' ? () => _resumeBook(book) : null,
+                  onTap: (status == 'ready' || status == 'reading') ? () => _resumeBook(book) : null,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(

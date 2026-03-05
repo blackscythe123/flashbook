@@ -35,6 +35,9 @@ class BookProvider extends ChangeNotifier {
   int _totalPages = 0;
   int _pagesExtracted = 0;
 
+  // Resume position (global block index) set when opening from library
+  int _resumeBlockIndex = 0;
+
   // Loading state for chapters
   bool _isLoadingChapter = false;
   int? _loadingChapterIndex;
@@ -68,6 +71,9 @@ class BookProvider extends ChangeNotifier {
   String? get uploadedPdfPath => _uploadedPdfPath;
   String? get uploadedPdfContent => _uploadedPdfContent;
   Uint8List? get uploadedPdfBytes => _uploadedPdfBytes;
+
+  // Resume position getter
+  int get resumeBlockIndex => _resumeBlockIndex;
 
   // Loading state getters
   bool get isLoadingChapter => _isLoadingChapter;
@@ -451,11 +457,13 @@ class BookProvider extends ChangeNotifier {
   Future<void> _initializeLazyLoading(
     String textContent, {
     String? fileName,
+    String? bookId,
   }) async {
     _currentBookTitle =
         fileName?.replaceAll('.pdf', '').replaceAll('.txt', '') ??
         'Uploaded Book';
-    _currentBookId = 'uploaded_${DateTime.now().millisecondsSinceEpoch}';
+    // Use the provided backend book ID if given, otherwise generate a local one
+    _currentBookId = bookId ?? 'uploaded_${DateTime.now().millisecondsSinceEpoch}';
 
     final cleanedText = _cleanText(textContent);
     _rawChunks = _splitTextIntoChunks(cleanedText);
@@ -940,8 +948,8 @@ class BookProvider extends ChangeNotifier {
       _currentBookTitle =
           title.isNotEmpty ? title : filename.replaceAll('.pdf', '');
 
-      // Initialize lazy loading with extracted text
-      await _initializeLazyLoading(text, fileName: filename);
+      // Initialize lazy loading with extracted text, passing real bookId
+      await _initializeLazyLoading(text, fileName: filename, bookId: bookId);
 
       // Update progress on backend
       await _apiClient!.updateBookProgress(
@@ -966,6 +974,7 @@ class BookProvider extends ChangeNotifier {
     required int totalPages,
     required int pagesExtracted,
     required int currentChapterIndex,
+    int currentBlockIndex = 0,
   }) {
     _currentBookId = bookId;
     _currentBookTitle = title;
@@ -976,15 +985,38 @@ class BookProvider extends ChangeNotifier {
     // If we have a persisted book that matches, use it
     if (_currentBook != null && _currentBook!.id == bookId) {
       debugPrint('BookProvider: Resuming existing book $bookId');
+      // Calculate the global block index to scroll to
+      _resumeBlockIndex = _globalBlockIndex(
+        _currentBook!,
+        currentChapterIndex,
+        currentBlockIndex,
+      );
       notifyListeners();
       return;
     }
+
+    // Reset resume position — will scroll after content loads
+    _resumeBlockIndex = 0;
 
     // Otherwise start batch extraction from where we left off
     debugPrint(
       'BookProvider: Loading book $bookId from S3 (page $pagesExtracted of $totalPages)',
     );
     _loadFromS3(startPage: 0, pageCount: 50);
+  }
+
+  /// Compute global block index from chapter+block indices.
+  int _globalBlockIndex(Book book, int chapterIndex, int blockIndex) {
+    int idx = 0;
+    for (int i = 0; i < chapterIndex && i < book.chapters.length; i++) {
+      idx += book.chapters[i].blocks.length;
+    }
+    return idx + blockIndex;
+  }
+
+  /// Clear the resume position after it has been consumed.
+  void clearResumePosition() {
+    _resumeBlockIndex = 0;
   }
 
   /// Load text from S3 and initialize lazy loading
@@ -1007,7 +1039,11 @@ class BookProvider extends ChangeNotifier {
       final endPage = (batchData['end_page'] as num).toInt();
       _pagesExtracted = endPage;
 
-      await _initializeLazyLoading(text, fileName: _currentBookTitle ?? 'book');
+      await _initializeLazyLoading(
+        text,
+        fileName: _currentBookTitle ?? 'book',
+        bookId: _currentBookId,
+      );
     } catch (e) {
       _errorMessage = 'Failed to load pages: $e';
       debugPrint('BookProvider: S3 load error: $e');

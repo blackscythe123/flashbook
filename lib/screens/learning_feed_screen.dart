@@ -31,6 +31,16 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    // Jump to resume position after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bookProvider = context.read<BookProvider>();
+      final resumeIndex = bookProvider.resumeBlockIndex;
+      if (resumeIndex > 0) {
+        setState(() => _currentPage = resumeIndex);
+        _pageController.jumpToPage(resumeIndex);
+        bookProvider.clearResumePosition();
+      }
+    });
   }
 
   @override
@@ -77,6 +87,12 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
 
                   // Trigger lazy loading for upcoming chapters
                   bookProvider.onChapterViewed(indices.chapterIndex);
+
+                  // 80% threshold: background-load next batch if needed
+                  final pct = (index + 1) / allBlocks.length;
+                  if (pct >= 0.8 && bookProvider.hasMorePages) {
+                    bookProvider.loadMorePages();
+                  }
                 },
                 itemBuilder: (context, index) {
                   final block = allBlocks[index];
