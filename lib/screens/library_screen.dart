@@ -79,6 +79,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     final chapterIndex = (book['current_chapter_index'] as num?)?.toInt() ?? 0;
     final blockIndex = (book['current_block_index'] as num?)?.toInt() ?? 0;
 
+    // Restore cached image URLs so the other device doesn't regenerate
+    Map<String, String>? imageUrls;
+    final rawImageUrls = book['image_urls'];
+    if (rawImageUrls is Map) {
+      imageUrls = rawImageUrls.map((k, v) => MapEntry(k.toString(), v.toString()));
+    }
+
     bookProvider.resumeFromLibrary(
       bookId: bookId,
       title: title,
@@ -87,9 +94,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
       pagesExtracted: pagesExtracted,
       currentChapterIndex: chapterIndex,
       currentBlockIndex: blockIndex,
+      imageUrls: imageUrls,
     );
 
-    Navigator.of(context).pushReplacement(
+    // Use push (not pushReplacement) so back button returns here
+    Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const LearningFeedScreen()),
     );
   }

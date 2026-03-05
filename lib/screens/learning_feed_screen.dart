@@ -55,6 +55,12 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
       builder: (context, bookProvider, child) {
         final book = bookProvider.currentBook;
 
+        if (book == null && bookProvider.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         if (book == null) {
           return const Scaffold(body: Center(child: Text('No book selected')));
         }

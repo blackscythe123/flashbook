@@ -35,6 +35,9 @@ class BookProvider extends ChangeNotifier {
   int _totalPages = 0;
   int _pagesExtracted = 0;
 
+  // Cross-device image URL cache: blockId → presignedUrl
+  final Map<String, String> _imageUrls = {};
+
   // Resume position (global block index) set when opening from library
   int _resumeBlockIndex = 0;
 
@@ -58,6 +61,7 @@ class BookProvider extends ChangeNotifier {
   static const _keyCurrentBookId = 'current_book_id';
   static const _keyCurrentBookTitle = 'current_book_title';
   static const _keyUploadedPdfPath = 'uploaded_pdf_path';
+  static const _keyImageUrls = 'image_urls_cache';
   static const _keyUploadedPdfContent = 'uploaded_pdf_content';
 
   // Getters
@@ -268,12 +272,16 @@ class BookProvider extends ChangeNotifier {
 
     for (var idx = 0; idx < apiBlocks.length; idx++) {
       final block = apiBlocks[idx];
+      final blockId = '${chapterId}_$idx';
 
-      // Defer ALL image generation for instant text loading
-      String? imageUrl;
+      // Check if we already have a cached image URL for this block (cross-device restore)
+      final cachedUrl = _imageUrls[blockId];
+
+      // Defer image generation unless we already have a cached URL
+      String? imageUrl = cachedUrl;
       String? pendingPrompt;
 
-      if (block.imageHint && block.imagePrompt.isNotEmpty) {
+      if (cachedUrl == null && block.imageHint && block.imagePrompt.isNotEmpty) {
         pendingPrompt = block.imagePrompt;
       }
 
@@ -288,7 +296,7 @@ class BookProvider extends ChangeNotifier {
 
       blocks.add(
         LearningBlock(
-          id: '${chapterId}_$idx',
+          id: blockId,
           tag: slideTitle,
           headline: headline,
           content: body,
@@ -975,12 +983,20 @@ class BookProvider extends ChangeNotifier {
     required int pagesExtracted,
     required int currentChapterIndex,
     int currentBlockIndex = 0,
+    Map<String, String>? imageUrls,
   }) {
     _currentBookId = bookId;
     _currentBookTitle = title;
     _s3Key = s3Key;
     _totalPages = totalPages;
     _pagesExtracted = pagesExtracted;
+
+    // Restore any previously generated image URLs so blocks won't regenerate
+    if (imageUrls != null && imageUrls.isNotEmpty) {
+      _imageUrls.clear();
+      _imageUrls.addAll(imageUrls);
+      debugPrint('BookProvider: Restored ${imageUrls.length} cached image URLs');
+    }
 
     // If we have a persisted book that matches, use it
     if (_currentBook != null && _currentBook!.id == bookId) {
@@ -1134,6 +1150,7 @@ class BookProvider extends ChangeNotifier {
     _s3Key = null;
     _totalPages = 0;
     _pagesExtracted = 0;
+    _imageUrls.clear();
 
     // Clear persisted state
     await clearPersistedState();
@@ -1198,6 +1215,13 @@ class BookProvider extends ChangeNotifier {
         await prefs.remove(_keyUploadedPdfContent);
       }
 
+      // Save image URL cache (local device fast-restore)
+      if (_imageUrls.isNotEmpty) {
+        await prefs.setString(_keyImageUrls, jsonEncode(_imageUrls));
+      } else {
+        await prefs.remove(_keyImageUrls);
+      }
+
       debugPrint('BookProvider: State saved to SharedPreferences');
     } catch (e) {
       debugPrint('BookProvider: Failed to save state: $e');
@@ -1235,6 +1259,15 @@ class BookProvider extends ChangeNotifier {
       _currentBookTitle = prefs.getString(_keyCurrentBookTitle);
       _uploadedPdfPath = prefs.getString(_keyUploadedPdfPath);
       _uploadedPdfContent = prefs.getString(_keyUploadedPdfContent);
+
+      // Load image URL cache
+      final imageUrlsJson = prefs.getString(_keyImageUrls);
+      if (imageUrlsJson != null) {
+        final decoded = jsonDecode(imageUrlsJson) as Map<String, dynamic>;
+        _imageUrls.clear();
+        _imageUrls.addAll(decoded.map((k, v) => MapEntry(k, v as String)));
+        debugPrint('BookProvider: Restored ${_imageUrls.length} cached image URLs');
+      }
 
       if (_currentBook != null) {
         debugPrint('BookProvider: Restored book state: ${_currentBook!.title}');
@@ -1312,8 +1345,19 @@ class BookProvider extends ChangeNotifier {
 
         _currentBook = _currentBook!.copyWith(chapters: updatedChapters);
 
-        // Save updated state
+        // Cache the URL so resumed sessions skip regeneration
+        _imageUrls[blockId] = imageUrl;
+        // Persist locally
         await saveBookState();
+        // Push to DynamoDB (fire-and-forget) so other devices can use it
+        if (_currentBookId != null && _apiClient != null) {
+          _apiClient!.updateBookProgress(
+            bookId: _currentBookId!,
+            imageUrls: Map<String, String>.from(_imageUrls),
+          ).catchError((e) {
+            debugPrint('BookProvider: Failed to sync image_urls to DynamoDB: $e');
+          });
+        }
 
         notifyListeners();
         debugPrint(
