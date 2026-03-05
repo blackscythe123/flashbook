@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
@@ -527,21 +528,48 @@ class BackendApiClient {
   }
 
   /// Upload raw PDF bytes to the presigned S3 URL.
+  /// Follows 307/301 redirects manually because Dart's http.Client
+  /// does not resend the request body when redirecting PUT requests.
   Future<void> uploadPdfToS3({
     required String presignedUrl,
     required List<int> fileBytes,
   }) async {
-    final response = await _httpClient
-        .put(
-          Uri.parse(presignedUrl),
-          headers: {'Content-Type': 'application/pdf'},
-          body: fileBytes,
-        )
-        .timeout(const Duration(seconds: 120));
+    final bodyBytes = Uint8List.fromList(fileBytes);
+    String currentUrl = presignedUrl;
 
-    if (response.statusCode != 200) {
-      throw Exception('S3 upload failed: ${response.statusCode}');
+    for (int attempt = 0; attempt < 5; attempt++) {
+      final request = http.Request('PUT', Uri.parse(currentUrl));
+      request.headers['Content-Type'] = 'application/pdf';
+      request.bodyBytes = bodyBytes;
+      request.followRedirects = false;
+
+      final streamed = await _httpClient
+          .send(request)
+          .timeout(const Duration(seconds: 120));
+      final response = await http.Response.fromStream(streamed);
+
+      if (response.statusCode == 200) return;
+
+      // S3 regional redirect — resend PUT with body to new URL
+      if (response.statusCode == 307 ||
+          response.statusCode == 301 ||
+          response.statusCode == 302) {
+        final location = response.headers['location'];
+        if (location != null && location.isNotEmpty) {
+          debugPrint(
+            'BackendApiClient: S3 redirect ${response.statusCode} → $location',
+          );
+          currentUrl = location;
+          continue;
+        }
+      }
+
+      throw Exception(
+        'S3 upload failed: ${response.statusCode} - ${response.body}',
+      );
     }
+
+    throw Exception('S3 upload failed: too many redirects');
   }
 
   /// Confirm the PDF was uploaded — backend reads it to count pages.
