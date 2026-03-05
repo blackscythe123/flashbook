@@ -2,71 +2,83 @@ import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 
+/// Authentication states
+enum AuthState { initial, unauthenticated, authenticated, needsVerification }
+
 /// State provider for authentication.
-/// Manages user sign-in state and user data.
+/// Uses CognitoAuthService for real AWS Cognito login.
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService;
+  CognitoAuthService? _authService;
 
   AppUser? _user;
   bool _isLoading = false;
   String? _errorMessage;
-
-  AuthProvider({AuthService? authService})
-    : _authService = authService ?? MockAuthService();
+  AuthState _authState = AuthState.initial;
+  String? _pendingVerificationEmail;
 
   // Getters
   AppUser? get user => _user;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _user != null;
+  bool get isAuthenticated => _authState == AuthState.authenticated;
   String? get errorMessage => _errorMessage;
   String get userId => _user?.id ?? 'anonymous';
+  AuthState get authState => _authState;
+  String? get pendingVerificationEmail => _pendingVerificationEmail;
+  String? get idToken => _authService?.idToken;
 
-  /// Initialize auth state
+  /// Inject the API config so we can create the auth service
+  void setApiConfig(ApiConfig apiConfig) {
+    _authService = CognitoAuthService(apiConfig);
+  }
+
+  /// Initialize — try to restore previous session
   Future<void> initialize() async {
+    if (_authService == null) {
+      _authState = AuthState.unauthenticated;
+      notifyListeners();
+      return;
+    }
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Try to get current user or sign in anonymously
-      _user = _authService.currentUser;
-      if (_user == null) {
-        await signInAnonymously();
+      final restored = await _authService!.tryRestoreSession();
+      if (restored) {
+        _user = _authService!.currentUser;
+        _authState = AuthState.authenticated;
+      } else {
+        _authState = AuthState.unauthenticated;
       }
     } catch (e) {
-      _errorMessage = 'Failed to initialize auth: $e';
+      _authState = AuthState.unauthenticated;
+      debugPrint('AuthProvider: init error: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Sign in anonymously (for hackathon demo)
-  Future<void> signInAnonymously() async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      _user = await _authService.signInAnonymously();
-    } catch (e) {
-      _errorMessage = 'Failed to sign in: $e';
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  /// Sign in with email
+  /// Sign in with email/password via Cognito
   Future<bool> signInWithEmail(String email, String password) async {
+    if (_authService == null) return false;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _user = await _authService.signInWithEmail(email, password);
+      _user = await _authService!.signInWithEmail(email, password);
+      _authState = AuthState.authenticated;
       return true;
     } catch (e) {
-      _errorMessage = 'Invalid email or password';
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      if (msg == '__unverified__') {
+        // Account exists but email not verified — go to verification screen
+        _pendingVerificationEmail = email;
+        _authState = AuthState.needsVerification;
+        _errorMessage = null;
+      } else {
+        _errorMessage = msg;
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -74,17 +86,49 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Create account
+  /// Create account via Cognito (triggers verification email)
   Future<bool> createAccount(String email, String password) async {
+    if (_authService == null) return false;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _user = await _authService.createAccount(email, password);
+      await _authService!.createAccount(email, password);
+      _pendingVerificationEmail = email;
+      _authState = AuthState.needsVerification;
       return true;
     } catch (e) {
-      _errorMessage = 'Failed to create account';
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      if (msg.contains('already exists')) {
+        // Account exists but may be unverified — go to verification screen
+        _pendingVerificationEmail = email;
+        _authState = AuthState.needsVerification;
+        _errorMessage = null;
+      } else {
+        _errorMessage = msg;
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Verify email with code
+  Future<bool> verifyEmail(String code) async {
+    if (_authService == null || _pendingVerificationEmail == null) return false;
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _authService!.verifyEmail(_pendingVerificationEmail!, code);
+      _authState = AuthState.unauthenticated; // Go to login after verify
+      _pendingVerificationEmail = null;
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
       return false;
     } finally {
       _isLoading = false;
@@ -98,8 +142,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _authService.signOut();
+      await _authService?.signOut();
       _user = null;
+      _authState = AuthState.unauthenticated;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -108,6 +153,14 @@ class AuthProvider extends ChangeNotifier {
 
   /// Clear error message
   void clearError() {
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  /// Reset state back to login (from verification screen)
+  void resetToLogin() {
+    _authState = AuthState.unauthenticated;
+    _pendingVerificationEmail = null;
     _errorMessage = null;
     notifyListeners();
   }

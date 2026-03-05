@@ -1,33 +1,39 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
+import 'api_config.dart';
 
 /// Abstract authentication service interface.
-/// For hackathon demo, we use MockAuthService.
 abstract class AuthService {
-  /// Stream of authentication state changes
   Stream<AppUser?> get authStateChanges;
-
-  /// Get current user
   AppUser? get currentUser;
-
-  /// Sign in anonymously (for quick demo access)
-  Future<AppUser?> signInAnonymously();
-
-  /// Sign in with email and password
+  String? get idToken;
   Future<AppUser?> signInWithEmail(String email, String password);
-
-  /// Create account with email and password
   Future<AppUser?> createAccount(String email, String password);
-
-  /// Sign out
+  Future<bool> verifyEmail(String email, String code);
   Future<void> signOut();
+  Future<bool> tryRestoreSession();
 }
 
-/// Mock auth service for hackathon demo.
-/// No Firebase dependency - works fully offline.
-class MockAuthService implements AuthService {
+/// Cognito-backed auth service calling /auth/* Lambda endpoints.
+class CognitoAuthService implements AuthService {
+  final ApiConfig _apiConfig;
   AppUser? _currentUser;
+  String? _idToken;
+  String? _accessToken;
+  String? _refreshToken;
   final _authStateController = StreamController<AppUser?>.broadcast();
+
+  static const _keyIdToken = 'auth_id_token';
+  static const _keyAccessToken = 'auth_access_token';
+  static const _keyRefreshToken = 'auth_refresh_token';
+  static const _keyUserId = 'auth_user_id';
+  static const _keyEmail = 'auth_email';
+
+  CognitoAuthService(this._apiConfig);
 
   @override
   Stream<AppUser?> get authStateChanges => _authStateController.stream;
@@ -36,53 +42,199 @@ class MockAuthService implements AuthService {
   AppUser? get currentUser => _currentUser;
 
   @override
-  Future<AppUser?> signInAnonymously() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+  String? get idToken => _idToken;
 
-    _currentUser = AppUser(
-      id: 'demo_user_${DateTime.now().millisecondsSinceEpoch}',
-      isAnonymous: true,
-      isPremium: false,
-      createdAt: DateTime.now(),
-    );
+  String? get _baseUrl {
+    final url = _apiConfig.apiBaseUrl;
+    return url;
+  }
 
-    _authStateController.add(_currentUser);
-    return _currentUser;
+  /// Try to restore a previous session from stored tokens.
+  @override
+  Future<bool> tryRestoreSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final storedRefresh = prefs.getString(_keyRefreshToken);
+      final storedId = prefs.getString(_keyIdToken);
+      final storedUserId = prefs.getString(_keyUserId);
+      final storedEmail = prefs.getString(_keyEmail);
+
+      if (storedRefresh == null || storedUserId == null) return false;
+
+      // Try refreshing the token
+      final base = _baseUrl;
+      if (base == null) {
+        // No backend — use stored user info as-is
+        _idToken = storedId;
+        _refreshToken = storedRefresh;
+        _currentUser = AppUser(
+          id: storedUserId,
+          email: storedEmail,
+          isAnonymous: false,
+          createdAt: DateTime.now(),
+        );
+        _authStateController.add(_currentUser);
+        return true;
+      }
+
+      final resp = await http
+          .post(
+            Uri.parse('$base/auth/refresh'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'refresh_token': storedRefresh}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        _idToken = data['id_token'] as String?;
+        _accessToken = data['access_token'] as String?;
+        _refreshToken = storedRefresh; // refresh token stays the same
+        _currentUser = AppUser(
+          id: storedUserId,
+          email: storedEmail,
+          isAnonymous: false,
+          createdAt: DateTime.now(),
+        );
+        await _persistTokens(storedEmail ?? '');
+        _authStateController.add(_currentUser);
+        return true;
+      }
+    } catch (e) {
+      debugPrint('CognitoAuthService: Failed to restore session: $e');
+    }
+    return false;
   }
 
   @override
   Future<AppUser?> signInWithEmail(String email, String password) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+    final base = _baseUrl;
+    if (base == null) throw Exception('Backend not configured');
 
-    // For demo, any email/password works
-    _currentUser = AppUser(
-      id: 'user_${email.hashCode}',
-      email: email,
-      isAnonymous: false,
-      isPremium: email.contains('premium'),
-      createdAt: DateTime.now(),
-    );
+    final resp = await http
+        .post(
+          Uri.parse('$base/auth/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email, 'password': password}),
+        )
+        .timeout(const Duration(seconds: 15));
 
-    _authStateController.add(_currentUser);
-    return _currentUser;
+    final data = jsonDecode(resp.body) as Map<String, dynamic>;
+
+    if (resp.statusCode == 403 &&
+        (data['error'] as String? ?? '').contains('not verified')) {
+      throw Exception('__unverified__');
+    }
+
+    if (resp.statusCode == 200) {
+      _idToken = data['id_token'] as String?;
+      _accessToken = data['access_token'] as String?;
+      _refreshToken = data['refresh_token'] as String?;
+
+      // Decode sub from id_token JWT payload
+      final userId = _decodeSubFromJwt(_idToken!);
+      _currentUser = AppUser(
+        id: userId,
+        email: email,
+        isAnonymous: false,
+        createdAt: DateTime.now(),
+      );
+      await _persistTokens(email);
+      _authStateController.add(_currentUser);
+      return _currentUser;
+    } else {
+      throw Exception(data['error'] ?? 'Login failed');
+    }
   }
 
   @override
   Future<AppUser?> createAccount(String email, String password) async {
-    // Same as sign in for demo
-    return signInWithEmail(email, password);
+    final base = _baseUrl;
+    if (base == null) throw Exception('Backend not configured');
+
+    final resp = await http
+        .post(
+          Uri.parse('$base/auth/signup'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email, 'password': password}),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    final data = jsonDecode(resp.body) as Map<String, dynamic>;
+
+    if (resp.statusCode == 200 || resp.statusCode == 201) {
+      // Signup succeeded — user needs to verify email
+      return null; // Signal that verification is needed
+    } else if (resp.statusCode == 409) {
+      throw Exception('An account with this email already exists. Please sign in or verify your email.');
+    } else {
+      throw Exception(data['error'] ?? 'Signup failed');
+    }
+  }
+
+  @override
+  Future<bool> verifyEmail(String email, String code) async {
+    final base = _baseUrl;
+    if (base == null) throw Exception('Backend not configured');
+
+    final resp = await http
+        .post(
+          Uri.parse('$base/auth/verify'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'email': email, 'code': code}),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    if (resp.statusCode == 200) {
+      return true;
+    } else {
+      final data = jsonDecode(resp.body) as Map<String, dynamic>;
+      throw Exception(data['error'] ?? 'Verification failed');
+    }
   }
 
   @override
   Future<void> signOut() async {
-    await Future.delayed(const Duration(milliseconds: 300));
     _currentUser = null;
+    _idToken = null;
+    _accessToken = null;
+    _refreshToken = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyIdToken);
+    await prefs.remove(_keyAccessToken);
+    await prefs.remove(_keyRefreshToken);
+    await prefs.remove(_keyUserId);
+    await prefs.remove(_keyEmail);
     _authStateController.add(null);
   }
 
-  /// Dispose the stream controller
+  Future<void> _persistTokens(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_idToken != null) await prefs.setString(_keyIdToken, _idToken!);
+    if (_accessToken != null) {
+      await prefs.setString(_keyAccessToken, _accessToken!);
+    }
+    if (_refreshToken != null) {
+      await prefs.setString(_keyRefreshToken, _refreshToken!);
+    }
+    if (_currentUser != null) {
+      await prefs.setString(_keyUserId, _currentUser!.id);
+      await prefs.setString(_keyEmail, email);
+    }
+  }
+
+  /// Decode the 'sub' claim from a JWT without verification (client-side only).
+  String _decodeSubFromJwt(String jwt) {
+    final parts = jwt.split('.');
+    if (parts.length != 3) return 'unknown';
+    // Normalize base64
+    var payload = parts[1];
+    payload = base64.normalize(payload);
+    final decoded = utf8.decode(base64.decode(payload));
+    final map = jsonDecode(decoded) as Map<String, dynamic>;
+    return map['sub'] as String? ?? 'unknown';
+  }
+
   void dispose() {
     _authStateController.close();
   }

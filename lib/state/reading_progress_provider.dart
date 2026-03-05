@@ -4,12 +4,14 @@ import '../services/services.dart';
 
 /// State provider for reading progress.
 /// Tracks current position, progress percentage, and reading stats.
+/// Syncs progress to backend via PUT /books/{book_id}/progress.
 class ReadingProgressProvider extends ChangeNotifier {
   final StorageService _storageService;
 
   ReadingProgress? _currentProgress;
   bool _isLoading = false;
   String _userId = 'demo_user';
+  BackendApiClient? _apiClient;
 
   ReadingProgressProvider({StorageService? storageService})
     : _storageService = storageService ?? StorageService();
@@ -26,6 +28,11 @@ class ReadingProgressProvider extends ChangeNotifier {
   void setUserId(String userId) {
     _userId = userId;
     _storageService.initializeDemoData(userId);
+  }
+
+  /// Inject API client for backend sync
+  void setApiClient(BackendApiClient client) {
+    _apiClient = client;
   }
 
   /// Load progress for a specific book
@@ -93,10 +100,24 @@ class ReadingProgressProvider extends ChangeNotifier {
     await _saveProgress();
   }
 
-  /// Save current progress to storage
+  /// Save current progress to storage and sync to backend
   Future<void> _saveProgress() async {
     if (_currentProgress == null) return;
     await _storageService.saveProgress(_userId, _currentProgress!);
+
+    // Sync to backend (fire-and-forget)
+    if (_apiClient != null) {
+      try {
+        await _apiClient!.updateBookProgress(
+          bookId: _currentProgress!.bookId,
+          chapterIndex: _currentProgress!.currentChapterIndex,
+          blockIndex: _currentProgress!.currentBlockIndex,
+          progressPct: _currentProgress!.progressPercentage.round(),
+        );
+      } catch (e) {
+        debugPrint('ReadingProgressProvider: Backend sync error: $e');
+      }
+    }
   }
 
   /// Get global block index from chapter/block indices

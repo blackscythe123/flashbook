@@ -1,19 +1,33 @@
 """
 POST /extractText
-Accepts multipart/form-data with a PDF file field named "file".
-Returns { text, page_count, char_count }.
+Two modes:
+  1. multipart/form-data  — legacy full-PDF upload (extracts all pages)
+  2. application/json     — batch extraction from S3
+     Body: { s3_key, start_page (0-based), page_count (default 50) }
+     Returns: { text, start_page, end_page, total_pages, has_more, char_count }
 Note: cgi module was removed in Python 3.13 — using manual multipart parser.
 """
 import base64
 import io
 import json
 import logging
+import os
 import re
 
+import boto3
 import pypdf
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+_s3 = None
+
+
+def _get_s3():
+    global _s3
+    if _s3 is None:
+        _s3 = boto3.client("s3", region_name=os.environ.get("AWS_REGION", "ap-south-1"))
+    return _s3
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -76,25 +90,91 @@ def _parse_multipart(body_bytes: bytes, content_type: str):
     return files
 
 
+def _extract_batch(body: dict) -> dict:
+    """Download PDF from S3, extract only the requested page range."""
+    s3_key = body.get("s3_key", "")
+    start_page = int(body.get("start_page", 0))
+    page_count = int(body.get("page_count", 50))
+
+    if not s3_key:
+        return _err(400, "s3_key is required")
+
+    bucket = os.environ.get("PDF_BUCKET", "")
+    if not bucket:
+        return _err(500, "PDF_BUCKET not configured")
+
+    try:
+        obj = _get_s3().get_object(Bucket=bucket, Key=s3_key)
+        pdf_bytes = obj["Body"].read()
+    except Exception as exc:
+        logger.error(f"S3 download error for {s3_key}: {exc}")
+        return _err(404, f"PDF not found in S3: {s3_key}")
+
+    try:
+        reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+        total_pages = len(reader.pages)
+
+        end_page = min(start_page + page_count, total_pages)
+        if start_page >= total_pages:
+            return _ok({
+                "text": "",
+                "start_page": start_page,
+                "end_page": start_page,
+                "total_pages": total_pages,
+                "has_more": False,
+                "char_count": 0,
+            })
+
+        pages_text = []
+        for i in range(start_page, end_page):
+            t = reader.pages[i].extract_text()
+            if t:
+                pages_text.append(t)
+
+        text = "\n\n".join(pages_text)
+        has_more = end_page < total_pages
+
+        logger.info(f"Batch extract pages {start_page}-{end_page} of {total_pages} from {s3_key}: {len(text)} chars")
+        return _ok({
+            "text": text,
+            "start_page": start_page,
+            "end_page": end_page,
+            "total_pages": total_pages,
+            "has_more": has_more,
+            "char_count": len(text),
+        })
+
+    except Exception as exc:
+        logger.error(f"Batch extraction error: {exc}")
+        return _err(500, f"Failed to extract text: {str(exc)}")
+
+
 def lambda_handler(event, context):
     # Preflight
     if event.get("httpMethod") == "OPTIONS":
         return {"statusCode": 200, "headers": CORS, "body": ""}
 
-    # ── decode body ──────────────────────────────────────────────────────────
+    headers = event.get("headers") or {}
+    content_type = headers.get("Content-Type") or headers.get("content-type", "")
+
+    # ── JSON mode → batch extraction from S3 ─────────────────────────────────
+    if "application/json" in content_type:
+        try:
+            body = json.loads(event.get("body") or "{}")
+        except json.JSONDecodeError:
+            return _err(400, "Invalid JSON body")
+        return _extract_batch(body)
+
+    # ── Multipart mode → legacy full-PDF upload ──────────────────────────────
     if event.get("isBase64Encoded"):
         body_bytes = base64.b64decode(event["body"])
     else:
         raw = event.get("body") or ""
         body_bytes = raw.encode("latin-1") if isinstance(raw, str) else raw
 
-    headers = event.get("headers") or {}
-    content_type = headers.get("Content-Type") or headers.get("content-type", "")
-
     if "multipart/form-data" not in content_type:
-        return _err(400, f"Expected multipart/form-data, got: {content_type}")
+        return _err(400, f"Expected multipart/form-data or application/json, got: {content_type}")
 
-    # ── parse multipart ──────────────────────────────────────────────────────
     try:
         fields = _parse_multipart(body_bytes, content_type)
     except Exception as exc:
@@ -110,7 +190,6 @@ def lambda_handler(event, context):
     if not filename.lower().endswith(".pdf"):
         return _err(400, "File must be a PDF")
 
-    # ── extract text via pypdf ───────────────────────────────────────────────
     try:
         reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
 
