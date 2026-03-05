@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime, timezone
 
 import boto3
+from boto3.session import Config
 from boto3.dynamodb.conditions import Key
 
 logger = logging.getLogger()
@@ -39,7 +40,15 @@ def _table():
 def _get_s3():
     global _s3
     if _s3 is None:
-        _s3 = boto3.client("s3", region_name=os.environ.get("AWS_REGION", "ap-south-1"))
+        region = os.environ.get("AWS_REGION", "ap-south-1")
+        # Use explicit endpoint_url so presigned URLs are regionally pinned
+        # and clients don't get a 307 redirect on upload.
+        _s3 = boto3.client(
+            "s3",
+            region_name=region,
+            endpoint_url=f"https://s3.{region}.amazonaws.com",
+            config=Config(signature_version="s3v4"),
+        )
     return _s3
 
 
