@@ -1,0 +1,248 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: Flashbook AWS Lambda + API Gateway + DynamoDB backend
+
+Parameters:
+  GeminiApiKeyParam:
+    Type: String
+    NoEcho: true
+    Description: "Gemini API Key (get from https://aistudio.google.com/app/apikey)"
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Timeout: 29
+    MemorySize: 512
+    Environment:
+      Variables:
+        GEMINI_API_KEY: !Ref GeminiApiKeyParam
+        GEMINI_MODEL_TEXT: "gemini-2.0-flash"
+        GEMINI_MODEL_IMAGE: "gemini-2.0-flash-exp-image-generation"
+        SLIDES_TABLE: !Ref SlidesTable
+        NOTES_TABLE: !Ref NotesTable
+        IMAGES_BUCKET: !Ref ImagesBucket
+
+Resources:
+
+  # ===== API Gateway =====
+  FlashbookApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      BinaryMediaTypes:
+        - "multipart/form-data"
+        - "application/octet-stream"
+
+  # ===== Lambda: GET /health =====
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: flashbook-health
+      CodeUri: handlers/
+      Handler: health.lambda_handler
+      MemorySize: 128
+      Timeout: 5
+      Events:
+        GetHealth:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /health
+            Method: get
+
+  # ===== Lambda: POST /extractText =====
+  ExtractTextFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: flashbook-extract-text
+      CodeUri: handlers/
+      Handler: extract_text.lambda_handler
+      MemorySize: 512
+      Timeout: 30
+      Events:
+        PostExtractText:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /extractText
+            Method: post
+        OptionsExtractText:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /extractText
+            Method: options
+
+  # ===== Lambda: POST /generateSummary =====
+  GenerateSummaryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: flashbook-generate-summary
+      CodeUri: handlers/
+      Handler: generate_summary.lambda_handler
+      MemorySize: 1024
+      Timeout: 29
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SlidesTable
+      Events:
+        PostGenerateSummary:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /generateSummary
+            Method: post
+        OptionsGenerateSummary:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /generateSummary
+            Method: options
+
+  # ===== Lambda: POST /generateImage =====
+  GenerateImageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: flashbook-generate-image
+      CodeUri: handlers/
+      Handler: generate_image.lambda_handler
+      MemorySize: 1024
+      Timeout: 29
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref ImagesBucket
+      Events:
+        PostGenerateImage:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /generateImage
+            Method: post
+        OptionsGenerateImage:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /generateImage
+            Method: options
+
+  # ===== Lambda: /notes/* CRUD =====
+  NotesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: flashbook-notes
+      CodeUri: handlers/
+      Handler: notes.lambda_handler
+      MemorySize: 256
+      Timeout: 10
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NotesTable
+      Events:
+        NotesGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /notes/
+            Method: get
+        NotesCreate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /notes/create
+            Method: post
+        NotesByBook:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /notes/book/{book_id}
+            Method: get
+        NotesGetById:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /notes/{note_id}
+            Method: get
+        NotesUpdate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /notes/{note_id}
+            Method: put
+        NotesDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FlashbookApi
+            Path: /notes/{note_id}
+            Method: delete
+
+  # ===== S3: Generated Images =====
+  ImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "flashbook-images-${AWS::AccountId}"
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: ["*"]
+            AllowedMethods: ["GET"]
+            AllowedHeaders: ["*"]
+            MaxAge: 86400
+
+  # ===== DynamoDB: Slides Cache =====
+  SlidesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: flashbook-slides
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: book_id
+          AttributeType: S
+        - AttributeName: chapter_hash
+          AttributeType: S
+      KeySchema:
+        - AttributeName: book_id
+          KeyType: HASH
+        - AttributeName: chapter_hash
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: expires_at
+
+  # ===== DynamoDB: Notes =====
+  NotesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: flashbook-notes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: note_id
+          AttributeType: S
+        - AttributeName: book_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: note_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: book_id-index
+          KeySchema:
+            - AttributeName: book_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+Outputs:
+  ApiUrl:
+    Description: "API Gateway endpoint URL — paste this into Flutter PROD_URL"
+    Value: !Sub "https://${FlashbookApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+    Export:
+      Name: FlashbookApiUrl
+  SlidesTableName:
+    Value: !Ref SlidesTable
+  NotesTableName:
+    Value: !Ref NotesTable
+  ImagesBucketName:
+    Value: !Ref ImagesBucket

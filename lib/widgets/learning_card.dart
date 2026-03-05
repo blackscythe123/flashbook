@@ -76,7 +76,7 @@ class _LearningCardState extends State<LearningCard> {
     }
   }
 
-  /// Download and save image to gallery
+  /// Download and save image to gallery (optional, user-initiated)
   Future<void> _downloadImage() async {
     if (widget.block.imageUrl == null) return;
 
@@ -95,12 +95,18 @@ class _LearningCardState extends State<LearningCard> {
       }
 
       // 2. MOBILE IMPLEMENTATION
-      // Request permissions
-      var status = await Permission.storage.request();
+      // Request permissions (Android 10+ requires photo permission)
+      var status = await Permission.photos.request();
       if (!status.isGranted) {
-        // Fallback for Android 10+ where specific permission might not be needed or handled differently
-        // But for safety, check if strictly denied
         if (status.isPermanentlyDenied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please enable photo permission in settings'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
           openAppSettings();
           return;
         }
@@ -116,10 +122,19 @@ class _LearningCardState extends State<LearningCard> {
         );
       }
 
-      // Download image bytes
-      var response = await http.get(Uri.parse(widget.block.imageUrl!));
+      // Download image bytes from pre-signed S3 URL
+      final response = await http
+          .get(Uri.parse(widget.block.imageUrl!))
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => throw Exception('Download timeout'),
+          );
 
-      // 3. Save to gallery using Gal
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download: ${response.statusCode}');
+      }
+
+      // Save to gallery using Gal
       await Gal.putImageBytes(
         Uint8List.fromList(response.bodyBytes),
         name: "flashbook_${DateTime.now().millisecondsSinceEpoch}",
@@ -139,9 +154,12 @@ class _LearningCardState extends State<LearningCard> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text(
+              'Failed to save: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
