@@ -85,13 +85,14 @@ def _upload(user_id: str, body: dict) -> dict:
     s3_key = f"users/{user_id}/books/{book_id}/{filename}"
     bucket = os.environ["PDF_BUCKET"]
 
-    # Generate presigned PUT URL (15 min expiry)
+    # Generate presigned PUT URL (15 min expiry).
+    # Do NOT include ContentType in Params — it would become a required signed
+    # header and cause SignatureDoesNotMatch when the Flutter http client sends it.
     upload_url = _get_s3().generate_presigned_url(
         "put_object",
         Params={
             "Bucket": bucket,
             "Key": s3_key,
-            "ContentType": "application/pdf",
         },
         ExpiresIn=900,
     )
