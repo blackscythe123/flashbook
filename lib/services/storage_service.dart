@@ -9,7 +9,6 @@ class StorageService {
   // In-memory storage for demo
   final Map<String, ReadingProgress> _progressMap = {};
   final List<Bookmark> _bookmarks = [];
-  List<Note> _notes = [];
 
   // ============================================
   // READING PROGRESS

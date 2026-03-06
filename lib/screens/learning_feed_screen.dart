@@ -9,8 +9,6 @@ import '../services/services.dart';
 import '../widgets/learning_card.dart';
 import '../widgets/backend_url_dialog.dart';
 import 'progress_screen.dart';
-import 'settings_screen.dart'; 
-// Add this line with your other imports
 import '../theme/theme_provider.dart';
 
 /// Learning Feed Screen - the CORE experience.
@@ -26,6 +24,8 @@ class LearningFeedScreen extends StatefulWidget {
 class _LearningFeedScreenState extends State<LearningFeedScreen> {
   late PageController _pageController;
   int _currentPage = 0;
+  double _fontSize = 18.0;
+  bool _isBold = false;
 
   @override
   void initState() {
@@ -121,6 +121,8 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     isFirst: index == 0,
                     isLast: index == allBlocks.length - 1,
                     isLoading: isLoading || block.tag == 'LOADING',
+                    fontSize: _fontSize,
+                    isBold: _isBold,
                   );
                 },
               ),
@@ -132,6 +134,171 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
               _buildBottomProgress(context, book, allBlocks.length),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showReadingSettings(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        double tempFontSize = _fontSize;
+        bool tempIsBold = _isBold;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title + Reset
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Reading Settings',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setSheetState(() {
+                            tempFontSize = 18.0;
+                            tempIsBold = false;
+                          });
+                          setState(() {
+                            _fontSize = 18.0;
+                            _isBold = false;
+                          });
+                        },
+                        child: Text(
+                          'Reset',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Font Size
+                  Text(
+                    'Font Size',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Slider(
+                          value: tempFontSize,
+                          min: 14,
+                          max: 24,
+                          divisions: 10,
+                          activeColor: AppColors.primary,
+                          onChanged: (value) {
+                            setSheetState(() => tempFontSize = value);
+                            setState(() => _fontSize = value);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${tempFontSize.round()}px',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Font Weight
+                  Text(
+                    'Font Weight',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      ChoiceChip(
+                        label: Text(
+                          'Regular',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w400,
+                            color: !tempIsBold ? Colors.white : null,
+                          ),
+                        ),
+                        selected: !tempIsBold,
+                        selectedColor: AppColors.primary,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setSheetState(() => tempIsBold = false);
+                            setState(() => _isBold = false);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      ChoiceChip(
+                        label: Text(
+                          'Bold',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            color: tempIsBold ? Colors.white : null,
+                          ),
+                        ),
+                        selected: tempIsBold,
+                        selectedColor: AppColors.primary,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setSheetState(() => tempIsBold = true);
+                            setState(() => _isBold = true);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
@@ -186,17 +353,10 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                 ),
               ),
 
-              // Text size button (placeholder)
+              // Text size button
               _buildNavButton(
                 icon: Icons.format_size_rounded,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Text size adjustment coming soon'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
+                onTap: () => _showReadingSettings(context),
               ),
 
               const SizedBox(width: 8),
