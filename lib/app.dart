@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_provider.dart';
 import 'state/state.dart';
@@ -49,6 +50,7 @@ class AppInitializer extends StatefulWidget {
 
 class _AppInitializerState extends State<AppInitializer> {
   bool _isInitialized = false;
+  bool _onboardingComplete = false;
 
   @override
   void initState() {
@@ -58,6 +60,10 @@ class _AppInitializerState extends State<AppInitializer> {
 
   Future<void> _initializeApp() async {
     await Future.delayed(const Duration(milliseconds: 300));
+
+    // Check onboarding status
+    final prefs = await SharedPreferences.getInstance();
+    _onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
 
     if (mounted) {
       final apiConfig = context.read<ApiConfig>();
@@ -142,8 +148,11 @@ class _AppInitializerState extends State<AppInitializer> {
           );
         }
 
-        // Not authenticated → login screen
+        // Not authenticated → onboarding or login
         if (!authProvider.isAuthenticated) {
+          if (!_onboardingComplete) {
+            return const OnboardingScreen();
+          }
           return const LoginScreen();
         }
 
@@ -159,8 +168,8 @@ class _AppInitializerState extends State<AppInitializer> {
           apiConfig,
         );
 
-        // Authenticated → library
-        return const LibraryScreen();
+        // Authenticated → home with bottom nav
+        return const HomeScreen();
       },
     );
   }

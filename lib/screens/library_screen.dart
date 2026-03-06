@@ -6,6 +6,7 @@ import '../services/services.dart';
 import '../state/state.dart';
 import '../theme/app_colors.dart';
 import 'book_source_screen.dart';
+import 'book_detail_screen.dart';
 import 'learning_feed_screen.dart';
 
 /// Library screen — shows the user's uploaded books with progress.
@@ -103,6 +104,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  void _openBookDetail(Map<String, dynamic> book) async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => BookDetailScreen(
+          book: book,
+          onResume: () => _resumeBook(book),
+          onDelete: () => _deleteBook(book['book_id'] as String? ?? ''),
+        ),
+      ),
+    );
+    if (result == 'deleted') {
+      _loadBooks();
+    }
+  }
+
   Future<void> _deleteBook(String bookId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -148,236 +164,485 @@ class _LibraryScreenState extends State<LibraryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.paperLight, AppColors.backgroundLight],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'My Library',
-                      style: GoogleFonts.libreBaskerville(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.inkLight,
-                      ),
-                    ).animate().fadeIn(duration: 500.ms),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.logout,
-                            color: AppColors.inkLight,
-                          ),
-                          onPressed: () async {
-                            await context.read<AuthProvider>().signOut();
-                          },
-                          tooltip: 'Sign out',
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'My Library',
+                        style: GoogleFonts.inter(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
                         ),
-                      ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_books.length} book${_books.length == 1 ? '' : 's'}',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Upload button
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.secondary],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ],
-                ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _openBookSource,
+                        borderRadius: BorderRadius.circular(14),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Upload',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            ).animate().fadeIn(duration: 400.ms),
 
-              // Content
-              Expanded(
-                child:
-                    _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : _error != null
-                        ? _buildError()
-                        : _books.isEmpty
-                        ? _buildEmpty()
-                        : _buildBookList(),
-              ),
-            ],
-          ),
+            const SizedBox(height: 20),
+
+            // Content
+            Expanded(
+              child: _loading
+                  ? _buildLoadingState()
+                  : _error != null
+                      ? _buildError()
+                      : _books.isEmpty
+                          ? _buildEmpty()
+                          : _buildBookList(),
+            ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openBookSource,
-        backgroundColor: AppColors.inkLight,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: Text(
-          'New Book',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-        ),
-      ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.3),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          height: 88,
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.surfaceDark
+                : AppColors.paperLight,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        )
+            .animate(onPlay: (c) => c.repeat())
+            .shimmer(duration: 1500.ms, color: AppColors.primary.withOpacity(0.05));
+      },
     );
   }
 
   Widget _buildError() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 12),
-          Text(_error!, style: GoogleFonts.inter(color: Colors.red)),
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadBooks, child: const Text('Retry')),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.cloud_off_rounded, size: 36, color: AppColors.error),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to load books',
+              style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Check your connection and try again',
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: _loadBooks,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildEmpty() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.menu_book_outlined,
-            size: 72,
-            color: Colors.grey[400],
-          ).animate().fadeIn(duration: 600.ms),
-          const SizedBox(height: 16),
-          Text(
-            'No books yet',
-            style: GoogleFonts.libreBaskerville(
-              fontSize: 22,
-              color: Colors.grey[600],
-            ),
-          ).animate().fadeIn(delay: 200.ms),
-          const SizedBox(height: 8),
-          Text(
-            'Upload a PDF to start learning',
-            style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[500]),
-          ).animate().fadeIn(delay: 300.ms),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary.withOpacity(0.1), AppColors.secondary.withOpacity(0.05)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Icon(
+                Icons.auto_stories_rounded,
+                size: 44,
+                color: AppColors.primary.withOpacity(0.6),
+              ),
+            ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8)),
+            const SizedBox(height: 24),
+            Text(
+              'Your library is empty',
+              style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600),
+            ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
+            const SizedBox(height: 8),
+            Text(
+              'Upload a PDF and I\'ll turn it into\nbite-sized learning cards',
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted, height: 1.5),
+              textAlign: TextAlign.center,
+            ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
+            const SizedBox(height: 28),
+            ElevatedButton.icon(
+              onPressed: _openBookSource,
+              icon: const Icon(Icons.upload_file_rounded, size: 20),
+              label: const Text('Upload Your First Book'),
+            ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBookList() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Find "continue reading" candidate: highest progress that isn't 100%
+    Map<String, dynamic>? continueBook;
+    for (final b in _books) {
+      final p = (b['progress_pct'] as num?)?.toInt() ?? 0;
+      if (p > 0 && p < 100) {
+        if (continueBook == null ||
+            p > ((continueBook['progress_pct'] as num?)?.toInt() ?? 0)) {
+          continueBook = b;
+        }
+      }
+    }
+
     return RefreshIndicator(
       onRefresh: _loadBooks,
+      color: AppColors.primary,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: _books.length,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+        itemCount: _books.length + (continueBook != null ? 1 : 0),
         itemBuilder: (context, index) {
-          final book = _books[index];
+          // Hero card at index 0
+          if (continueBook != null && index == 0) {
+            return _buildContinueReadingCard(continueBook!, isDark);
+          }
+          final bookIndex = continueBook != null ? index - 1 : index;
+          final book = _books[bookIndex];
           final title = book['title'] as String? ?? 'Untitled';
           final progress = (book['progress_pct'] as num?)?.toInt() ?? 0;
           final totalPages = (book['total_pages'] as num?)?.toInt() ?? 0;
           final status = book['status'] as String? ?? 'unknown';
           final bookId = book['book_id'] as String? ?? '';
+          final isReady = status == 'ready' || status == 'reading';
+          final gradientColors = _bookGradients[bookIndex % _bookGradients.length];
 
-          return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: (status == 'ready' || status == 'reading') ? () => _resumeBook(book) : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        // Book icon
-                        Container(
-                          width: 52,
-                          height: 68,
-                          decoration: BoxDecoration(
-                            color: AppColors.inkLight.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withOpacity(0.06)
+                    : Colors.black.withOpacity(0.06),
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: isReady ? () => _openBookDetail(book) : null,
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    children: [
+                      // Book cover
+                      Container(
+                        width: 52,
+                        height: 68,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: gradientColors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
-                          child: const Icon(
-                            Icons.menu_book,
-                            color: AppColors.inkLight,
-                            size: 28,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.menu_book_rounded,
+                            color: Colors.white,
+                            size: 24,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        // Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: GoogleFonts.libreBaskerville(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.inkLight,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(width: 14),
+
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$totalPages pages',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              status == 'uploading'
+                                  ? 'Processing...'
+                                  : '$totalPages pages · ~${totalPages * 2} min · $progress%',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
                               ),
-                              const SizedBox(height: 8),
-                              // Progress bar
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: progress / 100,
-                                  minHeight: 6,
-                                  backgroundColor: Colors.grey[200],
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    progress == 100
-                                        ? Colors.green
-                                        : AppColors.inkLight,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                status == 'uploading'
-                                    ? 'Uploading...'
-                                    : '$progress% complete',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: Colors.grey[500],
+                            ),
+                            const SizedBox(height: 8),
+                            // Progress bar
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: LinearProgressIndicator(
+                                value: progress / 100,
+                                minHeight: 4,
+                                backgroundColor: isDark
+                                    ? Colors.white.withOpacity(0.06)
+                                    : Colors.black.withOpacity(0.06),
+                                valueColor: AlwaysStoppedAnimation(
+                                  progress == 100
+                                      ? AppColors.success
+                                      : AppColors.primary,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        // Delete
-                        IconButton(
-                          icon: Icon(
-                            Icons.delete_outline,
-                            color: Colors.grey[400],
-                            size: 20,
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Actions
+                      Column(
+                        children: [
+                          if (isReady)
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.play_arrow_rounded,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
+                            ),
+                          const SizedBox(height: 4),
+                          GestureDetector(
+                            onTap: () => _deleteBook(bookId),
+                            child: Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
+                              color: AppColors.textMuted.withOpacity(0.5),
+                            ),
                           ),
-                          onPressed: () => _deleteBook(bookId),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              )
+              ),
+            ),
+          )
               .animate()
-              .fadeIn(delay: (index * 100).ms, duration: 400.ms)
-              .slideX(begin: 0.05);
+              .fadeIn(delay: (bookIndex * 80).ms, duration: 400.ms)
+              .slideX(begin: 0.03);
         },
       ),
     );
   }
+
+  Widget _buildContinueReadingCard(Map<String, dynamic> book, bool isDark) {
+    final title = book['title'] as String? ?? 'Untitled';
+    final progress = (book['progress_pct'] as num?)?.toInt() ?? 0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.secondary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _openBookDetail(book),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Continue Reading',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.85),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Continue where you left off',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.white.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progress / 100,
+                          minHeight: 5,
+                          backgroundColor: Colors.white.withOpacity(0.2),
+                          valueColor: const AlwaysStoppedAnimation(Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '$progress%',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      'Continue',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.05);
+  }
+
+  static const _bookGradients = [
+    [Color(0xFF6366F1), Color(0xFF818CF8)],
+    [Color(0xFFF97316), Color(0xFFFB923C)],
+    [Color(0xFF10B981), Color(0xFF34D399)],
+    [Color(0xFFEC4899), Color(0xFFF472B6)],
+    [Color(0xFF8B5CF6), Color(0xFFA78BFA)],
+    [Color(0xFF3B82F6), Color(0xFF60A5FA)],
+  ];
 }
