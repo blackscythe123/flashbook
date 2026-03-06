@@ -4,11 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../state/state.dart';
-import '../services/services.dart';
 
-/// Bookmark & Highlights screen.
-/// Shows saved highlights and bookmarks with resume option.
-/// Design inspired by the Figma bookmark_&_highlights template.
+/// Bookmarks & Highlights screen — shows saved cards grouped by type.
 class BookmarkScreen extends StatefulWidget {
   const BookmarkScreen({super.key});
 
@@ -17,12 +14,12 @@ class BookmarkScreen extends StatefulWidget {
 }
 
 class _BookmarkScreenState extends State<BookmarkScreen> {
-  String _selectedFilter = 'All';
+  int _selectedFilter = 0;
+  final _filters = ['All', 'Bookmarks', 'Highlights'];
 
   @override
   void initState() {
     super.initState();
-    // Load bookmarks
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<BookmarkProvider>().loadBookmarks();
     });
@@ -30,45 +27,99 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header
-            _buildHeader().animate().fadeIn(duration: 400.ms),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: Text(
+                'Saved',
+                style: GoogleFonts.inter(fontSize: 28, fontWeight: FontWeight.w700),
+              ),
+            ).animate().fadeIn(duration: 400.ms),
+            const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Consumer<BookmarkProvider>(
+                builder: (context, provider, _) => Text(
+                  '${provider.totalCount} item${provider.totalCount == 1 ? '' : 's'}',
+                  style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted),
+                ),
+              ),
+            ).animate().fadeIn(delay: 80.ms, duration: 400.ms),
+
+            const SizedBox(height: 16),
 
             // Filter chips
-            _buildFilterChips().animate().fadeIn(
-              delay: 200.ms,
-              duration: 400.ms,
-            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: List.generate(_filters.length, (i) {
+                  final isSelected = _selectedFilter == i;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedFilter = i),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary
+                              : (isDark ? AppColors.surfaceDark : AppColors.paperLight),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
+                          ),
+                        ),
+                        child: Text(
+                          _filters[i],
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: isSelected ? Colors.white : AppColors.textMuted,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
+
+            const SizedBox(height: 16),
 
             // Content
             Expanded(
               child: Consumer<BookmarkProvider>(
-                builder: (context, provider, child) {
+                builder: (context, provider, _) {
                   if (provider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  final bookmarks = _getFilteredBookmarks(provider);
-
-                  if (bookmarks.isEmpty) {
-                    return _buildEmptyState();
-                  }
+                  final bookmarks = _getFiltered(provider);
+                  if (bookmarks.isEmpty) return _buildEmptyState();
 
                   return ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: bookmarks.length,
                     itemBuilder: (context, index) {
-                      return _buildBookmarkCard(bookmarks[index], index)
+                      return _BookmarkCard(
+                        bookmark: bookmarks[index],
+                        onRemove: () {
+                          provider.removeBookmark(bookmarks[index].id);
+                        },
+                      )
                           .animate()
-                          .fadeIn(
-                            delay: Duration(milliseconds: 100 * index),
-                            duration: 400.ms,
-                          )
-                          .slideX(begin: -0.1, end: 0);
+                          .fadeIn(delay: (index * 60).ms, duration: 400.ms)
+                          .slideY(begin: 0.03);
                     },
                   );
                 },
@@ -80,81 +131,11 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          Expanded(
-            child: Text(
-              'Your Collection',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.inkLight,
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list_rounded),
-            onPressed: () {
-              // Filter options
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChips() {
-    final filters = ['All', 'Bookmarks', 'Highlights'];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children:
-            filters.map((filter) {
-              final isSelected = _selectedFilter == filter;
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: FilterChip(
-                  label: Text(filter),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedFilter = filter;
-                    });
-                  },
-                  selectedColor: AppColors.primary,
-                  checkmarkColor: Colors.white,
-                  labelStyle: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : AppColors.textMuted,
-                  ),
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: isSelected ? AppColors.primary : Colors.grey[300]!,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-      ),
-    );
-  }
-
-  List<dynamic> _getFilteredBookmarks(BookmarkProvider provider) {
+  List<dynamic> _getFiltered(BookmarkProvider provider) {
     switch (_selectedFilter) {
-      case 'Bookmarks':
+      case 1:
         return provider.positions;
-      case 'Highlights':
+      case 2:
         return provider.highlights;
       default:
         return provider.sortedByDate;
@@ -164,214 +145,159 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.bookmark_border_rounded,
-            size: 64,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No saved items yet',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(24),
             ),
-          ),
-          const SizedBox(height: 8),
+            child: Icon(
+              Icons.bookmark_border_rounded,
+              size: 36,
+              color: AppColors.primary.withOpacity(0.5),
+            ),
+          ).animate().fadeIn(duration: 500.ms),
+          const SizedBox(height: 20),
           Text(
-            'Your bookmarks and highlights will appear here',
-            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted),
-          ),
+            'Nothing saved yet',
+            style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600),
+          ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
+          const SizedBox(height: 6),
+          Text(
+            'Tap the bookmark icon on any card\nto save it here',
+            style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted, height: 1.5),
+            textAlign: TextAlign.center,
+          ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms);
-  }
-
-  Widget _buildBookmarkCard(dynamic bookmark, int index) {
-    // Get mock book data for display
-    final books = MockBookService.getPublicDomainBooks();
-    final book = books.firstWhere(
-      (b) => b.id == bookmark.bookId,
-      orElse: () => books.first,
     );
+  }
+}
 
+class _BookmarkCard extends StatelessWidget {
+  final dynamic bookmark;
+  final VoidCallback onRemove;
+
+  const _BookmarkCard({required this.bookmark, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isHighlight = bookmark.type.toString().contains('highlight');
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Card content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header row
+            Row(
               children: [
-                // Book cover thumbnail
                 Container(
-                  width: 40,
-                  height: 40,
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
+                    color: (isHighlight ? AppColors.accentGold : AppColors.primary).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    color: AppColors.primary.withValues(alpha: 0.1),
                   ),
                   child: Icon(
-                    Icons.auto_stories_rounded,
-                    color: AppColors.primary,
-                    size: 20,
+                    isHighlight ? Icons.format_quote_rounded : Icons.bookmark_rounded,
+                    size: 16,
+                    color: isHighlight ? AppColors.accentGold : AppColors.primary,
                   ),
                 ),
-
-                const SizedBox(width: 12),
-
-                // Book info
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        book.author,
+                        isHighlight ? 'Highlight' : 'Bookmark',
                         style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textMuted,
-                          letterSpacing: 0.5,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
                       Text(
-                        book.title,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.inkLight,
-                        ),
+                        'Card ${bookmark.blockId?.substring(0, 8) ?? ''}',
+                        style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
                       ),
                     ],
                   ),
                 ),
-
-                // Type indicator
-                Icon(
-                  isHighlight
-                      ? Icons.format_quote_rounded
-                      : Icons.bookmark_rounded,
-                  color: AppColors.primary,
-                  size: 20,
+                GestureDetector(
+                  onTap: onRemove,
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: AppColors.textMuted.withOpacity(0.5),
+                  ),
                 ),
               ],
             ),
-          ),
 
-          // Highlight text (if applicable)
-          if (isHighlight && bookmark.highlightText != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Container(
+            // Highlight text
+            if (isHighlight && bookmark.highlightText != null) ...[
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(8),
+                  color: isDark
+                      ? Colors.white.withOpacity(0.04)
+                      : AppColors.primary.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border(
+                    left: BorderSide(
+                      color: AppColors.primary.withOpacity(0.4),
+                      width: 3,
+                    ),
+                  ),
                 ),
                 child: Text(
                   bookmark.highlightText,
-                  style: GoogleFonts.libreBaskerville(
-                    fontSize: 16,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
                     fontStyle: FontStyle.italic,
-                    color: AppColors.inkLight,
-                    height: 1.6,
+                    height: 1.5,
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
+            ],
 
-          // Action bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundLight.withValues(alpha: 0.5),
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(16),
+            // Note
+            if (bookmark.note != null && bookmark.note.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.sticky_note_2_outlined, size: 14, color: AppColors.textMuted),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      bookmark.note,
+                      style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: Row(
-              children: [
-                // Actions
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.share_rounded,
-                    size: 16,
-                    color: AppColors.textMuted,
-                  ),
-                  label: Text(
-                    'Share',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    context.read<BookmarkProvider>().removeBookmark(
-                      bookmark.id,
-                    );
-                  },
-                  icon: Icon(
-                    Icons.delete_outline_rounded,
-                    size: 16,
-                    color: AppColors.textMuted,
-                  ),
-                  label: Text(
-                    'Remove',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ),
-
-                const Spacer(),
-
-                // Resume/Page button
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    isHighlight ? 'Page 24' : 'Resume',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
@@ -28,6 +29,8 @@ class LearningCard extends StatefulWidget {
   final bool isFirst;
   final bool isLast;
   final bool isLoading;
+  final double fontSize;
+  final bool isBold;
 
   const LearningCard({
     super.key,
@@ -38,6 +41,8 @@ class LearningCard extends StatefulWidget {
     this.isFirst = false,
     this.isLast = false,
     this.isLoading = false,
+    this.fontSize = 18.0,
+    this.isBold = false,
   });
 
   @override
@@ -247,6 +252,7 @@ class _LearningCardState extends State<LearningCard> {
                         _needsLyricFlow
                             ? LyricFlowWidget(
                               text: widget.block.content,
+                              fontSize: widget.fontSize,
                               textColor:
                                   _hasImage
                                       ? Colors.white.withValues(alpha: 0.95)
@@ -263,7 +269,8 @@ class _LearningCardState extends State<LearningCard> {
                             : Text(
                               widget.block.content,
                               style: GoogleFonts.libreBaskerville(
-                                fontSize: 18,
+                                fontSize: widget.fontSize,
+                                fontWeight: widget.isBold ? FontWeight.bold : FontWeight.normal,
                                 color:
                                     _hasImage
                                         ? Colors.white.withValues(alpha: 0.95)
@@ -708,10 +715,31 @@ class _LearningCardState extends State<LearningCard> {
                         : Icons.bookmark_border_rounded,
                 isActive: isBookmarked,
                 onTap: () {
+                  HapticFeedback.mediumImpact();
+                  final wasBookmarked = provider.isBlockBookmarked(widget.block.id);
                   provider.toggleBookmark(
                     bookId: widget.bookTitle,
                     chapterId: widget.chapter?.id ?? '',
                     blockId: widget.block.id,
+                  );
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          Icon(
+                            wasBookmarked ? Icons.bookmark_remove_rounded : Icons.check_circle_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(wasBookmarked ? 'Bookmark removed' : 'Bookmarked!'),
+                        ],
+                      ),
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(seconds: 2),
+                      backgroundColor: wasBookmarked ? AppColors.textMuted : AppColors.primary,
+                    ),
                   );
                 },
               );

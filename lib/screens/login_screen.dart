@@ -66,14 +66,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.paperLight, AppColors.backgroundLight],
+            colors: isDark
+                ? [AppColors.backgroundDark, const Color(0xFF1A1040)]
+                : [AppColors.paperLight, AppColors.backgroundLight],
           ),
         ),
         child: SafeArea(
@@ -96,6 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildAuthForm(AuthProvider auth) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Form(
       key: _formKey,
       child: Column(
@@ -106,13 +109,22 @@ class _LoginScreenState extends State<LoginScreen> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              gradient: const LinearGradient(
+                colors: [AppColors.primary, AppColors.secondary],
+              ),
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: const Icon(
               Icons.auto_stories_rounded,
               size: 40,
-              color: AppColors.primary,
+              color: Colors.white,
             ),
           )
               .animate()
@@ -122,10 +134,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
           Text(
             'Flashbook',
-            style: GoogleFonts.libreBaskerville(
+            style: GoogleFonts.inter(
               fontSize: 32,
-              fontWeight: FontWeight.w700,
-              color: AppColors.inkLight,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppColors.inkLight,
             ),
           ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
           const SizedBox(height: 6),
@@ -139,11 +151,12 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: [
+              border: isDark ? Border.all(color: Colors.white.withOpacity(0.06)) : null,
+              boxShadow: isDark ? null : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withOpacity(0.04),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -155,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  style: GoogleFonts.inter(fontSize: 15, color: AppColors.inkLight),
+                  style: GoogleFonts.inter(fontSize: 15, color: isDark ? Colors.white : AppColors.inkLight),
                   decoration: _inputDecoration(
                     label: 'Email',
                     icon: Icons.email_outlined,
@@ -172,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  style: GoogleFonts.inter(fontSize: 15, color: AppColors.inkLight),
+                  style: GoogleFonts.inter(fontSize: 15, color: isDark ? Colors.white : AppColors.inkLight),
                   decoration: _inputDecoration(
                     label: 'Password',
                     icon: Icons.lock_outline,
@@ -262,6 +275,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildVerificationForm(AuthProvider auth) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -280,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 20),
         Text(
           'Check your email',
-          style: GoogleFonts.libreBaskerville(fontSize: 26, fontWeight: FontWeight.w700, color: AppColors.inkLight),
+          style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w800, color: isDark ? Colors.white : AppColors.inkLight),
         ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
         const SizedBox(height: 8),
         Text(
@@ -290,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 2),
         Text(
           auth.pendingVerificationEmail ?? '',
-          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkLight),
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: isDark ? Colors.white : AppColors.inkLight),
         ).animate().fadeIn(delay: 250.ms),
         const SizedBox(height: 28),
 
@@ -298,11 +312,12 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [
+            border: isDark ? Border.all(color: Colors.white.withOpacity(0.06)) : null,
+            boxShadow: isDark ? null : [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: Colors.black.withOpacity(0.04),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -315,16 +330,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  fontSize: 28, fontWeight: FontWeight.w600, letterSpacing: 12, color: AppColors.inkLight,
+                  fontSize: 28, fontWeight: FontWeight.w600, letterSpacing: 12,
+                  color: isDark ? Colors.white : AppColors.inkLight,
                 ),
                 decoration: InputDecoration(
                   hintText: '000000',
                   hintStyle: GoogleFonts.inter(
                     fontSize: 28, fontWeight: FontWeight.w400, letterSpacing: 12,
-                    color: AppColors.textMuted.withValues(alpha: 0.3),
+                    color: AppColors.textMuted.withOpacity(0.3),
                   ),
                   filled: true,
-                  fillColor: AppColors.backgroundLight,
+                  fillColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -388,13 +404,14 @@ class _LoginScreenState extends State<LoginScreen> {
     required IconData icon,
     Widget? suffixIcon,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InputDecoration(
       labelText: label,
       labelStyle: GoogleFonts.inter(color: AppColors.textMuted),
       prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: AppColors.backgroundLight,
+      fillColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(
