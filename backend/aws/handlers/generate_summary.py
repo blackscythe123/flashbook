@@ -67,6 +67,32 @@ FOR EACH SLIDE YOU CREATE:
 3. "body": The actual content - brief but vivid (2-4 sentences capturing what's happening)
 4. "image_hint": true/false - set true for visually rich scenes
 5. "image_prompt": If image_hint is true, describe the scene for image generation
+6. "visual_type": one of "scene | diagram | concept | historical | portrait"
+
+IMAGE PROMPT RULES (CRITICAL):
+When image_hint=true, image_prompt MUST include:
+- Main subject
+- Environment/location
+- Character appearance (if applicable)
+- Mood/emotion
+- Lighting
+- Camera framing
+- Visual style appropriate to the content
+
+Do NOT write vague prompts like:
+- "Person thinking"
+- "Character standing"
+
+Write rich prompts like cinematic scene descriptions, concept-art directions,
+or educational diagram briefs depending on content.
+
+WHEN TO USE image_hint=true:
+- Action scenes
+- Strong emotional expressions
+- Unique locations
+- Symbolic objects
+- Historical moments
+- Scientific diagrams or explanations
 
 FORMATTING:
 - Headlines should NOT repeat the body content
@@ -84,6 +110,7 @@ OUTPUT FORMAT (strict JSON):
       "body": "The narrative content describing what's happening",
       "lyric_lines": [],
       "image_hint": false,
+            "visual_type": "scene",
       "image_prompt": ""
     }
   ],
@@ -178,6 +205,7 @@ def _parse_response(raw: str, chapter_title: str) -> dict:
             "text": body_text,
             "lyric_lines": b.get("lyric_lines") or [],
             "image_hint": image_hint,
+            "visual_type": b.get("visual_type", "scene"),
             "image_prompt": b.get("image_prompt", "") if image_hint else "",
         })
 
