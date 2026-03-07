@@ -40,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
               builder: (ctx, theme, _) => Switch(
                 value: theme.isDarkMode,
                 onChanged: (v) => theme.toggleTheme(v),
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
               ),
             ),
           ).animate().fadeIn(delay: 80.ms, duration: 400.ms),

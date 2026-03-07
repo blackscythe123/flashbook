@@ -174,7 +174,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.inkDark.withOpacity(0.08)),
+          side: BorderSide(color: AppColors.surfaceBorder.withOpacity(0.5)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -204,7 +204,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceDark,
+        fillColor: AppColors.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -212,7 +212,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.inkDark.withOpacity(0.1)),
+          borderSide: BorderSide(color: AppColors.surfaceBorder.withOpacity(0.5)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -242,7 +242,7 @@ class AppTheme {
         unselectedLabelStyle: GoogleFonts.inter(fontSize: 11),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.navBarDark,
+        backgroundColor: AppColors.background,
         indicatorColor: AppColors.primaryLight.withOpacity(0.15),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
@@ -257,12 +257,12 @@ class AppTheme {
         backgroundColor: AppColors.surfaceDark,
         selectedColor: AppColors.primaryLight.withOpacity(0.15),
         labelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
-        side: BorderSide(color: AppColors.inkDark.withOpacity(0.1)),
+        side: BorderSide(color: AppColors.surfaceBorder.withOpacity(0.5)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       ),
       dividerTheme: DividerThemeData(
-        color: AppColors.inkDark.withOpacity(0.08),
+        color: AppColors.surfaceBorder.withOpacity(0.5),
         thickness: 1,
       ),
       snackBarTheme: SnackBarThemeData(

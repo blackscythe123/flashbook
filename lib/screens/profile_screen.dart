@@ -57,11 +57,7 @@ class ProfileScreen extends StatelessWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.primary, AppColors.secondary],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Center(
@@ -136,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
                           ? Colors.white.withOpacity(0.08)
                           : Colors.black.withOpacity(0.06),
                     ),
-                    _StatItem(value: '0', label: 'Highlights'),
+                    _StatItem(value: '0h', label: 'Time'),
                   ],
                 ),
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.05),
@@ -157,17 +153,12 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.accentGold.withOpacity(0.1),
-                      AppColors.accentClay.withOpacity(0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.accentGold.withOpacity(0.2),
+                    color: isDark
+                        ? Colors.white.withOpacity(0.06)
+                        : Colors.black.withOpacity(0.06),
                   ),
                 ),
                 child: Row(
@@ -282,7 +273,7 @@ class ProfileScreen extends StatelessWidget {
                   builder: (context, theme, _) => Switch(
                     value: theme.isDarkMode,
                     onChanged: (v) => theme.toggleTheme(v),
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                   ),
                 ),
               ).animate().fadeIn(delay: 500.ms, duration: 400.ms),

@@ -26,7 +26,7 @@ class BookDetailScreen extends StatelessWidget {
     final isReading = progress > 0 && progress < 100;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -58,7 +58,7 @@ class BookDetailScreen extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.inkLight,
+                      color: AppColors.textPrimary,
                     ),
                   ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
 
@@ -127,13 +127,9 @@ class BookDetailScreen extends StatelessWidget {
 
   Widget _buildHeader(String title) {
     return Container(
-      height: 220,
+      height: 200,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.surface,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
@@ -141,17 +137,17 @@ class BookDetailScreen extends StatelessWidget {
       ),
       child: Center(
         child: Container(
-          width: 80,
-          height: 100,
+          width: 72,
+          height: 90,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.3)),
+            color: AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.surfaceBorder),
           ),
           child: const Icon(
             Icons.menu_book_rounded,
-            color: Colors.white,
-            size: 40,
+            color: AppColors.primaryLight,
+            size: 36,
           ),
         ),
       ),
@@ -175,7 +171,7 @@ class BookDetailScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.primary.withOpacity(0.06),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -187,7 +183,7 @@ class BookDetailScreen extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.inkLight,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 2),
@@ -213,7 +209,7 @@ class BookDetailScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.inkLight,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -221,10 +217,10 @@ class BookDetailScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: Colors.black.withOpacity(0.06),
+              color: AppColors.surfaceBorder,
             ),
           ),
           child: Row(
@@ -243,7 +239,7 @@ class BookDetailScreen extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.inkLight,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],
@@ -259,9 +255,7 @@ class BookDetailScreen extends StatelessWidget {
       height: 54,
       child: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.secondary],
-          ),
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Material(

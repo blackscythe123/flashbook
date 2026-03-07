@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 _NavItem(
                   icon: Icons.bookmark_rounded,
-                  label: 'Saved',
+                  label: 'Bookmarks',
                   isSelected: _currentIndex == 2,
                   onTap: () => setState(() => _currentIndex = 2),
                 ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../theme/app_colors.dart';
 import 'login_screen.dart';
 
 /// 3-page onboarding flow shown on first launch.
@@ -17,24 +16,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
 
+  // --- Dark theme palette ---
+  static const _bg = Color(0xFF1A1D2E);
+  static const _iconContainer = Color(0xFF252A3D);
+  static const _iconBorder = Color(0xFF3D4460);
+  static const _iconColor = Color(0xFF818CF8);
+  static const _accent = Color(0xFF6366F1);
+  static const _subtitleColor = Color(0xFF9CA3AF);
+
   static const _pages = [
     _OnboardingPage(
       icon: Icons.auto_stories_rounded,
-      iconGradient: [AppColors.primary, AppColors.secondary],
-      title: 'Books as Reels',
-      subtitle: 'Swipe through bite-sized learning cards\ncreated by AI from any book or PDF.',
+      title: 'Turn Any PDF Into\nScrollable Reels',
+      subtitle:
+          'Upload any PDF and our AI transforms it into bite-sized, swipeable learning cards.',
     ),
     _OnboardingPage(
       icon: Icons.bolt_rounded,
-      iconGradient: [AppColors.accentGold, AppColors.accentClay],
-      title: 'Learn in Seconds',
-      subtitle: 'Key insights, quotes, and takeaways\ndelivered one card at a time.',
+      title: 'AI-Powered\nLearning Cards',
+      subtitle:
+          'Key insights, summaries, and concepts extracted automatically — one card at a time.',
     ),
     _OnboardingPage(
       icon: Icons.bookmark_rounded,
-      iconGradient: [AppColors.accentSage, Color(0xFF34D399)],
-      title: 'Save What Matters',
-      subtitle: 'Bookmark cards, add notes,\nand revisit your highlights anytime.',
+      title: 'Bookmark & Resume\nAnytime',
+      subtitle:
+          'Save your favorite cards, track progress, and pick up right where you left off.',
     ),
   ];
 
@@ -67,110 +74,97 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [AppColors.backgroundDark, const Color(0xFF1A1040)]
-                : [AppColors.backgroundLight, const Color(0xFFEEF2FF)],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Skip button
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 8, right: 8),
-                  child: TextButton(
-                    onPressed: _completeOnboarding,
-                    child: Text(
-                      'Skip',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textMuted,
-                      ),
+      backgroundColor: _bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Skip button
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, right: 8),
+                child: TextButton(
+                  onPressed: _completeOnboarding,
+                  child: Text(
+                    'Skip',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: _subtitleColor,
                     ),
                   ),
                 ),
               ),
+            ),
 
-              // Pages
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (i) => setState(() => _currentPage = i),
-                  itemCount: _pages.length,
-                  itemBuilder: (context, index) {
-                    final page = _pages[index];
-                    return _buildPage(page, index);
-                  },
-                ),
+            // Pages
+            Expanded(
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (i) => setState(() => _currentPage = i),
+                itemCount: _pages.length,
+                itemBuilder: (context, index) {
+                  return _buildPage(_pages[index], index);
+                },
               ),
+            ),
 
-              // Dots + Button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
-                child: Column(
-                  children: [
-                    // Page dots
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        _pages.length,
-                        (i) => AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: _currentPage == i ? 28 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: _currentPage == i
-                                ? AppColors.primary
-                                : AppColors.primary.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+            // Dots + Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
+              child: Column(
+                children: [
+                  // Page dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _pages.length,
+                      (i) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentPage == i ? 28 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentPage == i
+                              ? _accent
+                              : _accent.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                  ),
+                  const SizedBox(height: 32),
 
-                    // CTA button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _nextPage,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                  // CTA button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _nextPage,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Text(
-                          _currentPage == _pages.length - 1
-                              ? 'Get Started'
-                              : 'Next',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      ),
+                      child: Text(
+                        _currentPage == _pages.length - 1
+                            ? 'Get Started'
+                            : 'Next',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -182,39 +176,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Animated icon
+          // Icon container — flat dark box, no gradient
           Container(
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: page.iconGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(32),
-              boxShadow: [
-                BoxShadow(
-                  color: page.iconGradient.first.withOpacity(0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                ),
-              ],
+              color: _iconContainer,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: _iconBorder, width: 1),
             ),
-            child: Icon(page.icon, size: 52, color: Colors.white),
+            child: Icon(page.icon, size: 44, color: _iconColor),
           )
               .animate(key: ValueKey('icon_$index'))
               .fadeIn(duration: 500.ms)
-              .scale(begin: const Offset(0.7, 0.7), curve: Curves.elasticOut, duration: 700.ms),
+              .scale(
+                  begin: const Offset(0.7, 0.7),
+                  curve: Curves.elasticOut,
+                  duration: 700.ms),
           const SizedBox(height: 48),
 
           // Title
           Text(
             page.title,
             style: GoogleFonts.inter(
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
+              color: Colors.white,
+              height: 1.25,
             ),
             textAlign: TextAlign.center,
           )
@@ -227,8 +215,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             page.subtitle,
             style: GoogleFonts.inter(
-              fontSize: 16,
-              color: AppColors.textMuted,
+              fontSize: 15,
+              color: _subtitleColor,
               height: 1.6,
             ),
             textAlign: TextAlign.center,
@@ -244,13 +232,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class _OnboardingPage {
   final IconData icon;
-  final List<Color> iconGradient;
   final String title;
   final String subtitle;
 
   const _OnboardingPage({
     required this.icon,
-    required this.iconGradient,
     required this.title,
     required this.subtitle,
   });

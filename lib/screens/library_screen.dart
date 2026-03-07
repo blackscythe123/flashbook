@@ -197,9 +197,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   // Upload button
                   Container(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.secondary],
-                      ),
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Material(
@@ -380,7 +378,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         itemBuilder: (context, index) {
           // Hero card at index 0
           if (continueBook != null && index == 0) {
-            return _buildContinueReadingCard(continueBook!, isDark);
+            return _buildContinueReadingCard(continueBook, isDark);
           }
           final bookIndex = continueBook != null ? index - 1 : index;
           final book = _books[bookIndex];
@@ -528,12 +526,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? AppColors.surfaceBorder.withOpacity(0.5)
+              : Colors.black.withOpacity(0.06),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -550,10 +549,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: AppColors.primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 20),
+                      child: const Icon(Icons.auto_stories_rounded, color: AppColors.primary, size: 20),
                     ),
                     const SizedBox(width: 10),
                     Text(
@@ -561,7 +560,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.85),
+                        color: AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -572,7 +571,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -582,7 +580,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   'Continue where you left off',
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: Colors.white.withOpacity(0.7),
+                    color: AppColors.textMuted,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -594,8 +592,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         child: LinearProgressIndicator(
                           value: progress / 100,
                           minHeight: 5,
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          valueColor: const AlwaysStoppedAnimation(Colors.white),
+                          backgroundColor: isDark
+                              ? Colors.white.withOpacity(0.06)
+                              : Colors.black.withOpacity(0.06),
+                          valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                         ),
                       ),
                     ),
@@ -605,7 +605,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -616,7 +615,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -624,7 +623,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: Colors.white,
                       ),
                     ),
                   ),
