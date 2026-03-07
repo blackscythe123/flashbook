@@ -194,7 +194,7 @@ class _LearningCardState extends State<LearningCard> {
               children: [
                 // Top section: Progress bar
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 64, 20, 0),
                   child: _buildProgressIndicator(),
                 ),
 
@@ -202,7 +202,7 @@ class _LearningCardState extends State<LearningCard> {
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
+                    padding: const EdgeInsets.fromLTRB(20, 32, 68, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -309,12 +309,6 @@ class _LearningCardState extends State<LearningCard> {
                       ],
                     ),
                   ),
-                ),
-
-                // Bottom info bar
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: _buildBottomInfo(),
                 ),
               ],
             ),
@@ -548,19 +542,18 @@ class _LearningCardState extends State<LearningCard> {
   }
 
   Widget _buildTakeawayBox(String takeaway) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color:
-            _hasImage
-                ? Colors.white.withValues(alpha: 0.15)
-                : Theme.of(context).cardColor,
+        color: _hasImage
+            ? Colors.white.withValues(alpha: 0.15)
+            : cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color:
-              _hasImage
-                  ? Colors.white.withValues(alpha: 0.2)
-                  : Theme.of(context).dividerColor.withValues(alpha: 0.3),
+          color: _hasImage
+              ? Colors.white.withValues(alpha: 0.2)
+              : cs.outlineVariant,
         ),
       ),
       child: Column(
@@ -572,12 +565,9 @@ class _LearningCardState extends State<LearningCard> {
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.5,
-              color:
-                  _hasImage
-                      ? Colors.white.withValues(alpha: 0.7)
-                      : Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+              color: _hasImage
+                  ? Colors.white.withValues(alpha: 0.7)
+                  : cs.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -586,20 +576,16 @@ class _LearningCardState extends State<LearningCard> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color:
-                  _hasImage
-                      ? Colors.white
-                      : Theme.of(context).textTheme.bodyMedium?.color,
+              color: _hasImage ? Colors.white : cs.onSurface,
               height: 1.5,
-              shadows:
-                  _hasImage
-                      ? [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 4,
-                        ),
-                      ]
-                      : null,
+              shadows: _hasImage
+                  ? [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                      ),
+                    ]
+                  : null,
             ),
           ),
         ],
@@ -608,16 +594,16 @@ class _LearningCardState extends State<LearningCard> {
   }
 
   Widget _buildBottomInfo() {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color:
-                _hasImage
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Theme.of(context).cardColor,
+            color: _hasImage
+                ? Colors.white.withValues(alpha: 0.15)
+                : cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -625,19 +611,15 @@ class _LearningCardState extends State<LearningCard> {
             style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color:
-                  _hasImage
-                      ? Colors.white
-                      : Theme.of(context).textTheme.bodySmall?.color,
-              shadows:
-                  _hasImage
-                      ? [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 4,
-                        ),
-                      ]
-                      : null,
+              color: _hasImage ? Colors.white : cs.onSurface,
+              shadows: _hasImage
+                  ? [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                      ),
+                    ]
+                  : null,
             ),
           ),
         ),
@@ -790,14 +772,14 @@ class _LearningCardState extends State<LearningCard> {
     bool isActive = false,
     required VoidCallback onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color:
-          _hasImage
-              ? Colors.black.withValues(alpha: 0.3)
-              : Theme.of(context).cardColor,
+      color: _hasImage
+          ? Colors.black.withValues(alpha: 0.3)
+          : cs.surfaceContainerHighest,
       borderRadius: BorderRadius.circular(20),
-      elevation: _hasImage ? 0 : 2,
-      shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+      elevation: _hasImage ? 0 : 1,
+      shadowColor: cs.shadow.withValues(alpha: 0.08),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
@@ -807,14 +789,9 @@ class _LearningCardState extends State<LearningCard> {
           alignment: Alignment.center,
           child: Icon(
             icon,
-            color:
-                isActive
-                    ? AppColors.accentGold
-                    : (_hasImage
-                        ? Colors.white
-                        : Theme.of(
-                          context,
-                        ).iconTheme.color?.withValues(alpha: 0.6)),
+            color: isActive
+                ? AppColors.accentGold
+                : (_hasImage ? Colors.white : cs.onSurfaceVariant),
             size: 22,
           ),
         ),
