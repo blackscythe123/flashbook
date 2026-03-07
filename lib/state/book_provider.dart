@@ -298,8 +298,10 @@ class BookProvider extends ChangeNotifier {
         LearningBlock(
           id: blockId,
           tag: slideTitle,
+          type: _normalizeBlockType(block.type),
           headline: headline,
           content: body,
+          quote: block.type == 'quote' ? (block.text.isNotEmpty ? block.text : body) : null,
           takeaway: block.type == 'takeaway' ? body : null,
           imageUrl: imageUrl,
           pendingImagePrompt: pendingPrompt,
@@ -347,6 +349,32 @@ class BookProvider extends ChangeNotifier {
         return 'REFLECTION';
       default:
         return type.toUpperCase().replaceAll('_', ' ');
+    }
+  }
+
+  /// Normalize backend block type to one of: quote, insight, scene, takeaway
+  String _normalizeBlockType(String type) {
+    switch (type) {
+      case 'quote':
+        return 'quote';
+      case 'scene':
+      case 'visual':
+      case 'emotion':
+        return 'scene';
+      case 'takeaway':
+        return 'takeaway';
+      case 'insight':
+      case 'reveal':
+      case 'tension':
+      case 'core_idea':
+      case 'explanation':
+      case 'example':
+      case 'nuance':
+      case 'contrast':
+      case 'reflection':
+      case 'lyric_scroll':
+      default:
+        return 'insight';
     }
   }
 
@@ -500,6 +528,7 @@ class BookProvider extends ChangeNotifier {
           LearningBlock(
             id: '${_currentBookId}_ch${i + 1}_loading',
             tag: 'LOADING',
+            type: 'insight',
             headline: 'Loading Chapter ${i + 1}...',
             content: 'AI is processing this chapter. Please wait...',
             estimatedReadTime: 30,
@@ -789,6 +818,7 @@ class BookProvider extends ChangeNotifier {
         LearningBlock(
           id: '${_currentBookId}_ch${chapterNum}_0',
           tag: 'CONTENT',
+          type: 'insight',
           headline: 'Chapter $chapterNum Content',
           content: preview,
           estimatedReadTime: _estimateReadTime(preview),
@@ -1105,6 +1135,7 @@ class BookProvider extends ChangeNotifier {
                 LearningBlock(
                   id: '${_currentBookId}_ch${chNum}_loading',
                   tag: 'LOADING',
+                  type: 'insight',
                   headline: 'Loading Chapter $chNum...',
                   content: 'AI is processing this chapter. Please wait...',
                   estimatedReadTime: 30,
@@ -1327,6 +1358,7 @@ class BookProvider extends ChangeNotifier {
         updatedBlocks[blockIndex] = LearningBlock(
           id: targetBlock.id,
           tag: targetBlock.tag,
+          type: targetBlock.type,
           headline: targetBlock.headline,
           content: targetBlock.content,
           quote: targetBlock.quote,

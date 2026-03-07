@@ -24,6 +24,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   int _currentPage = 0;
   double _fontSize = 18.0;
   bool _isBold = false;
+  double _scrollOffset = 0.0; // for parallax
 
   @override
   void initState() {
@@ -64,72 +65,107 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
         }
 
         final allBlocks = bookProvider.allBlocks;
+        // Build virtual feed items: blocks + chapter transition cards
+        final feedItems = _buildFeedItems(book, allBlocks);
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: Stack(
             children: [
-              // Main PageView feed
-              PageView.builder(
-                controller: _pageController,
-                scrollDirection: Axis.vertical,
-                itemCount: allBlocks.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-
-                  // Update reading progress
-                  final progressProvider =
-                      context.read<ReadingProgressProvider>();
-                  final indices = progressProvider.getLocalIndices(book, index);
-                  progressProvider.updateProgress(
-                    book: book,
-                    chapterIndex: indices.chapterIndex,
-                    blockIndex: indices.blockIndex,
-                  );
-
-                  // Trigger lazy loading for upcoming chapters
-                  bookProvider.onChapterViewed(indices.chapterIndex);
-
-                  // 80% threshold: background-load next batch if needed
-                  final pct = (index + 1) / allBlocks.length;
-                  if (pct >= 0.8 && bookProvider.hasMorePages) {
-                    bookProvider.loadMorePages();
+              // Main PageView feed with upgraded physics
+              NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is ScrollUpdateNotification) {
+                    setState(() {
+                      _scrollOffset = _pageController.page ?? 0.0;
+                    });
                   }
+                  return false;
                 },
-                itemBuilder: (context, index) {
-                  final block = allBlocks[index];
-                  final chapter = bookProvider.getChapterForBlock(block.id);
+                child: PageView.builder(
+                  controller: _pageController,
+                  scrollDirection: Axis.vertical,
+                  physics: const PageScrollPhysics(parent: BouncingScrollPhysics()),
+                  itemCount: feedItems.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
 
-                  // Check if this block's chapter is still loading
-                  final chapterIndex = book.chapters.indexWhere(
-                    (c) => c.id == chapter?.id,
-                  );
-                  final isLoading =
-                      chapterIndex != -1 &&
-                      bookProvider.isLoadingChapter &&
-                      bookProvider.loadingChapterIndex == chapterIndex;
+                    final item = feedItems[index];
+                    if (item.isTransition) return; // skip progress for transition cards
 
-                  return LearningCard(
-                    block: block,
-                    chapter: chapter,
-                    bookTitle: book.title,
-                    progress: (index + 1) / allBlocks.length,
-                    isFirst: index == 0,
-                    isLast: index == allBlocks.length - 1,
-                    isLoading: isLoading || block.tag == 'LOADING',
-                    fontSize: _fontSize,
-                    isBold: _isBold,
-                  );
-                },
+                    // Update reading progress
+                    final blockIndex = item.blockIndex!;
+                    final progressProvider =
+                        context.read<ReadingProgressProvider>();
+                    final indices = progressProvider.getLocalIndices(book, blockIndex);
+                    progressProvider.updateProgress(
+                      book: book,
+                      chapterIndex: indices.chapterIndex,
+                      blockIndex: indices.blockIndex,
+                    );
+
+                    // Trigger lazy loading for upcoming chapters
+                    bookProvider.onChapterViewed(indices.chapterIndex);
+
+                    // 80% threshold: background-load next batch if needed
+                    final pct = (blockIndex + 1) / allBlocks.length;
+                    if (pct >= 0.8 && bookProvider.hasMorePages) {
+                      bookProvider.loadMorePages();
+                    }
+                  },
+                  itemBuilder: (context, index) {
+                    final item = feedItems[index];
+
+                    // Chapter transition card
+                    if (item.isTransition) {
+                      return _buildChapterTransition(
+                        context,
+                        completedChapter: item.completedChapter!,
+                        nextChapter: item.nextChapter,
+                        book: book,
+                      );
+                    }
+
+                    final block = allBlocks[item.blockIndex!];
+                    final chapter = bookProvider.getChapterForBlock(block.id);
+
+                    // Check if this block's chapter is still loading
+                    final chapterIndex = book.chapters.indexWhere(
+                      (c) => c.id == chapter?.id,
+                    );
+                    final isLoading =
+                        chapterIndex != -1 &&
+                        bookProvider.isLoadingChapter &&
+                        bookProvider.loadingChapterIndex == chapterIndex;
+
+                    // Parallax offset for cinematic depth
+                    final pageOffset = _scrollOffset - index;
+
+                    return Transform.translate(
+                      offset: Offset(0, pageOffset * 40),
+                      child: LearningCard(
+                        block: block,
+                        chapter: chapter,
+                        bookTitle: book.title,
+                        progress: (item.blockIndex! + 1) / allBlocks.length,
+                        isFirst: index == 0,
+                        isLast: index == feedItems.length - 1,
+                        isLoading: isLoading || block.tag == 'LOADING',
+                        fontSize: _fontSize,
+                        isBold: _isBold,
+                      ),
+                    );
+                  },
+                ),
               ),
 
               // Top navigation bar (floating)
               _buildTopNavigation(context, book),
 
               // Bottom progress indicator
-              _buildBottomProgress(context, book, allBlocks.length),
+              _buildBottomProgress(context, book, allBlocks.length, feedItems),
             ],
           ),
         );
@@ -411,7 +447,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
     BuildContext context,
     Book book,
     int totalBlocks,
+    List<_FeedItem> feedItems,
   ) {
+    // Map current page to actual block index for progress calc
+    final currentItem = _currentPage < feedItems.length ? feedItems[_currentPage] : null;
+    final currentBlockIndex = currentItem?.blockIndex ?? 0;
     return Positioned(
       bottom: 24,
       left: 0,
@@ -447,7 +487,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Chapter ${_getCurrentChapterNumber(book)}',
+                      'Chapter ${_getCurrentChapterNumber(book, feedItems)}',
                       style: GoogleFonts.inter(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
@@ -459,7 +499,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      _getCurrentChapterTitle(book),
+                      _getCurrentChapterTitle(book, feedItems),
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -510,7 +550,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                             ),
                             const SizedBox(width: 16),
                             Text(
-                              '${((_currentPage + 1) / totalBlocks * 100).toInt()}%',
+                              '${((currentBlockIndex + 1) / totalBlocks * 100).toInt()}%',
                               style: GoogleFonts.inter(
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
@@ -533,7 +573,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           ),
                           child: FractionallySizedBox(
                             alignment: Alignment.centerLeft,
-                            widthFactor: (_currentPage + 1) / totalBlocks,
+                            widthFactor: (currentBlockIndex + 1) / totalBlocks,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
@@ -554,25 +594,220 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
     ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.2, end: 0);
   }
 
-  int _getCurrentChapterNumber(Book book) {
+  int _getCurrentChapterNumber(Book book, List<_FeedItem> feedItems) {
+    final item = _currentPage < feedItems.length ? feedItems[_currentPage] : null;
+    final blockIndex = item?.blockIndex ?? 0;
+
     int blocksCount = 0;
     for (int i = 0; i < book.chapters.length; i++) {
       blocksCount += book.chapters[i].blocks.length;
-      if (_currentPage < blocksCount) {
+      if (blockIndex < blocksCount) {
         return i + 1;
       }
     }
     return book.chapters.length;
   }
 
-  String _getCurrentChapterTitle(Book book) {
+  String _getCurrentChapterTitle(Book book, List<_FeedItem> feedItems) {
+    final item = _currentPage < feedItems.length ? feedItems[_currentPage] : null;
+    final blockIndex = item?.blockIndex ?? 0;
+
     int blocksCount = 0;
     for (int i = 0; i < book.chapters.length; i++) {
       blocksCount += book.chapters[i].blocks.length;
-      if (_currentPage < blocksCount) {
+      if (blockIndex < blocksCount) {
         return book.chapters[i].title;
       }
     }
     return book.chapters.last.title;
   }
+
+  /// Build virtual feed items: interleave blocks with chapter transition cards
+  List<_FeedItem> _buildFeedItems(Book book, List<LearningBlock> allBlocks) {
+    final items = <_FeedItem>[];
+    int globalIndex = 0;
+
+    for (int ci = 0; ci < book.chapters.length; ci++) {
+      final chapter = book.chapters[ci];
+      for (int bi = 0; bi < chapter.blocks.length; bi++) {
+        items.add(_FeedItem(blockIndex: globalIndex));
+        globalIndex++;
+      }
+
+      // Insert chapter transition after each chapter (except the last)
+      if (ci < book.chapters.length - 1) {
+        items.add(_FeedItem(
+          isTransition: true,
+          completedChapter: chapter,
+          nextChapter: book.chapters[ci + 1],
+        ));
+      }
+    }
+
+    return items;
+  }
+
+  /// Build a chapter transition card between chapters
+  Widget _buildChapterTransition(
+    BuildContext context, {
+    required Chapter completedChapter,
+    Chapter? nextChapter,
+    required Book book,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Completion icon
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    size: 44,
+                    color: AppColors.primary,
+                  ),
+                ).animate().scale(
+                  begin: const Offset(0.5, 0.5),
+                  end: const Offset(1, 1),
+                  duration: 600.ms,
+                  curve: Curves.elasticOut,
+                ),
+
+                const SizedBox(height: 28),
+
+                // "Chapter Complete" label
+                Text(
+                  'CHAPTER COMPLETE',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2.5,
+                    color: AppColors.primary,
+                  ),
+                ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+
+                const SizedBox(height: 12),
+
+                // Completed chapter title
+                Text(
+                  completedChapter.title,
+                  style: GoogleFonts.libreBaskerville(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                    height: 1.3,
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+
+                const SizedBox(height: 32),
+
+                // Divider
+                Container(
+                  width: 40,
+                  height: 2,
+                  decoration: BoxDecoration(
+                    color: cs.outlineVariant,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ).animate().fadeIn(delay: 400.ms).scaleX(begin: 0, duration: 400.ms),
+
+                const SizedBox(height: 32),
+
+                // Next chapter preview
+                if (nextChapter != null) ...[
+                  Text(
+                    'UP NEXT',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
+                      color: isDark
+                          ? AppColors.textMuted
+                          : AppColors.textTertiary,
+                    ),
+                  ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    'Chapter ${nextChapter.number}',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ).animate().fadeIn(delay: 550.ms, duration: 400.ms),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    nextChapter.title,
+                    style: GoogleFonts.libreBaskerville(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: cs.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
+
+                  const SizedBox(height: 40),
+
+                  // "Swipe to continue" hint
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.keyboard_arrow_up_rounded,
+                        size: 20,
+                        color: AppColors.textMuted,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Swipe up to continue',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ).animate(
+                    onPlay: (c) => c.repeat(reverse: true),
+                  ).fadeIn(delay: 800.ms).then().fadeOut(delay: 2.seconds),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Represents a virtual item in the feed — either a real block or a chapter transition
+class _FeedItem {
+  final bool isTransition;
+  final int? blockIndex;
+  final Chapter? completedChapter;
+  final Chapter? nextChapter;
+
+  const _FeedItem({
+    this.isTransition = false,
+    this.blockIndex,
+    this.completedChapter,
+    this.nextChapter,
+  });
 }

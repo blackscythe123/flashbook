@@ -17,6 +17,7 @@ import 'package:gal/gal.dart';
 import 'package:universal_html/html.dart' as html;
 import 'lyric_flow_widget.dart';
 import 'note_input_dialog.dart';
+import 'block_renderer.dart';
 
 /// Learning Card widget - Instagram Reels style with image background.
 /// When image is present, shows it as full background with light overlay.
@@ -214,41 +215,7 @@ class _LearningCardState extends State<LearningCard> {
 
                         const SizedBox(height: 16),
 
-                        // Headline
-                        Text(
-                              widget.block.headline,
-                              style: GoogleFonts.inter(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color:
-                                    _hasImage
-                                        ? Colors.white
-                                        : Theme.of(
-                                          context,
-                                        ).textTheme.headlineLarge?.color,
-                                height: 1.2,
-                                letterSpacing: -0.5,
-                                shadows:
-                                    _hasImage
-                                        ? [
-                                          Shadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ]
-                                        : null,
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(delay: 100.ms, duration: 400.ms)
-                            .slideY(begin: 0.1, end: 0),
-
-                        const SizedBox(height: 20),
-
-                        // Content text
+                        // Type-aware content rendering
                         _needsLyricFlow
                             ? LyricFlowWidget(
                               text: widget.block.content,
@@ -266,43 +233,12 @@ class _LearningCardState extends State<LearningCard> {
                                           ),
                               hasImageBackground: _hasImage,
                             )
-                            : Text(
-                              widget.block.content,
-                              style: GoogleFonts.libreBaskerville(
+                            : BlockRenderer(
+                                block: widget.block,
+                                hasImageBackground: _hasImage,
                                 fontSize: widget.fontSize,
-                                fontWeight: widget.isBold ? FontWeight.bold : FontWeight.normal,
-                                color:
-                                    _hasImage
-                                        ? Colors.white.withValues(alpha: 0.95)
-                                        : Theme.of(context)
-                                                .textTheme
-                                                .bodyLarge
-                                                ?.color
-                                                ?.withValues(alpha: 0.85) ??
-                                            AppColors.inkLight.withValues(
-                                              alpha: 0.85,
-                                            ),
-                                height: 1.8,
-                                shadows:
-                                    _hasImage
-                                        ? [
-                                          Shadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                            blurRadius: 6,
-                                            offset: const Offset(0, 1),
-                                          ),
-                                        ]
-                                        : null,
+                                isBold: widget.isBold,
                               ),
-                            ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
-
-                        // Takeaway box
-                        if (widget.block.takeaway != null) ...[
-                          const SizedBox(height: 28),
-                          _buildTakeawayBox(widget.block.takeaway!),
-                        ],
 
                         // Bottom spacing
                         const SizedBox(height: 100),
@@ -538,92 +474,6 @@ class _LearningCardState extends State<LearningCard> {
                   : null,
         ),
       ),
-    );
-  }
-
-  Widget _buildTakeawayBox(String takeaway) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: _hasImage
-            ? Colors.white.withValues(alpha: 0.15)
-            : cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _hasImage
-              ? Colors.white.withValues(alpha: 0.2)
-              : cs.outlineVariant,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'TAKEAWAY',
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.5,
-              color: _hasImage
-                  ? Colors.white.withValues(alpha: 0.7)
-                  : cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            takeaway,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: _hasImage ? Colors.white : cs.onSurface,
-              height: 1.5,
-              shadows: _hasImage
-                  ? [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 4,
-                      ),
-                    ]
-                  : null,
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 400.ms, duration: 400.ms);
-  }
-
-  Widget _buildBottomInfo() {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: _hasImage
-                ? Colors.white.withValues(alpha: 0.15)
-                : cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '${(widget.block.estimatedReadTime / 60).ceil()} min read',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: _hasImage ? Colors.white : cs.onSurface,
-              shadows: _hasImage
-                  ? [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 4,
-                      ),
-                    ]
-                  : null,
-            ),
-          ),
-        ),
-      ],
     );
   }
 

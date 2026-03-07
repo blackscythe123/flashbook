@@ -122,6 +122,7 @@ class Chapter {
 class LearningBlock {
   final String id;
   final String? tag;
+  final String type; // quote, insight, scene, takeaway
   final String headline;
   final String content;
   final String? quote;
@@ -133,6 +134,7 @@ class LearningBlock {
   const LearningBlock({
     required this.id,
     this.tag,
+    this.type = 'insight',
     required this.headline,
     required this.content,
     this.quote,
@@ -146,6 +148,7 @@ class LearningBlock {
     return {
       'id': id,
       'tag': tag,
+      'type': type,
       'headline': headline,
       'content': content,
       'quote': quote,
@@ -160,6 +163,7 @@ class LearningBlock {
     return LearningBlock(
       id: json['id'] as String,
       tag: json['tag'] as String?,
+      type: json['type'] as String? ?? 'insight',
       headline: json['headline'] as String,
       content: json['content'] as String,
       quote: json['quote'] as String?,
