@@ -132,10 +132,6 @@ def _call_gemini(prompt: str, style: str, book_title: str, character_context: st
         contents=enhanced,
         config=genai_types.GenerateContentConfig(
             response_modalities=["IMAGE", "TEXT"],
-            image_config=genai_types.ImageConfig(
-            aspect_ratio="16:9",
-            image_size="2K",
-        )
         ),
     )
 

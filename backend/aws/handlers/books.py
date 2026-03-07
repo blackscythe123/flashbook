@@ -52,8 +52,15 @@ def _get_s3():
     return _s3
 
 
+def _json_default(o):
+    from decimal import Decimal
+    if isinstance(o, Decimal):
+        return int(o) if o % 1 == 0 else float(o)
+    raise TypeError(f"Not serializable: {type(o)}")
+
+
 def _ok(data, code: int = 200) -> dict:
-    return {"statusCode": code, "headers": {**CORS, "Content-Type": "application/json"}, "body": json.dumps(data)}
+    return {"statusCode": code, "headers": {**CORS, "Content-Type": "application/json"}, "body": json.dumps(data, default=_json_default)}
 
 
 def _err(code: int, msg: str) -> dict:
@@ -123,7 +130,7 @@ def _upload(user_id: str, body: dict) -> dict:
 def _confirm(user_id: str, book_id: str) -> dict:
     """Read PDF from S3 to count pages, update DynamoDB status to 'ready'."""
     import io
-    import pypdf
+    import re as _re
 
     # Get book record
     resp = _table().get_item(Key={"user_id": user_id, "book_id": book_id})
@@ -139,8 +146,21 @@ def _confirm(user_id: str, book_id: str) -> dict:
         obj = _get_s3().get_object(Bucket=bucket, Key=s3_key)
         pdf_bytes = obj["Body"].read()
 
-        reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
-        total_pages = len(reader.pages)
+        # Three-tier fallback for page counting
+        total_pages = None
+        try:
+            import pypdf
+            total_pages = len(pypdf.PdfReader(io.BytesIO(pdf_bytes)).pages)
+        except Exception:
+            pass
+        if total_pages is None:
+            try:
+                import PyPDF2
+                total_pages = len(PyPDF2.PdfReader(io.BytesIO(pdf_bytes)).pages)
+            except Exception:
+                pass
+        if total_pages is None:
+            total_pages = len(_re.findall(rb"/Type\s*/Page[^s]", pdf_bytes)) or 1
 
         # Update DynamoDB
         _table().update_item(
