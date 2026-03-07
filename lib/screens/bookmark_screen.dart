@@ -15,7 +15,7 @@ class BookmarkScreen extends StatefulWidget {
 
 class _BookmarkScreenState extends State<BookmarkScreen> {
   int _selectedFilter = 0;
-  final _filters = ['All', 'Bookmarks', 'Highlights'];
+  final _filters = ['All', 'Bookmarks'];
 
   @override
   void initState() {
@@ -135,8 +135,6 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
     switch (_selectedFilter) {
       case 1:
         return provider.positions;
-      case 2:
-        return provider.highlights;
       default:
         return provider.sortedByDate;
     }
@@ -230,8 +228,12 @@ class _BookmarkCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Card ${bookmark.blockId?.substring(0, 8) ?? ''}',
+                        bookmark.highlightText?.isNotEmpty == true
+                            ? bookmark.highlightText!.substring(0, bookmark.highlightText!.length.clamp(0, 40))
+                            : 'Saved card',
                         style: GoogleFonts.inter(fontSize: 11, color: AppColors.textMuted),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),

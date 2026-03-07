@@ -100,7 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: isDark ? AppColors.surfaceDark : AppColors.paperLight,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isDark
                               ? Colors.white.withOpacity(0.08)
@@ -286,21 +286,14 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: category.gradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: category.gradient.first.withOpacity(0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -315,13 +308,12 @@ class _CategoryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(category.icon, color: Colors.white, size: 28),
+                Icon(category.icon, color: category.gradient.first, size: 28),
                 Text(
                   category.name,
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
                   ),
                 ),
               ],
