@@ -8,7 +8,7 @@ class ApiConfig extends ChangeNotifier {
   static const String _backendUrlKey = 'backend_url';
   // NEW (paste your ApiUrl):
   static const String PROD_URL =
-      "https://a1wkc4dj45.execute-api.ap-south-1.amazonaws.com/Prod/";
+      "https://lnvkdza1u2.execute-api.ap-south-1.amazonaws.com/Prod/";
 
   String? _backendUrl;
   bool _isConnected = false;
