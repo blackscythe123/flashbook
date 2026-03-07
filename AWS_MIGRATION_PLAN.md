@@ -93,8 +93,8 @@ backend/aws/
 
 ```yaml
 GEMINI_API_KEY:        !Ref GeminiApiKeyParam    # entered at sam deploy time
-GEMINI_MODEL_TEXT:     gemini-2.0-flash
-GEMINI_MODEL_IMAGE:    gemini-2.0-flash-exp-image-generation
+GEMINI_MODEL_TEXT:     gemini-3-flash-preview
+GEMINI_MODEL_IMAGE:    gemini-3.1-flash-image-preview
 SLIDES_TABLE:          !Ref SlidesTable
 NOTES_TABLE:           !Ref NotesTable
 ```
@@ -311,7 +311,7 @@ sam local start-api --env-vars env.json
 # {
 #   "GenerateSummaryFunction": {
 #     "GEMINI_API_KEY": "your-key-here",
-#     "GEMINI_MODEL_TEXT": "gemini-2.0-flash",
+#     "GEMINI_MODEL_TEXT": "gemini-3-flash-preview",
 #     "SLIDES_TABLE": "flashbook-slides",
 #     "NOTES_TABLE": "flashbook-notes"
 #   }

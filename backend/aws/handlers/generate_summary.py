@@ -128,7 +128,7 @@ def _get_model():
     global _gemini_model
     if _gemini_model is None:
         api_key = os.environ.get("GEMINI_API_KEY", "")
-        model_name = os.environ.get("GEMINI_MODEL_TEXT", "gemini-2.0-flash")
+        model_name = os.environ.get("GEMINI_MODEL_TEXT", "gemini-3-flash-preview")
         genai.configure(api_key=api_key)
         _gemini_model = genai.GenerativeModel(
             model_name=model_name,

@@ -120,7 +120,7 @@ def _enhance_prompt(prompt: str, visual_type: str, style: str, book_title: str, 
 def _call_gemini(prompt: str, style: str, book_title: str, character_context: str, visual_type: str) -> bytes | None:
     """Call Gemini image model and return raw PNG bytes, or None on failure."""
     # MUST use an image-generation capable model, NOT a text-only one
-    model_name = os.environ.get("GEMINI_MODEL_IMAGE", "gemini-2.0-flash-exp-image-generation")
+    model_name = os.environ.get("GEMINI_MODEL_IMAGE", "gemini-3.1-flash-image-preview")
 
     enhanced = _enhance_prompt(prompt, visual_type, style, book_title, character_context)
 
@@ -132,6 +132,10 @@ def _call_gemini(prompt: str, style: str, book_title: str, character_context: st
         contents=enhanced,
         config=genai_types.GenerateContentConfig(
             response_modalities=["IMAGE", "TEXT"],
+            image_config=genai_types.ImageConfig(
+            aspect_ratio="16:9",
+            image_size="2K",
+        )
         ),
     )
 
