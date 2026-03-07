@@ -25,8 +25,9 @@ class BookDetailScreen extends StatelessWidget {
     final estimatedMinutes = totalPages * 2;
     final isReading = progress > 0 && progress < 100;
 
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -41,7 +42,7 @@ class BookDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Hero gradient header
-            _buildHeader(title)
+            _buildHeader(context, title)
                 .animate()
                 .fadeIn(duration: 500.ms),
 
@@ -58,7 +59,7 @@ class BookDetailScreen extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: cs.onSurface,
                     ),
                   ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
 
@@ -67,14 +68,14 @@ class BookDetailScreen extends StatelessWidget {
                     status == 'reading' ? 'Currently reading' : 'Ready to read',
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: AppColors.textMuted,
+                      color: cs.onSurfaceVariant,
                     ),
                   ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
 
                   const SizedBox(height: 24),
 
                   // Stats row
-                  _buildStatsRow(totalPages, progress, estimatedMinutes)
+                  _buildStatsRow(context, totalPages, progress, estimatedMinutes)
                       .animate()
                       .fadeIn(delay: 200.ms, duration: 400.ms)
                       .slideY(begin: 0.05),
@@ -82,7 +83,7 @@ class BookDetailScreen extends StatelessWidget {
                   const SizedBox(height: 28),
 
                   // Card preview section
-                  _buildCardPreview(totalPages)
+                  _buildCardPreview(context, totalPages)
                       .animate()
                       .fadeIn(delay: 300.ms, duration: 400.ms),
 
@@ -125,12 +126,13 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String title) {
+  Widget _buildHeader(BuildContext context, String title) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       height: 200,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
         ),
@@ -140,9 +142,9 @@ class BookDetailScreen extends StatelessWidget {
           width: 72,
           height: 90,
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.surfaceBorder),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: const Icon(
             Icons.menu_book_rounded,
@@ -154,24 +156,25 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(int totalPages, int progress, int estimatedMinutes) {
+  Widget _buildStatsRow(BuildContext context, int totalPages, int progress, int estimatedMinutes) {
     return Row(
       children: [
-        _buildStatItem(Icons.auto_stories_rounded, '$totalPages', 'Pages'),
+        _buildStatItem(context, Icons.auto_stories_rounded, '$totalPages', 'Pages'),
         const SizedBox(width: 24),
-        _buildStatItem(Icons.trending_up_rounded, '$progress%', 'Progress'),
+        _buildStatItem(context, Icons.trending_up_rounded, '$progress%', 'Progress'),
         const SizedBox(width: 24),
-        _buildStatItem(Icons.schedule_rounded, '${estimatedMinutes}m', 'Est. Time'),
+        _buildStatItem(context, Icons.schedule_rounded, '${estimatedMinutes}m', 'Est. Time'),
       ],
     );
   }
 
-  Widget _buildStatItem(IconData icon, String value, String label) {
+  Widget _buildStatItem(BuildContext context, IconData icon, String value, String label) {
+    final cs = Theme.of(context).colorScheme;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -183,7 +186,7 @@ class BookDetailScreen extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 2),
@@ -191,7 +194,7 @@ class BookDetailScreen extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                color: AppColors.textMuted,
+                color: cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -200,7 +203,8 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCardPreview(int totalPages) {
+  Widget _buildCardPreview(BuildContext context, int totalPages) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -209,7 +213,7 @@ class BookDetailScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -217,10 +221,10 @@ class BookDetailScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: AppColors.surfaceBorder,
+              color: cs.outlineVariant,
             ),
           ),
           child: Row(
@@ -239,7 +243,7 @@ class BookDetailScreen extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color: cs.onSurface,
                 ),
               ),
             ],

@@ -125,8 +125,10 @@ class _ProcessingScreenState extends State<ProcessingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.paperLight,
+      backgroundColor: isDark ? AppColors.paperDark : AppColors.paperLight,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -151,7 +153,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                 style: GoogleFonts.libreBaskerville(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.inkLight,
+                  color: cs.onSurface,
                 ),
               ).animate().fadeIn(duration: 600.ms),
 
@@ -178,7 +180,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 16,
-                    color: AppColors.textMuted,
+                    color: cs.onSurfaceVariant,
                     height: 1.5,
                   ),
                 ),
@@ -196,7 +198,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                 '${_currentStep + 1} of ${_processingSteps.length}',
                 style: GoogleFonts.inter(
                   fontSize: 12,
-                  color: AppColors.textMuted,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
 
@@ -222,7 +224,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                         'AI is structuring this book for optimal learning',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: AppColors.inkLight.withValues(alpha: 0.8),
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ),

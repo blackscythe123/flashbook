@@ -16,6 +16,9 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: AppColors.surfaceLight,
         onSurface: AppColors.inkLight,
+        onSurfaceVariant: AppColors.textMuted,
+        outline: AppColors.textMuted,
+        outlineVariant: const Color(0xFFE2E8F0), // Slate 200
         error: AppColors.error,
         onError: Colors.white,
       ),
@@ -150,6 +153,9 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: AppColors.surfaceDark,
         onSurface: AppColors.inkDark,
+        onSurfaceVariant: AppColors.textMutedDark,
+        outline: AppColors.textMutedDark,
+        outlineVariant: const Color(0xFF334155), // Slate 700
         error: AppColors.error,
         onError: Colors.white,
       ),

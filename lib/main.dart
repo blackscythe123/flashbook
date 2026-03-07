@@ -28,13 +28,14 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Set system UI style for immersive reading
+  // Set system UI style for immersive reading.
+  // Use transparent bars so the navigation bar adapts to the active theme.
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarContrastEnforced: false,
     ),
   );
 

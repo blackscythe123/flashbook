@@ -11,8 +11,10 @@ class UpgradeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.paperLight,
+      backgroundColor: isDark ? AppColors.paperDark : AppColors.paperLight,
       body: SafeArea(
         child: Column(
           children: [
@@ -23,7 +25,7 @@ class UpgradeScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: IconButton(
                   icon: const Icon(Icons.close_rounded),
-                  color: AppColors.textMuted,
+                  color: cs.onSurfaceVariant,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -71,7 +73,7 @@ class UpgradeScreen extends StatelessWidget {
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 32,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.inkLight,
+                        color: cs.onSurface,
                         height: 1.2,
                       ),
                     ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -84,7 +86,7 @@ class UpgradeScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 15,
-                        color: AppColors.textMuted,
+                        color: cs.onSurfaceVariant,
                         height: 1.5,
                       ),
                     ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
@@ -93,6 +95,7 @@ class UpgradeScreen extends StatelessWidget {
 
                     // Features
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.palette_rounded,
                       iconColor: AppColors.primary,
                       title: 'Illustrated explanations',
@@ -101,6 +104,7 @@ class UpgradeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.play_circle_rounded,
                       iconColor: Colors.purple,
                       title: 'Short visual clips',
@@ -109,6 +113,7 @@ class UpgradeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.wifi_off_rounded,
                       iconColor: Colors.green,
                       title: 'Offline reading',
@@ -141,8 +146,8 @@ class UpgradeScreen extends StatelessWidget {
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.inkLight,
-                            foregroundColor: Colors.white,
+                            backgroundColor: cs.inverseSurface,
+                            foregroundColor: cs.onInverseSurface,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -173,7 +178,7 @@ class UpgradeScreen extends StatelessWidget {
                           'Restore Purchases',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -182,7 +187,7 @@ class UpgradeScreen extends StatelessWidget {
                         height: 4,
                         margin: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: cs.outlineVariant,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -192,7 +197,7 @@ class UpgradeScreen extends StatelessWidget {
                           'Terms',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -213,13 +218,15 @@ class UpgradeScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required int delay,
+    required BuildContext context,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: cs.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+            border: Border.all(color: cs.outlineVariant),
           ),
           child: Row(
             children: [
@@ -242,7 +249,7 @@ class UpgradeScreen extends StatelessWidget {
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.inkLight,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -250,7 +257,7 @@ class UpgradeScreen extends StatelessWidget {
                       subtitle,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],

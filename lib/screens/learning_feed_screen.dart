@@ -147,6 +147,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
 
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            final cs = Theme.of(context).colorScheme;
             return Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).scaffoldBackgroundColor,
@@ -165,7 +166,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                        color: cs.outlineVariant,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -213,7 +214,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -250,7 +251,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 12),

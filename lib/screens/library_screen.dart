@@ -125,13 +125,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
       builder:
           (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            backgroundColor: AppColors.surfaceLight,
-            title: Text('Delete Book', style: GoogleFonts.libreBaskerville(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.inkLight)),
-            content: Text('This will permanently remove this book.', style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted)),
+            title: Text('Delete Book', style: GoogleFonts.libreBaskerville(fontSize: 20, fontWeight: FontWeight.w700)),
+            content: Text('This will permanently remove this book.', style: GoogleFonts.inter(fontSize: 14)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: Text('Cancel', style: GoogleFonts.inter(color: AppColors.textMuted)),
+                child: Text('Cancel', style: GoogleFonts.inter()),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),

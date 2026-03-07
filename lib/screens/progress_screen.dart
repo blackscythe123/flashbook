@@ -15,7 +15,6 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
       body: SafeArea(
         child: Consumer2<BookProvider, ReadingProgressProvider>(
           builder: (context, bookProvider, progressProvider, child) {
@@ -50,6 +49,7 @@ class ProgressScreen extends StatelessWidget {
 
                         // Progress percentage
                         _buildProgressHeader(
+                          context,
                           progress?.progressPercentage ?? 0,
                         ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
 
@@ -64,7 +64,7 @@ class ProgressScreen extends StatelessWidget {
                         const SizedBox(height: 16),
 
                         // AI insight
-                        _buildAiInsight()
+                        _buildAiInsight(context)
                             .animate()
                             .fadeIn(delay: 400.ms, duration: 600.ms)
                             .slideY(begin: 0.1, end: 0),
@@ -73,6 +73,7 @@ class ProgressScreen extends StatelessWidget {
 
                         // Stats grid
                         _buildStatsGrid(
+                          context,
                           progress,
                         ).animate().fadeIn(delay: 500.ms, duration: 600.ms),
 
@@ -117,6 +118,7 @@ class ProgressScreen extends StatelessWidget {
 
   /// Build PDF preview card like WhatsApp document preview
   Widget _buildPdfPreviewCard(BuildContext context, BookProvider bookProvider) {
+    final cs = Theme.of(context).colorScheme;
     final pdfPath = bookProvider.uploadedPdfPath;
     final book = bookProvider.currentBook;
     final isPdf = pdfPath?.toLowerCase().endsWith('.pdf') ?? false;
@@ -145,7 +147,7 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -220,7 +222,7 @@ class ProgressScreen extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.inkLight,
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -229,14 +231,14 @@ class ProgressScreen extends StatelessWidget {
                     Icon(
                       Icons.insert_drive_file_outlined,
                       size: 14,
-                      color: AppColors.textMuted,
+                      color: cs.onSurfaceVariant,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       '$sizeStr • ${bookProvider.totalChunksCount} chapters',
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: cs.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -280,7 +282,8 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressHeader(double percentage) {
+  Widget _buildProgressHeader(BuildContext context, double percentage) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         Text(
@@ -288,7 +291,7 @@ class ProgressScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 48,
             fontWeight: FontWeight.bold,
-            color: AppColors.inkLight,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 4),
@@ -297,14 +300,14 @@ class ProgressScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w500,
-            color: AppColors.inkLight,
+            color: cs.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           'You\'ve completed 5 out of 8 chapters. You\'re on a roll!',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted),
+          style: GoogleFonts.inter(fontSize: 14, color: cs.onSurfaceVariant),
         ),
       ],
     );
@@ -315,6 +318,8 @@ class ProgressScreen extends StatelessWidget {
     dynamic book,
     dynamic progress,
   ) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentChapter = progress?.currentChapterIndex ?? 0;
     final chapterTitle =
         book.chapters.isNotEmpty
@@ -326,7 +331,7 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -359,7 +364,7 @@ class ProgressScreen extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.inkLight,
+                      color: cs.onSurface,
                     ),
                   ),
                 ],
@@ -367,14 +372,14 @@ class ProgressScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: isDark ? AppColors.paperDark : AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   'Chapter ${currentChapter + 1}',
                   style: GoogleFonts.inter(
                     fontSize: 11,
-                    color: AppColors.textMuted,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -416,14 +421,14 @@ class ProgressScreen extends StatelessWidget {
                   Icon(
                     Icons.schedule_rounded,
                     size: 14,
-                    color: AppColors.textMuted,
+                    color: cs.onSurfaceVariant,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${progress?.estimatedMinutesRemaining ?? 12} mins left',
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: AppColors.textMuted,
+                      color: cs.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -432,7 +437,7 @@ class ProgressScreen extends StatelessWidget {
                 'Page ${progress?.totalBlocksRead ?? 0} / ${progress?.totalBlocks ?? 10}',
                 style: GoogleFonts.inter(
                   fontSize: 12,
-                  color: AppColors.textMuted,
+                  color: cs.onSurfaceVariant,
                 ),
               ),
             ],
@@ -442,7 +447,8 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAiInsight() {
+  Widget _buildAiInsight(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -461,7 +467,7 @@ class ProgressScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
@@ -484,7 +490,7 @@ class ProgressScreen extends StatelessWidget {
                   'You learned about the "Focus Flow" technique in the last session. Ready to apply it?',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppColors.inkLight.withValues(alpha: 0.7),
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -495,11 +501,12 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsGrid(dynamic progress) {
+  Widget _buildStatsGrid(BuildContext context, dynamic progress) {
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
+            context,
             icon: Icons.local_fire_department_rounded,
             iconColor: Colors.orange,
             value: '${progress?.readingStreak ?? 4} Days',
@@ -509,6 +516,7 @@ class ProgressScreen extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: _buildStatCard(
+            context,
             icon: Icons.bookmark_added_rounded,
             iconColor: Colors.green,
             value: '12',
@@ -519,18 +527,20 @@ class ProgressScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({
+  Widget _buildStatCard(
+    BuildContext context, {
     required IconData icon,
     required Color iconColor,
     required String value,
     required String label,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
@@ -541,12 +551,12 @@ class ProgressScreen extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.inkLight,
+              color: cs.onSurface,
             ),
           ),
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+            style: GoogleFonts.inter(fontSize: 12, color: cs.onSurfaceVariant),
           ),
         ],
       ),
@@ -554,16 +564,16 @@ class ProgressScreen extends StatelessWidget {
   }
 
   Widget _buildBottomCta(BuildContext context) {
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.backgroundLight.withValues(alpha: 0),
-            AppColors.backgroundLight,
+            scaffoldBg.withValues(alpha: 0),
+            scaffoldBg,
           ],
         ),
       ),
@@ -599,7 +609,7 @@ class ProgressScreen extends StatelessWidget {
               'View Table of Contents',
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppColors.textMuted,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),

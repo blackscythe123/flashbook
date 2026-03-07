@@ -39,10 +39,11 @@ class BookSourceScreen extends StatelessWidget {
   }
 
   Widget _buildBottomSheet(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
         top: false,
@@ -56,7 +57,7 @@ class BookSourceScreen extends StatelessWidget {
                 width: 48,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: cs.outlineVariant,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ).animate().fadeIn(duration: 300.ms),
@@ -69,7 +70,7 @@ class BookSourceScreen extends StatelessWidget {
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.inkLight,
+                      color: cs.onSurface,
                     ),
                   )
                   .animate()
@@ -84,7 +85,7 @@ class BookSourceScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: AppColors.textMuted,
+                  color: cs.onSurfaceVariant,
                   height: 1.5,
                 ),
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -133,7 +134,7 @@ class BookSourceScreen extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textMuted,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
@@ -158,8 +159,10 @@ class BookSourceScreen extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: AppColors.backgroundLight,
+      color: isDark ? AppColors.paperDark : AppColors.backgroundLight,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -191,7 +194,7 @@ class BookSourceScreen extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.inkLight,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -199,7 +202,7 @@ class BookSourceScreen extends StatelessWidget {
                       subtitle,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: cs.onSurfaceVariant,
                         height: 1.4,
                       ),
                     ),
@@ -208,7 +211,7 @@ class BookSourceScreen extends StatelessWidget {
               ),
 
               // Chevron
-              Icon(Icons.chevron_right_rounded, color: Colors.grey[300]),
+              Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
             ],
           ),
         ),
@@ -295,8 +298,8 @@ class BookSourceScreen extends StatelessWidget {
               context: context,
               barrierDismissible: false,
               builder: (BuildContext context) {
+                final cs = Theme.of(context).colorScheme;
                 return Dialog(
-                  backgroundColor: AppColors.backgroundLight,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -312,7 +315,7 @@ class BookSourceScreen extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.inkLight,
+                            color: cs.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -321,7 +324,7 @@ class BookSourceScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ],
