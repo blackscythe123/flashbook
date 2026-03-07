@@ -71,12 +71,12 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primary
-                              : (isDark ? AppColors.surfaceDark : AppColors.paperLight),
+                              : Theme.of(context).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: isSelected
                                 ? AppColors.primary
-                                : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.06)),
+                                : Theme.of(context).colorScheme.outlineVariant,
                           ),
                         ),
                         child: Text(
@@ -189,10 +189,10 @@ class _BookmarkCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Padding(

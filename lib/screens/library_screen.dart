@@ -258,7 +258,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark
                 ? AppColors.surfaceDark
-                : AppColors.paperLight,
+                : Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
           ),
         )
@@ -392,12 +392,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+              color: isDark ? AppColors.surfaceDark : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isDark
                     ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.06),
+                    : Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
             child: Material(
@@ -462,9 +462,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               child: LinearProgressIndicator(
                                 value: progress / 100,
                                 minHeight: 4,
-                                backgroundColor: isDark
-                                    ? Colors.white.withOpacity(0.06)
-                                    : Colors.black.withOpacity(0.06),
+                                backgroundColor: Theme.of(context).colorScheme.outlineVariant,
                                 valueColor: AlwaysStoppedAnimation(
                                   progress == 100
                                       ? AppColors.success
@@ -525,12 +523,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: isDark ? AppColors.surfaceDark : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
               ? AppColors.surfaceBorder.withOpacity(0.5)
-              : Colors.black.withOpacity(0.06),
+              : Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Material(
@@ -591,9 +589,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         child: LinearProgressIndicator(
                           value: progress / 100,
                           minHeight: 5,
-                          backgroundColor: isDark
-                              ? Colors.white.withOpacity(0.06)
-                              : Colors.black.withOpacity(0.06),
+                          backgroundColor: Theme.of(context).colorScheme.outlineVariant,
                           valueColor: const AlwaysStoppedAnimation(AppColors.primary),
                         ),
                       ),
