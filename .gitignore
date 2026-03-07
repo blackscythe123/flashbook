@@ -44,3 +44,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Debug screenshots and UI dumps
+*.png
+!assets/**/*.png
+ui_dump*.xml
+maestro_hierarchy.json
+maestro_out.txt
+screenshots/
