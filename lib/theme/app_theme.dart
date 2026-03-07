@@ -14,11 +14,12 @@ class AppTheme {
         primaryContainer: AppColors.primaryLight.withOpacity(0.12),
         secondary: AppColors.secondary,
         onSecondary: Colors.white,
-        surface: AppColors.surfaceLight,
+        surface: const Color(0xFFFFF7ED), // Warm peach cream (Orange 50)
         onSurface: AppColors.inkLight,
         onSurfaceVariant: AppColors.textMuted,
         outline: AppColors.textMuted,
-        outlineVariant: const Color(0xFFE2E8F0), // Slate 200
+        outlineVariant: const Color(0xFFE8DDD3), // Warm border
+        surfaceContainerHighest: const Color(0xFFFFEDD5), // Orange 100
         error: AppColors.error,
         onError: Colors.white,
       ),
@@ -39,11 +40,11 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: AppColors.surfaceLight,
+        color: const Color(0xFFFFF7ED),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppColors.inkLight.withOpacity(0.06)),
+          side: const BorderSide(color: Color(0xFFE8DDD3)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -95,7 +96,7 @@ class AppTheme {
         labelStyle: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.surfaceLight,
+        backgroundColor: Color(0xFFFFF7ED),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -156,6 +157,7 @@ class AppTheme {
         onSurfaceVariant: AppColors.textMutedDark,
         outline: AppColors.textMutedDark,
         outlineVariant: const Color(0xFF334155), // Slate 700
+        surfaceContainerHighest: const Color(0xFF263245), // Slate 800.5
         error: AppColors.error,
         onError: Colors.white,
       ),
