@@ -117,7 +117,6 @@ class BackendApiClient {
   Map<String, String> _headers({String contentType = 'application/json'}) {
     final h = <String, String>{
       'Content-Type': contentType,
-      'ngrok-skip-browser-warning': 'true',
     };
     final token = _tokenGetter?.call();
     if (token != null && token.isNotEmpty) {
@@ -135,7 +134,7 @@ class BackendApiClient {
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/health');
       final response = await _httpClient
-          .get(url, headers: {'ngrok-skip-browser-warning': 'true'})
+          .get(url, headers: _headers())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
@@ -225,7 +224,6 @@ class BackendApiClient {
 
     final uri = Uri.parse('${_config.apiBaseUrl}/extractText');
     final request = http.MultipartRequest('POST', uri);
-    request.headers['ngrok-skip-browser-warning'] = 'true';
     final token = _tokenGetter?.call();
     if (token != null && token.isNotEmpty) {
       request.headers['Authorization'] = 'Bearer $token';
@@ -271,7 +269,7 @@ class BackendApiClient {
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/cache/stats');
       final response = await _httpClient
-          .get(url, headers: {'ngrok-skip-browser-warning': 'true'})
+          .get(url, headers: _headers())
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {

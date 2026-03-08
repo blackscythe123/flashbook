@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,7 +7,6 @@ import '../theme/app_colors.dart';
 import '../state/state.dart';
 import '../services/services.dart';
 import 'learning_feed_screen.dart';
-import 'home_screen.dart';
 
 /// Processing screen - shows while book is being processed.
 /// Features animated loading indicator and progress text.
@@ -14,8 +14,14 @@ import 'home_screen.dart';
 class ProcessingScreen extends StatefulWidget {
   final String? bookId;
   final String? fileName;
+  final Uint8List? fileBytes;
 
-  const ProcessingScreen({super.key, this.bookId, this.fileName});
+  const ProcessingScreen({
+    super.key,
+    this.bookId,
+    this.fileName,
+    this.fileBytes,
+  });
 
   @override
   State<ProcessingScreen> createState() => _ProcessingScreenState();
@@ -60,7 +66,52 @@ class _ProcessingScreenState extends State<ProcessingScreen>
     final progressProvider = context.read<ReadingProgressProvider>();
     final apiConfig = context.read<ApiConfig>();
 
-    // Upload flow: backend upload already completed, so only show staged prep UI.
+    // --- LIVE UPLOAD PATH: fileBytes provided, run full pipeline with live status ---
+    if (widget.fileBytes != null) {
+      final title = (widget.fileName ?? 'book.pdf').replaceAll(
+        RegExp(r'\.pdf$', caseSensitive: false),
+        '',
+      );
+      await bookProvider.uploadPdfToS3(
+        bytes: widget.fileBytes!.toList(),
+        filename: widget.fileName ?? 'book.pdf',
+        title: title,
+      );
+
+      if (!mounted) return;
+
+      if (bookProvider.currentBook != null) {
+        progressProvider.initializeProgress(bookProvider.currentBook!);
+        Navigator.pushAndRemoveUntil(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const LearningFeedScreen(),
+            transitionDuration: const Duration(milliseconds: 600),
+            transitionsBuilder:
+                (_, animation, __, child) =>
+                    FadeTransition(opacity: animation, child: child),
+          ),
+          (route) => false,
+        );
+      } else {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              bookProvider.errorMessage ?? 'Upload failed. Please try again.',
+            ),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    // --- LEGACY bookId PATH: upload already completed, animate steps then go to feed ---
     if (widget.bookId != null) {
       for (int i = 0; i < _processingSteps.length; i++) {
         await Future.delayed(const Duration(milliseconds: 500));
@@ -77,7 +128,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       Navigator.pushAndRemoveUntil(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomeScreen(),
+          pageBuilder: (_, __, ___) => const LearningFeedScreen(),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder:
               (_, animation, __, child) =>
@@ -189,31 +240,46 @@ class _ProcessingScreenState extends State<ProcessingScreen>
 
               const SizedBox(height: 24),
 
-              // Progress steps
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 400),
-                transitionBuilder: (child, animation) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.2),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
+              // Progress steps — live stage text when uploading, fake steps otherwise
+              Consumer<BookProvider>(
+                builder: (context, bookProvider, _) {
+                  final isLiveUpload = widget.fileBytes != null;
+                  final stageText =
+                      isLiveUpload
+                          ? (bookProvider.uploadStage.isNotEmpty
+                              ? bookProvider.uploadStage
+                              : 'Preparing...')
+                          : _processingSteps[_currentStep];
+                  final key =
+                      isLiveUpload
+                          ? bookProvider.uploadStage
+                          : _currentStep.toString();
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 400),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.2),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Text(
+                      stageText,
+                      key: ValueKey(key),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: AppColors.textMuted,
+                        height: 1.5,
+                      ),
                     ),
                   );
                 },
-                child: Text(
-                  _processingSteps[_currentStep],
-                  key: ValueKey(_currentStep),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: AppColors.textMuted,
-                    height: 1.5,
-                  ),
-                ),
               ),
 
               if (widget.fileName != null) ...[
@@ -237,14 +303,15 @@ class _ProcessingScreenState extends State<ProcessingScreen>
 
               const SizedBox(height: 16),
 
-              // Step indicator
-              Text(
-                '${_currentStep + 1} of ${_processingSteps.length}',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: AppColors.textMuted,
+              // Step indicator — only shown for legacy fake-step mode
+              if (widget.fileBytes == null)
+                Text(
+                  '${_currentStep + 1} of ${_processingSteps.length}',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
                 ),
-              ),
 
               const Spacer(flex: 2),
 
@@ -301,13 +368,16 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             ),
           ).animate(onPlay: (c) => c.repeat()).rotate(duration: 3.seconds),
 
-          // Inner ring
+          // Inner ring - indeterminate when live uploading
           SizedBox(
             width: 90,
             height: 90,
             child: CircularProgressIndicator(
               strokeWidth: 3,
-              value: (_currentStep + 1) / _processingSteps.length,
+              value:
+                  widget.fileBytes == null
+                      ? (_currentStep + 1) / _processingSteps.length
+                      : null,
               valueColor: const AlwaysStoppedAnimation(AppColors.accent),
               backgroundColor: AppColors.accent.withValues(alpha: 0.1),
             ),
@@ -333,6 +403,24 @@ class _ProcessingScreenState extends State<ProcessingScreen>
   }
 
   Widget _buildProgressBar() {
+    if (widget.fileBytes != null) {
+      // Indeterminate animated bar during live upload
+      return Container(
+        height: 6,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.accent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: const LinearProgressIndicator(
+            backgroundColor: Colors.transparent,
+            valueColor: AlwaysStoppedAnimation(AppColors.accent),
+          ),
+        ),
+      );
+    }
     final progress = (_currentStep + 1) / _processingSteps.length;
 
     return Container(

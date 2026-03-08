@@ -307,7 +307,9 @@ class BookProvider extends ChangeNotifier {
       String? imageUrl = cachedUrl;
       String? pendingPrompt;
 
-      if (cachedUrl == null && block.imageHint && block.imagePrompt.isNotEmpty) {
+      if (cachedUrl == null &&
+          block.imageHint &&
+          block.imagePrompt.isNotEmpty) {
         pendingPrompt = block.imagePrompt;
       }
 
@@ -493,11 +495,14 @@ class BookProvider extends ChangeNotifier {
     String? fileName,
     String? bookId,
   }) async {
+    _uploadStage = 'Analysing content...';
+    notifyListeners();
     _currentBookTitle =
         fileName?.replaceAll('.pdf', '').replaceAll('.txt', '') ??
         'Uploaded Book';
     // Use the provided backend book ID if given, otherwise generate a local one
-    _currentBookId = bookId ?? 'uploaded_${DateTime.now().millisecondsSinceEpoch}';
+    _currentBookId =
+        bookId ?? 'uploaded_${DateTime.now().millisecondsSinceEpoch}';
 
     final cleanedText = _cleanText(textContent);
     _rawChunks = _splitTextIntoChunks(cleanedText);
@@ -592,6 +597,11 @@ class BookProvider extends ChangeNotifier {
       'BookProvider: Processing chapters $chaptersToProcess (immediate: $immediate)',
     );
 
+    if (immediate && chaptersToProcess.isNotEmpty) {
+      _uploadStage = 'Generating learning cards...';
+      notifyListeners();
+    }
+
     for (final chapterIndex in chaptersToProcess) {
       await _processChapter(chapterIndex);
     }
@@ -626,6 +636,8 @@ class BookProvider extends ChangeNotifier {
 
   /// Strictly await image generation for a chapter (used for Chapter 1)
   Future<void> _generateImagesForChapterStrict(Chapter chapter) async {
+    _uploadStage = 'Creating visual summaries...';
+    notifyListeners();
     for (int i = 0; i < chapter.blocks.length; i++) {
       final block = chapter.blocks[i];
       if (block.pendingImagePrompt != null && block.imageUrl == null) {
@@ -1033,7 +1045,9 @@ class BookProvider extends ChangeNotifier {
     if (imageUrls != null && imageUrls.isNotEmpty) {
       _imageUrls.clear();
       _imageUrls.addAll(imageUrls);
-      debugPrint('BookProvider: Restored ${imageUrls.length} cached image URLs');
+      debugPrint(
+        'BookProvider: Restored ${imageUrls.length} cached image URLs',
+      );
     }
 
     // If we have a persisted book that matches, use it
@@ -1304,7 +1318,9 @@ class BookProvider extends ChangeNotifier {
         final decoded = jsonDecode(imageUrlsJson) as Map<String, dynamic>;
         _imageUrls.clear();
         _imageUrls.addAll(decoded.map((k, v) => MapEntry(k, v as String)));
-        debugPrint('BookProvider: Restored ${_imageUrls.length} cached image URLs');
+        debugPrint(
+          'BookProvider: Restored ${_imageUrls.length} cached image URLs',
+        );
       }
 
       if (_currentBook != null) {
@@ -1389,12 +1405,16 @@ class BookProvider extends ChangeNotifier {
         await saveBookState();
         // Push to DynamoDB (fire-and-forget) so other devices can use it
         if (_currentBookId != null && _apiClient != null) {
-          _apiClient!.updateBookProgress(
-            bookId: _currentBookId!,
-            imageUrls: Map<String, String>.from(_imageUrls),
-          ).catchError((e) {
-            debugPrint('BookProvider: Failed to sync image_urls to DynamoDB: $e');
-          });
+          _apiClient!
+              .updateBookProgress(
+                bookId: _currentBookId!,
+                imageUrls: Map<String, String>.from(_imageUrls),
+              )
+              .catchError((e) {
+                debugPrint(
+                  'BookProvider: Failed to sync image_urls to DynamoDB: $e',
+                );
+              });
         }
 
         notifyListeners();
