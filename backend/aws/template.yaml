@@ -75,9 +75,33 @@ Resources:
         - "application/octet-stream"
       Auth:
         DefaultAuthorizer: CognitoAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
         Authorizers:
           CognitoAuthorizer:
             UserPoolArn: !GetAtt CognitoUserPool.Arn
+
+  # ===== API Gateway CORS error responses =====
+  # Ensures 4xx/5xx responses from authorizer/Gateway include CORS headers
+  # so the browser can read the error body instead of showing "CORS error"
+  GatewayResponse4xx:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      ResponseType: DEFAULT_4XX
+      RestApiId: !Ref FlashbookApi
+
+  GatewayResponse5xx:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+        gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      ResponseType: DEFAULT_5XX
+      RestApiId: !Ref FlashbookApi
 
   # ===== Lambda: GET /health (no auth) =====
   HealthFunction:
@@ -140,14 +164,6 @@ Resources:
             Method: post
             Auth:
               Authorizer: NONE
-        AuthOptions:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /auth/{proxy+}
-            Method: options
-            Auth:
-              Authorizer: NONE
 
   # ===== Lambda: POST /extractText =====
   ExtractTextFunction:
@@ -168,14 +184,6 @@ Resources:
             RestApiId: !Ref FlashbookApi
             Path: /extractText
             Method: post
-        OptionsExtractText:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /extractText
-            Method: options
-            Auth:
-              Authorizer: NONE
 
   # ===== Lambda: POST /generateSummary =====
   GenerateSummaryFunction:
@@ -196,14 +204,6 @@ Resources:
             RestApiId: !Ref FlashbookApi
             Path: /generateSummary
             Method: post
-        OptionsGenerateSummary:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /generateSummary
-            Method: options
-            Auth:
-              Authorizer: NONE
 
   # ===== Lambda: POST /generateImage =====
   GenerateImageFunction:
@@ -224,14 +224,6 @@ Resources:
             RestApiId: !Ref FlashbookApi
             Path: /generateImage
             Method: post
-        OptionsGenerateImage:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /generateImage
-            Method: options
-            Auth:
-              Authorizer: NONE
 
   # ===== Lambda: /notes/* CRUD =====
   NotesFunction:
@@ -328,38 +320,6 @@ Resources:
             RestApiId: !Ref FlashbookApi
             Path: /books/{book_id}
             Method: delete
-        BooksBookIdOptions:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /books/{book_id}
-            Method: options
-            Auth:
-              Authorizer: NONE
-        BooksConfirmOptions:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /books/{book_id}/confirm
-            Method: options
-            Auth:
-              Authorizer: NONE
-        BooksProgressOptions:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /books/{book_id}/progress
-            Method: options
-            Auth:
-              Authorizer: NONE
-        BooksRootOptions:
-          Type: Api
-          Properties:
-            RestApiId: !Ref FlashbookApi
-            Path: /books
-            Method: options
-            Auth:
-              Authorizer: NONE
 
   # ===== S3: Generated Images (private, accessed via presigned URLs) =====
   ImagesBucket:
