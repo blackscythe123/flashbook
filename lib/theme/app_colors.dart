@@ -10,9 +10,9 @@ class AppColors {
   static const Color overlay     = Color(0xFF222222); // Modals, drawers
 
   // -- Accent -----------------------------
-  static const Color accent      = Color(0xFFED1C24); // Primary CTA red
-  static const Color accentDim   = Color(0x33ED1C24); // 20% red (badges, bg tints)
-  static const Color accentHover = Color(0xFFFF2D35); // Button press state
+  static const Color accent      = Color(0xFFC41E24); // Primary CTA red
+  static const Color accentDim   = Color(0x33C41E24); // 20% red (badges, bg tints)
+  static const Color accentHover = Color(0xFFD42028); // Button press state
 
   // -- Text -------------------------------
   static const Color textPrimary   = Color(0xFFFFFFFF);
@@ -25,7 +25,7 @@ class AppColors {
   static const Color border   = Color(0xFF2A2A2A);
   static const Color success  = Color(0xFF22C55E);
   static const Color warning  = Color(0xFFF59E0B);
-  static const Color error    = Color(0xFFED1C24);
+  static const Color error    = Color(0xFFC41E24);
 
   // -- Semantic ---------------------------
   static const Color cardBackground   = surface;

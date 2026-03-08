@@ -282,9 +282,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            _ModeChip(label: '\u{1F4DA} Study'),
+            _ModeChip(label: 'Study'),
             SizedBox(width: 12),
-            _ModeChip(label: '\u{1F3AD} Read'),
+            _ModeChip(label: 'Read'),
           ],
         );
       default:
