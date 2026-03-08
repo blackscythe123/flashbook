@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
 import 'package:http/http.dart' as http;
@@ -111,7 +110,7 @@ class _LearningCardState extends State<LearningCard> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Please enable photo permission in settings'),
-                backgroundColor: AppColors.warning,
+                backgroundColor: Color(0xFFF59E0B),
               ),
             );
           }
@@ -152,7 +151,7 @@ class _LearningCardState extends State<LearningCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Image saved to gallery!'),
-            backgroundColor: AppColors.success,
+            backgroundColor: Color(0xFF22C55E),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -165,7 +164,7 @@ class _LearningCardState extends State<LearningCard> {
             content: Text(
               'Failed to save: ${e.toString().replaceAll('Exception: ', '')}',
             ),
-            backgroundColor: AppColors.accent,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
@@ -223,7 +222,7 @@ class _LearningCardState extends State<LearningCard> {
                               style: GoogleFonts.syne(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 letterSpacing: -0.3,
                                 shadows: const [
                                   Shadow(
@@ -245,7 +244,7 @@ class _LearningCardState extends State<LearningCard> {
                             ? LyricFlowWidget(
                               text: widget.block.content,
                               fontSize: 15,
-                              textColor: AppColors.textPrimary,
+                              textColor: Theme.of(context).colorScheme.onSurface,
                               hasImageBackground: _hasImage,
                             )
                             : Text(
@@ -253,7 +252,7 @@ class _LearningCardState extends State<LearningCard> {
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 height: 1.6,
                                 shadows: const [
                                   Shadow(
@@ -399,7 +398,7 @@ class _LearningCardState extends State<LearningCard> {
               height: 50,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
               ),
             ).animate(onPlay: (c) => c.repeat()).rotate(duration: 2.seconds),
             const SizedBox(height: 24),
@@ -481,13 +480,13 @@ class _LearningCardState extends State<LearningCard> {
       decoration: BoxDecoration(
         color:
             _hasImage
-                ? AppColors.textPrimary.withValues(alpha: 0.2)
+                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)
                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
-                  ? AppColors.textPrimary.withValues(alpha: 0.3)
+                  ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
                   : Theme.of(
                     context,
                   ).colorScheme.primary.withValues(alpha: 0.3),
@@ -511,13 +510,13 @@ class _LearningCardState extends State<LearningCard> {
       decoration: BoxDecoration(
         color:
             _hasImage
-                ? AppColors.textPrimary.withValues(alpha: 0.15)
+                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)
                 : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
-                  ? AppColors.textPrimary.withValues(alpha: 0.2)
+                  ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)
                   : Theme.of(context).dividerColor.withValues(alpha: 0.3),
         ),
       ),
@@ -532,7 +531,7 @@ class _LearningCardState extends State<LearningCard> {
               letterSpacing: 1.5,
               color:
                   _hasImage
-                      ? AppColors.textPrimary.withValues(alpha: 0.7)
+                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
                       : Theme.of(
                         context,
                       ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
@@ -546,14 +545,14 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? AppColors.textPrimary
+                      ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: AppColors.background.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                           blurRadius: 4,
                         ),
                       ]
@@ -574,7 +573,7 @@ class _LearningCardState extends State<LearningCard> {
           decoration: BoxDecoration(
             color:
                 _hasImage
-                    ? AppColors.textPrimary.withValues(alpha: 0.15)
+                    ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)
                     : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -585,13 +584,13 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? AppColors.textPrimary
+                      ? Theme.of(context).colorScheme.onSurface
                       : Theme.of(context).textTheme.bodySmall?.color,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: AppColors.background.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                           blurRadius: 4,
                         ),
                       ]
@@ -782,9 +781,9 @@ class _LearningCardState extends State<LearningCard> {
             icon,
             color:
                 isActive
-                    ? AppColors.warning
+                    ? const Color(0xFFF59E0B)
                     : (_hasImage
-                        ? AppColors.textPrimary
+                        ? Theme.of(context).colorScheme.onSurface
                         : Theme.of(
                           context,
                         ).iconTheme.color?.withValues(alpha: 0.6)),
@@ -818,3 +817,4 @@ class _LearningCardState extends State<LearningCard> {
         .fadeOut(delay: 2.seconds);
   }
 }
+

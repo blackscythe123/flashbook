@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
-import '../theme/app_colors.dart';
 import '../state/state.dart';
 import 'learning_feed_screen.dart';
 
@@ -26,6 +25,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -38,7 +38,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                 style: GoogleFonts.syne(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: cs.onSurface,
                 ),
               ),
             ).animate().fadeIn(duration: 300.ms),
@@ -51,7 +51,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                     '$count bookmark${count == 1 ? '' : 's'}',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      color: cs.secondary,
                     ),
                   );
                 },
@@ -85,10 +85,10 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                               ),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: AppColors.surface,
+                                color: cs.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: AppColors.border,
+                                  color: cs.outline,
                                   width: 1,
                                 ),
                               ),
@@ -100,7 +100,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.accentDim,
+                                      color: cs.primaryContainer,
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
@@ -108,7 +108,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.accent,
+                                        color: cs.primary,
                                         letterSpacing: 1.2,
                                       ),
                                     ),
@@ -126,7 +126,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                           style: GoogleFonts.syne(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
-                                            color: AppColors.textPrimary,
+                                            color: cs.onSurface,
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -138,7 +138,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                               : bookmark.bookId,
                                           style: GoogleFonts.plusJakartaSans(
                                             fontSize: 12,
-                                            color: AppColors.textSecondary,
+                                            color: cs.secondary,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -146,9 +146,9 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                                       ],
                                     ),
                                   ),
-                                  const Icon(
+                                  Icon(
                                     Icons.chevron_right_rounded,
-                                    color: AppColors.textMuted,
+                                    color: cs.outline,
                                     size: 20,
                                   ),
                                 ],
@@ -176,10 +176,10 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.bookmark_border_rounded,
               size: 48,
-              color: AppColors.textMuted,
+              color: Theme.of(context).colorScheme.outline,
             ),
             const SizedBox(height: 16),
             Text(
@@ -187,7 +187,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
               style: GoogleFonts.syne(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -195,7 +195,7 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
               'Bookmark cards while reading to save them here',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.secondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -222,3 +222,4 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
     );
   }
 }
+

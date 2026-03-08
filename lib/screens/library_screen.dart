@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/services.dart';
 import '../state/state.dart';
-import '../theme/app_colors.dart';
 import 'book_detail_screen.dart';
 import 'learning_feed_screen.dart';
 
@@ -153,20 +152,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            backgroundColor: AppColors.surface,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             title: Text(
               'Delete Book',
               style: GoogleFonts.libreBaskerville(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             content: Text(
               'This will permanently remove this book.',
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppColors.textMuted,
+                color: Theme.of(context).colorScheme.outline,
               ),
             ),
             actions: [
@@ -174,7 +173,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 onPressed: () => Navigator.pop(ctx, false),
                 child: Text(
                   'Cancel',
-                  style: GoogleFonts.inter(color: AppColors.textMuted),
+                  style: GoogleFonts.inter(color: Theme.of(context).colorScheme.outline),
                 ),
               ),
               TextButton(
@@ -182,7 +181,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 child: Text(
                   'Delete',
                   style: GoogleFonts.inter(
-                    color: AppColors.error,
+                    color: Theme.of(context).colorScheme.error,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -237,7 +236,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         '${_books.length} book${_books.length == 1 ? '' : 's'}',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: AppColors.textMuted,
+                          color: Theme.of(context).colorScheme.outline,
                         ),
                       ),
                     ],
@@ -245,7 +244,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   // Upload button
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Material(
@@ -263,10 +262,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.add_rounded,
                                 size: 20,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -274,7 +273,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -317,15 +316,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
               decoration: BoxDecoration(
                 color:
                     Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.surface
-                        : AppColors.surface,
+                        ? Theme.of(context).colorScheme.surface
+                        : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
             )
             .animate(onPlay: (c) => c.repeat())
             .shimmer(
               duration: 1500.ms,
-              color: AppColors.accent.withValues(alpha: 0.05),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
             );
       },
     );
@@ -341,13 +340,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.cloud_off_rounded,
                 size: 36,
-                color: AppColors.error,
+                color: Theme.of(context).colorScheme.error,
               ),
             ),
             const SizedBox(height: 16),
@@ -363,7 +362,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               'Check your connection and try again',
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppColors.textMuted,
+                color: Theme.of(context).colorScheme.outline,
               ),
               textAlign: TextAlign.center,
             ),
@@ -390,14 +389,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(28),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: Theme.of(context).colorScheme.outline),
                   ),
                   child: Icon(
                     Icons.auto_stories_rounded,
                     size: 44,
-                    color: AppColors.accent,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 )
                 .animate()
@@ -416,7 +415,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
               'Upload a PDF and I\'ll turn it into\nbite-sized learning cards',
               style: GoogleFonts.inter(
                 fontSize: 14,
-                color: AppColors.textMuted,
+                color: Theme.of(context).colorScheme.outline,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
@@ -441,8 +440,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     return RefreshIndicator(
       onRefresh: _refreshBooks,
-      color: AppColors.accent,
-      backgroundColor: AppColors.surface,
+      color: Theme.of(context).colorScheme.primary,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         itemCount: _books.length + (continueBook != null ? 1 : 0),
@@ -463,13 +462,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
           return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.surface : AppColors.surface,
+                  color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color:
                         isDark
-                            ? AppColors.textPrimary.withValues(alpha: 0.06)
-                            : AppColors.background.withValues(alpha: 0.06),
+                            ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06)
+                            : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
                   ),
                 ),
                 child: Material(
@@ -486,14 +485,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             width: 52,
                             height: 68,
                             decoration: BoxDecoration(
-                              color: AppColors.elevated,
-                              border: Border.all(color: AppColors.border),
+                              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                              border: Border.all(color: Theme.of(context).colorScheme.outline),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Center(
                               child: Icon(
                                 Icons.menu_book_rounded,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 size: 24,
                               ),
                             ),
@@ -510,7 +509,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -522,7 +521,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                       : '$totalPages pages · ~${totalPages * 2} min · $progress%',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: AppColors.textMuted,
+                                    color: Theme.of(context).colorScheme.outline,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -534,16 +533,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                     minHeight: 4,
                                     backgroundColor:
                                         isDark
-                                            ? AppColors.textPrimary.withValues(
+                                            ? Theme.of(context).colorScheme.onSurface.withValues(
                                               alpha: 0.06,
                                             )
-                                            : AppColors.background.withValues(
+                                            : Theme.of(context).colorScheme.surface.withValues(
                                               alpha: 0.06,
                                             ),
                                     valueColor: AlwaysStoppedAnimation(
                                       progress == 100
-                                          ? AppColors.success
-                                          : AppColors.accent,
+                                          ? const Color(0xFF22C55E)
+                                          : Theme.of(context).colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -559,12 +558,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: AppColors.accentDim,
+                                    color: Theme.of(context).colorScheme.primaryContainer,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.play_arrow_rounded,
-                                    color: AppColors.accent,
+                                    color: Theme.of(context).colorScheme.primary,
                                     size: 20,
                                   ),
                                 ),
@@ -574,7 +573,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 child: Icon(
                                   Icons.delete_outline_rounded,
                                   size: 18,
-                                  color: AppColors.textMuted.withValues(
+                                  color: Theme.of(context).colorScheme.outline.withValues(
                                     alpha: 0.5,
                                   ),
                                 ),
@@ -602,13 +601,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surface : AppColors.surface,
+        color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color:
               isDark
-                  ? AppColors.border.withValues(alpha: 0.5)
-                  : AppColors.background.withValues(alpha: 0.06),
+                  ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)
+                  : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
         ),
       ),
       child: Material(
@@ -626,12 +625,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.accent.withValues(alpha: 0.12),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.auto_stories_rounded,
-                        color: AppColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         size: 20,
                       ),
                     ),
@@ -641,7 +640,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textMuted,
+                        color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
                   ],
@@ -652,7 +651,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -662,7 +661,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   'Continue where you left off',
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: AppColors.textMuted,
+                    color: Theme.of(context).colorScheme.outline,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -676,14 +675,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           minHeight: 5,
                           backgroundColor:
                               isDark
-                                  ? AppColors.textPrimary.withValues(
+                                  ? Theme.of(context).colorScheme.onSurface.withValues(
                                     alpha: 0.06,
                                   )
-                                  : AppColors.background.withValues(
+                                  : Theme.of(context).colorScheme.surface.withValues(
                                     alpha: 0.06,
                                   ),
-                          valueColor: const AlwaysStoppedAnimation(
-                            AppColors.accent,
+                          valueColor: AlwaysStoppedAnimation(
+                            Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ),
@@ -707,7 +706,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -715,7 +714,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -728,3 +727,4 @@ class _LibraryScreenState extends State<LibraryScreen> {
     ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.05);
   }
 }
+

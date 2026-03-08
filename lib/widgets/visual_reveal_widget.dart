@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Visual Reveal Widget - Auto-reveals image with fade after 3 seconds.
 /// Features smooth fade animation.
@@ -80,7 +79,7 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
         height: 240,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: AppColors.background,
+          color: Theme.of(context).colorScheme.surface,
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -108,12 +107,12 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
                     return Container(
-                      color: AppColors.accent.withValues(alpha: 0.05),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                       child: Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            AppColors.accent.withValues(alpha: 0.5),
+                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                           ),
                         ),
                       ),
@@ -121,7 +120,7 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
                   },
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: AppColors.accent.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -129,14 +128,14 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
                             Icon(
                               Icons.image_not_supported_rounded,
                               size: 48,
-                              color: AppColors.accent.withValues(alpha: 0.5),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Image unavailable',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
-                                color: AppColors.textMuted,
+                                color: Theme.of(context).colorScheme.outline,
                               ),
                             ),
                           ],
@@ -157,8 +156,8 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.accent.withValues(alpha: 0.1)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -166,12 +165,12 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
           Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.05),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.auto_awesome_rounded,
-                  color: AppColors.accent,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 28,
                 ),
               )
@@ -187,14 +186,14 @@ class _VisualRevealWidgetState extends State<VisualRevealWidget>
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
               letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Tap to reveal now',
-            style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+            style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.outline),
           ),
         ],
       ),
@@ -221,7 +220,7 @@ class FullScreenVisualReveal extends StatelessWidget {
     return GestureDetector(
       onTap: onClose,
       child: Container(
-        color: AppColors.background.withValues(alpha: 0.9),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
         child: Stack(
           children: [
             // Image
@@ -233,7 +232,7 @@ class FullScreenVisualReveal extends StatelessWidget {
                       return Icon(
                         Icons.image_not_supported_rounded,
                         size: 64,
-                        color: AppColors.textPrimary.withValues(alpha: 0.5),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                       );
                     },
                   ),
@@ -253,7 +252,7 @@ class FullScreenVisualReveal extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 16,
-                        color: AppColors.textPrimary.withValues(alpha: 0.8),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                         height: 1.5,
                       ),
                     )
@@ -272,7 +271,7 @@ class FullScreenVisualReveal extends StatelessWidget {
                   'Tap anywhere to close',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppColors.textPrimary.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
@@ -283,9 +282,9 @@ class FullScreenVisualReveal extends StatelessWidget {
               top: 60,
               right: 20,
               child: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.close_rounded,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 onPressed: onClose,
               ).animate().fadeIn(duration: 300.ms),
@@ -296,3 +295,4 @@ class FullScreenVisualReveal extends StatelessWidget {
     );
   }
 }
+

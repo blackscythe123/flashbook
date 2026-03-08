@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_colors.dart';
 import '../theme/theme_provider.dart';
 import '../state/state.dart';
 import '../services/services.dart';
@@ -100,14 +99,14 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.person_outline_rounded,
-            iconColor: AppColors.accent,
+            iconColor: Theme.of(context).colorScheme.primary,
             title: 'Account Info',
             subtitle: context.watch<AuthProvider>().user?.email ?? 'Not signed in',
           ).animate().fadeIn(delay: 160.ms, duration: 400.ms),
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.cloud_outlined,
-            iconColor: AppColors.accent,
+            iconColor: Theme.of(context).colorScheme.primary,
             title: 'Backend Status',
             subtitle: context.watch<ApiConfig>().isConnected ? 'Connected' : 'Disconnected',
             trailing: Container(
@@ -116,8 +115,8 @@ class SettingsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color:
                     context.watch<ApiConfig>().isConnected
-                        ? AppColors.success
-                        : AppColors.warning,
+                        ? const Color(0xFF22C55E)
+                        : const Color(0xFFF59E0B),
                 shape: BoxShape.circle,
               ),
             ),
@@ -131,14 +130,14 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.info_outline_rounded,
-            iconColor: AppColors.textMuted,
+            iconColor: Theme.of(context).colorScheme.outline,
             title: 'Version',
             subtitle: '0.1.0',
           ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.code_rounded,
-            iconColor: AppColors.textMuted,
+            iconColor: Theme.of(context).colorScheme.outline,
             title: 'Built with',
             subtitle: 'Flutter + AI',
           ).animate().fadeIn(delay: 320.ms, duration: 400.ms),
@@ -148,19 +147,19 @@ class SettingsScreen extends StatelessWidget {
           // Sign out
           Container(
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.06),
+              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
+              border: Border.all(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.15)),
             ),
             child: ListTile(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              leading: Icon(Icons.logout_rounded, size: 22, color: AppColors.error),
+              leading: Icon(Icons.logout_rounded, size: 22, color: Theme.of(context).colorScheme.error),
               title: Text(
                 'Sign Out',
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.error,
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
               onTap: () async {
@@ -202,7 +201,7 @@ class _SectionHeader extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: AppColors.textMuted,
+          color: Theme.of(context).colorScheme.outline,
           letterSpacing: 1,
         ),
       ),
@@ -231,12 +230,12 @@ class _SettingsTile extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surface : AppColors.surface,
+        color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark
-              ? AppColors.textPrimary.withValues(alpha: 0.06)
-              : AppColors.background.withValues(alpha: 0.06),
+              ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06)
+              : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
         ),
       ),
       child: ListTile(
@@ -255,10 +254,11 @@ class _SettingsTile extends StatelessWidget {
         ),
         subtitle: Text(
           subtitle,
-          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+          style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.outline),
         ),
         trailing: trailing,
       ),
     );
   }
 }
+

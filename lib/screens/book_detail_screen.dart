@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Book detail / preview screen before entering the reel reader.
 class BookDetailScreen extends StatelessWidget {
@@ -26,7 +25,7 @@ class BookDetailScreen extends StatelessWidget {
     final isReading = progress > 0 && progress < 100;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -41,7 +40,7 @@ class BookDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Hero gradient header
-            _buildHeader(title).animate().fadeIn(duration: 500.ms),
+            _buildHeader(context, title).animate().fadeIn(duration: 500.ms),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -56,7 +55,7 @@ class BookDetailScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 26,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       )
                       .animate()
@@ -68,14 +67,19 @@ class BookDetailScreen extends StatelessWidget {
                     status == 'reading' ? 'Currently reading' : 'Ready to read',
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: AppColors.textMuted,
+                      color: Theme.of(context).colorScheme.outline,
                     ),
                   ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
 
                   const SizedBox(height: 24),
 
                   // Stats row
-                  _buildStatsRow(totalPages, progress, estimatedMinutes)
+                  _buildStatsRow(
+                    context,
+                    totalPages,
+                    progress,
+                    estimatedMinutes,
+                  )
                       .animate()
                       .fadeIn(delay: 200.ms, duration: 400.ms)
                       .slideY(begin: 0.05),
@@ -84,13 +88,14 @@ class BookDetailScreen extends StatelessWidget {
 
                   // Card preview section
                   _buildCardPreview(
+                    context,
                     totalPages,
                   ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
 
                   const SizedBox(height: 36),
 
                   // CTA button
-                  _buildCtaButton(isReading)
+                  _buildCtaButton(context, isReading)
                       .animate()
                       .fadeIn(delay: 400.ms, duration: 400.ms)
                       .slideY(begin: 0.1),
@@ -104,16 +109,16 @@ class BookDetailScreen extends StatelessWidget {
                         onDelete();
                         Navigator.pop(context, 'deleted');
                       },
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline_rounded,
                         size: 18,
-                        color: AppColors.error,
+                        color: Theme.of(context).colorScheme.error,
                       ),
                       label: Text(
                         'Delete Book',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: AppColors.error,
+                          color: Theme.of(context).colorScheme.error,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -130,11 +135,11 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(String title) {
+  Widget _buildHeader(BuildContext context, String title) {
     return Container(
       height: 200,
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
@@ -145,13 +150,13 @@ class BookDetailScreen extends StatelessWidget {
           width: 72,
           height: 90,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.menu_book_rounded,
-            color: AppColors.accent,
+            color: Theme.of(context).colorScheme.primary,
             size: 36,
           ),
         ),
@@ -159,14 +164,20 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(int totalPages, int progress, int estimatedMinutes) {
+  Widget _buildStatsRow(
+    BuildContext context,
+    int totalPages,
+    int progress,
+    int estimatedMinutes,
+  ) {
     return Row(
       children: [
-        _buildStatItem(Icons.auto_stories_rounded, '$totalPages', 'Pages'),
+        _buildStatItem(context, Icons.auto_stories_rounded, '$totalPages', 'Pages'),
         const SizedBox(width: 24),
-        _buildStatItem(Icons.trending_up_rounded, '$progress%', 'Progress'),
+        _buildStatItem(context, Icons.trending_up_rounded, '$progress%', 'Progress'),
         const SizedBox(width: 24),
         _buildStatItem(
+          context,
           Icons.schedule_rounded,
           '${estimatedMinutes}m',
           'Est. Time',
@@ -175,24 +186,29 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(IconData icon, String value, String label) {
+  Widget _buildStatItem(
+    BuildContext context,
+    IconData icon,
+    String value,
+    String label,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 20, color: AppColors.accent),
+            Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 6),
             Text(
               value,
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 2),
@@ -200,7 +216,7 @@ class BookDetailScreen extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                color: AppColors.textMuted,
+                color: Theme.of(context).colorScheme.outline,
               ),
             ),
           ],
@@ -209,7 +225,7 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCardPreview(int totalPages) {
+  Widget _buildCardPreview(BuildContext context, int totalPages) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -218,7 +234,7 @@ class BookDetailScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -226,22 +242,22 @@ class BookDetailScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.accentDim,
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.layers_rounded,
                   size: 20,
-                  color: AppColors.accent,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -250,7 +266,7 @@ class BookDetailScreen extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -260,13 +276,13 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCtaButton(bool isReading) {
+  Widget _buildCtaButton(BuildContext context, bool isReading) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.accent,
+          color: Theme.of(context).colorScheme.primary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Material(
@@ -278,9 +294,9 @@ class BookDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.play_arrow_rounded,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                     size: 22,
                   ),
                   const SizedBox(width: 8),
@@ -289,7 +305,7 @@ class BookDetailScreen extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -301,3 +317,4 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 }
+

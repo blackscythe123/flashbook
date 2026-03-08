@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Search & Discovery screen placeholder.
 class SearchScreen extends StatelessWidget {
@@ -8,6 +7,7 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -15,19 +15,18 @@ class SearchScreen extends StatelessWidget {
           style: GoogleFonts.syne(
             fontSize: 22,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: cs.onSurface,
           ),
         ),
       ),
-      backgroundColor: AppColors.background,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.search_rounded,
               size: 48,
-              color: AppColors.textMuted,
+              color: cs.outline,
             ),
             const SizedBox(height: 24),
             Text(
@@ -35,7 +34,7 @@ class SearchScreen extends StatelessWidget {
               style: GoogleFonts.syne(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -44,7 +43,7 @@ class SearchScreen extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: cs.secondary,
               ),
             ),
             const SizedBox(height: 32),
@@ -52,7 +51,7 @@ class SearchScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                border: Border.all(color: AppColors.border, width: 1),
+                border: Border.all(color: cs.outline, width: 1),
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Text(
@@ -60,7 +59,7 @@ class SearchScreen extends StatelessWidget {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textMuted,
+                  color: cs.outline,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -71,3 +70,4 @@ class SearchScreen extends StatelessWidget {
     );
   }
 }
+

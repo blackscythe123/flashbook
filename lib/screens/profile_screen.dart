@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_colors.dart';
 import '../theme/theme_provider.dart';
 import '../state/state.dart';
 import 'settings_screen.dart';
@@ -60,7 +59,7 @@ class ProfileScreen extends StatelessWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Center(
@@ -69,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -89,7 +88,7 @@ class ProfileScreen extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.accentDim,
+                        color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -97,7 +96,7 @@ class ProfileScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.accent,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ),
@@ -111,13 +110,13 @@ class ProfileScreen extends StatelessWidget {
               Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.surface : AppColors.surface,
+                      color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color:
                             isDark
-                                ? AppColors.textPrimary.withValues(alpha: 0.06)
-                                : AppColors.background.withValues(alpha: 0.06),
+                                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06)
+                                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
                       ),
                     ),
                     child: Row(
@@ -129,10 +128,10 @@ class ProfileScreen extends StatelessWidget {
                           height: 36,
                           color:
                               isDark
-                                  ? AppColors.textPrimary.withValues(
+                                  ? Theme.of(context).colorScheme.onSurface.withValues(
                                     alpha: 0.08,
                                   )
-                                  : AppColors.background.withValues(
+                                  : Theme.of(context).colorScheme.surface.withValues(
                                     alpha: 0.06,
                                   ),
                         ),
@@ -142,10 +141,10 @@ class ProfileScreen extends StatelessWidget {
                           height: 36,
                           color:
                               isDark
-                                  ? AppColors.textPrimary.withValues(
+                                  ? Theme.of(context).colorScheme.onSurface.withValues(
                                     alpha: 0.08,
                                   )
-                                  : AppColors.background.withValues(
+                                  : Theme.of(context).colorScheme.surface.withValues(
                                     alpha: 0.06,
                                   ),
                         ),
@@ -173,13 +172,13 @@ class ProfileScreen extends StatelessWidget {
               Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.surface : AppColors.surface,
+                      color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color:
                             isDark
-                                ? AppColors.textPrimary.withValues(alpha: 0.06)
-                                : AppColors.background.withValues(alpha: 0.06),
+                                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06)
+                                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
                       ),
                     ),
                     child: Row(
@@ -187,12 +186,12 @@ class ProfileScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha: 0.15),
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
                             Icons.local_fire_department_rounded,
-                            color: AppColors.warning,
+                            color: Color(0xFFF59E0B),
                             size: 24,
                           ),
                         ),
@@ -213,7 +212,7 @@ class ProfileScreen extends StatelessWidget {
                                 'Start reading to build your streak!',
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: AppColors.textMuted,
+                                  color: Theme.of(context).colorScheme.outline,
                                 ),
                               ),
                             ],
@@ -232,13 +231,13 @@ class ProfileScreen extends StatelessWidget {
               Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.surface : AppColors.surface,
+                      color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color:
                             isDark
-                                ? AppColors.textPrimary.withValues(alpha: 0.06)
-                                : AppColors.background.withValues(alpha: 0.06),
+                                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06)
+                                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
                       ),
                     ),
                     child: Column(
@@ -258,7 +257,7 @@ class ProfileScreen extends StatelessWidget {
                               '0 / 50 cards',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: AppColors.textMuted,
+                                color: Theme.of(context).colorScheme.outline,
                               ),
                             ),
                           ],
@@ -271,14 +270,14 @@ class ProfileScreen extends StatelessWidget {
                             minHeight: 8,
                             backgroundColor:
                                 isDark
-                                    ? AppColors.textPrimary.withValues(
+                                    ? Theme.of(context).colorScheme.onSurface.withValues(
                                       alpha: 0.06,
                                     )
-                                    : AppColors.background.withValues(
+                                    : Theme.of(context).colorScheme.surface.withValues(
                                       alpha: 0.06,
                                     ),
-                            valueColor: const AlwaysStoppedAnimation(
-                              AppColors.accent,
+                            valueColor: AlwaysStoppedAnimation(
+                              Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ),
@@ -309,7 +308,7 @@ class ProfileScreen extends StatelessWidget {
                       (context, theme, _) => Switch(
                         value: theme.isDarkMode,
                         onChanged: null,
-                        activeThumbColor: AppColors.accent,
+                        activeThumbColor: Theme.of(context).colorScheme.primary,
                       ),
                 ),
               ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
@@ -367,7 +366,7 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMuted),
+          style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.outline),
         ),
       ],
     );
@@ -393,13 +392,13 @@ class _ActionTile extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surface : AppColors.surface,
+        color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color:
               isDark
-                  ? AppColors.textPrimary.withValues(alpha: 0.06)
-                  : AppColors.background.withValues(alpha: 0.06),
+                  ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06)
+                  : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
         ),
       ),
       child: ListTile(
@@ -415,3 +414,4 @@ class _ActionTile extends StatelessWidget {
     );
   }
 }
+
