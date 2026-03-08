@@ -1,5 +1,6 @@
 // Screens barrel file - export all screens from a single location
 export 'onboarding_screen.dart';
+export 'splash_screen.dart';
 export 'entry_screen.dart';
 export 'login_screen.dart';
 export 'home_screen.dart';

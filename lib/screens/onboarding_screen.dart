@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/app_colors.dart';
 import 'login_screen.dart';
 
-/// 3-page onboarding flow shown on first launch.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -12,151 +11,170 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _pageController = PageController();
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with TickerProviderStateMixin {
+  final PageController _pageController = PageController();
+  late final AnimationController _contentController;
+  late final Animation<double> _contentOpacity;
+  late final Animation<Offset> _contentSlide;
   int _currentPage = 0;
 
-  // --- Dark theme palette ---
-  static const _bg = Color(0xFF1A1D2E);
-  static const _iconContainer = Color(0xFF252A3D);
-  static const _iconBorder = Color(0xFF3D4460);
-  static const _iconColor = Color(0xFF818CF8);
-  static const _accent = Color(0xFF6366F1);
-  static const _subtitleColor = Color(0xFF9CA3AF);
-
-  static const _pages = [
-    _OnboardingPage(
-      icon: Icons.auto_stories_rounded,
-      title: 'Turn Any PDF Into\nScrollable Reels',
-      subtitle:
-          'Upload any PDF and our AI transforms it into bite-sized, swipeable learning cards.',
+  static const List<_OnboardingPageContent> _pages = [
+    _OnboardingPageContent(
+      headline: 'Any book.\nUnder 5 minutes.',
+      body:
+          'Upload any PDF and get TikTok-style cards instantly. Study smarter, read faster.',
     ),
-    _OnboardingPage(
-      icon: Icons.bolt_rounded,
-      title: 'AI-Powered\nLearning Cards',
-      subtitle:
-          'Key insights, summaries, and concepts extracted automatically — one card at a time.',
+    _OnboardingPageContent(
+      headline: 'Learn or just enjoy.\nYou decide.',
+      body:
+          'Switch between textbook mode and novel mode. AI adapts the card format for each.',
     ),
-    _OnboardingPage(
-      icon: Icons.bookmark_rounded,
-      title: 'Bookmark & Resume\nAnytime',
-      subtitle:
-          'Save your favorite cards, track progress, and pick up right where you left off.',
+    _OnboardingPageContent(
+      headline: 'Built for how\nGen Z actually reads.',
+      body:
+          'Swipe through AI-generated cards. Bookmark the good stuff. Never lose context.',
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _contentController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _contentOpacity = CurvedAnimation(
+      parent: _contentController,
+      curve: Curves.easeOut,
+    );
+    _contentSlide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _contentController, curve: Curves.easeOut),
+    );
+
+    _contentController.forward();
+  }
+
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
     await prefs.setBool('onboarding_complete', true);
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-    }
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const LoginScreen(),
+        transitionDuration: const Duration(milliseconds: 400),
+        transitionsBuilder:
+            (_, animation, __, child) =>
+                FadeTransition(opacity: animation, child: child),
+      ),
+    );
   }
 
   void _nextPage() {
     if (_currentPage < _pages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+        curve: Curves.easeOut,
       );
-    } else {
-      _completeOnboarding();
+      return;
     }
+
+    _completeOnboarding();
   }
 
   @override
   void dispose() {
+    _contentController.dispose();
     _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLastSlide = _currentPage == _pages.length - 1;
+
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
-            Align(
-              alignment: Alignment.topRight,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8, right: 8),
-                child: TextButton(
-                  onPressed: _completeOnboarding,
-                  child: Text(
-                    'Skip',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: _subtitleColor,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            // Pages
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                onPageChanged: (i) => setState(() => _currentPage = i),
                 itemCount: _pages.length,
-                itemBuilder: (context, index) {
-                  return _buildPage(_pages[index], index);
+                onPageChanged: (index) {
+                  setState(() => _currentPage = index);
+                  _contentController.forward(from: 0.0);
                 },
+                itemBuilder: (context, index) => _buildSlide(index),
               ),
             ),
-
-            // Dots + Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
               child: Column(
                 children: [
-                  // Page dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       _pages.length,
-                      (i) => AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == i ? 28 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: _currentPage == i
-                              ? _accent
-                              : _accent.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
+                      (index) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                          width: _currentPage == index ? 20 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color:
+                                _currentPage == index
+                                    ? AppColors.accent
+                                    : AppColors.border,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-
-                  // CTA button
+                  const SizedBox(height: 22),
+                  if (!isLastSlide)
+                    TextButton(
+                      onPressed: _completeOnboarding,
+                      child: Text(
+                        'Skip',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  if (!isLastSlide) const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 52,
                     child: ElevatedButton(
                       onPressed: _nextPage,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _accent,
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.accent,
+                        foregroundColor: AppColors.textPrimary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
                       child: Text(
-                        _currentPage == _pages.length - 1
-                            ? 'Get Started'
-                            : 'Next',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
+                        isLastSlide ? 'Get Started' : 'Continue',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -170,74 +188,206 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildPage(_OnboardingPage page, int index) {
+  Widget _buildSlide(int index) {
+    final page = _pages[index];
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon container — flat dark box, no gradient
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: _iconContainer,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: _iconBorder, width: 1),
+          Expanded(
+            flex: 4,
+            child: Center(
+              child: FadeTransition(
+                opacity: _contentOpacity,
+                child: SlideTransition(
+                  position: _contentSlide,
+                  child: _buildTopVisual(index),
+                ),
+              ),
             ),
-            child: Icon(page.icon, size: 44, color: _iconColor),
-          )
-              .animate(key: ValueKey('icon_$index'))
-              .fadeIn(duration: 500.ms)
-              .scale(
-                  begin: const Offset(0.7, 0.7),
-                  curve: Curves.elasticOut,
-                  duration: 700.ms),
-          const SizedBox(height: 48),
-
-          // Title
-          Text(
-            page.title,
-            style: GoogleFonts.inter(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              height: 1.25,
+          ),
+          Expanded(
+            flex: 6,
+            child: FadeTransition(
+              opacity: _contentOpacity,
+              child: SlideTransition(
+                position: _contentSlide,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
+                    Text(
+                      page.headline,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.syne(
+                        fontSize: 38,
+                        height: 1.05,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        page.body,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 15,
+                          height: 1.6,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            textAlign: TextAlign.center,
-          )
-              .animate(key: ValueKey('title_$index'))
-              .fadeIn(delay: 200.ms, duration: 400.ms)
-              .slideY(begin: 0.2),
-          const SizedBox(height: 16),
-
-          // Subtitle
-          Text(
-            page.subtitle,
-            style: GoogleFonts.inter(
-              fontSize: 15,
-              color: _subtitleColor,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          )
-              .animate(key: ValueKey('sub_$index'))
-              .fadeIn(delay: 350.ms, duration: 400.ms)
-              .slideY(begin: 0.15),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTopVisual(int index) {
+    switch (index) {
+      case 0:
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '5',
+              style: GoogleFonts.syne(
+                fontSize: 120,
+                height: 0.9,
+                fontWeight: FontWeight.w800,
+                color: AppColors.accent,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'MINUTES',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+                letterSpacing: 3.0,
+              ),
+            ),
+          ],
+        );
+      case 1:
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            _ModeChip(label: '\u{1F4DA} Study'),
+            SizedBox(width: 12),
+            _ModeChip(label: '\u{1F3AD} Read'),
+          ],
+        );
+      default:
+        return const _StatRow();
+    }
+  }
+}
+
+class _ModeChip extends StatelessWidget {
+  const _ModeChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }
 }
 
-class _OnboardingPage {
-  final IconData icon;
-  final String title;
-  final String subtitle;
+class _StatRow extends StatelessWidget {
+  const _StatRow();
 
-  const _OnboardingPage({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        _StatBlock(value: '85%', label: 'RETENTION'),
+        _StatDivider(),
+        _StatBlock(value: '3x', label: 'FASTER'),
+        _StatDivider(),
+        _StatBlock(value: '\u221E', label: 'BOOKS'),
+      ],
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 52,
+      margin: const EdgeInsets.symmetric(horizontal: 18),
+      color: AppColors.divider,
+    );
+  }
+}
+
+class _StatBlock extends StatelessWidget {
+  const _StatBlock({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.syne(
+            fontSize: 32,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+            letterSpacing: 2.0,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OnboardingPageContent {
+  const _OnboardingPageContent({required this.headline, required this.body});
+
+  final String headline;
+  final String body;
 }

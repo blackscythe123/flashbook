@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_colors.dart';
 
 /// Bottom navigation bar for the app.
@@ -17,8 +18,10 @@ class AppBottomNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
+        color: AppColors.surface,
+        border: const Border(
+          top: BorderSide(color: AppColors.divider, width: 1),
+        ),
       ),
       child: SafeArea(
         child: Padding(
@@ -62,15 +65,15 @@ class AppBottomNavigation extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? AppColors.primary : AppColors.textMuted,
+              color: isSelected ? AppColors.accent : AppColors.textMuted,
             ),
             const SizedBox(height: 4),
             Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? AppColors.primary : AppColors.textMuted,
+                color: isSelected ? AppColors.accent : AppColors.textMuted,
               ),
             ),
           ],

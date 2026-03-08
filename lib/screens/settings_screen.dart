@@ -17,7 +17,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Settings',
-          style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w600),
+          style: GoogleFonts.syne(fontSize: 17, fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
@@ -33,14 +33,14 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.dark_mode_rounded,
-            iconColor: AppColors.secondary,
+            iconColor: AppColors.textMuted,
             title: 'Dark Mode',
             subtitle: 'Easier on the eyes at night',
             trailing: Consumer<ThemeProvider>(
               builder: (ctx, theme, _) => Switch(
                 value: theme.isDarkMode,
-                onChanged: (v) => theme.toggleTheme(v),
-                activeThumbColor: AppColors.primary,
+                onChanged: null,
+                activeThumbColor: AppColors.accent,
               ),
             ),
           ).animate().fadeIn(delay: 80.ms, duration: 400.ms),
@@ -53,14 +53,14 @@ class SettingsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.person_outline_rounded,
-            iconColor: AppColors.primary,
+            iconColor: AppColors.accent,
             title: 'Account Info',
             subtitle: context.watch<AuthProvider>().user?.email ?? 'Not signed in',
           ).animate().fadeIn(delay: 160.ms, duration: 400.ms),
           const SizedBox(height: 8),
           _SettingsTile(
             icon: Icons.cloud_outlined,
-            iconColor: AppColors.accentBlue,
+            iconColor: AppColors.accent,
             title: 'Backend Status',
             subtitle: context.watch<ApiConfig>().isDemoMode ? 'Demo Mode' : 'Connected',
             trailing: Container(
@@ -100,9 +100,9 @@ class SettingsScreen extends StatelessWidget {
           // Sign out
           Container(
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.06),
+              color: AppColors.error.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.error.withOpacity(0.15)),
+              border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
             ),
             child: ListTile(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -156,7 +156,6 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget? trailing;
-  final VoidCallback? onTap;
 
   const _SettingsTile({
     required this.icon,
@@ -164,7 +163,6 @@ class _SettingsTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.trailing,
-    this.onTap,
   });
 
   @override
@@ -173,19 +171,20 @@ class _SettingsTile extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: isDark ? AppColors.surface : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.06),
+          color: isDark
+              ? AppColors.textPrimary.withValues(alpha: 0.06)
+              : AppColors.background.withValues(alpha: 0.06),
         ),
       ),
       child: ListTile(
-        onTap: onTap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 20, color: iconColor),

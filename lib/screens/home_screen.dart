@@ -32,13 +32,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDark ? AppColors.navBarDark : AppColors.navBarLight,
+          color: isDark ? AppColors.navBackground : AppColors.navBackground,
           border: Border(
-            top: BorderSide(
-              color: isDark
-                  ? Colors.white.withOpacity(0.06)
-                  : Colors.black.withOpacity(0.06),
-            ),
+            top: BorderSide(color: AppColors.divider),
           ),
         ),
         child: SafeArea(
@@ -96,9 +92,9 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isSelected
-        ? AppColors.primary
+        ? AppColors.accent
         : (Theme.of(context).brightness == Brightness.dark
-            ? AppColors.textMutedDark
+            ? AppColors.textSecondary
             : AppColors.textMuted);
 
     return GestureDetector(
@@ -113,7 +109,10 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                color:
+                    isSelected
+                        ? AppColors.accentDim
+                        : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 24, color: color),
@@ -121,7 +120,7 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: color,

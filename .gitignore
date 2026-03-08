@@ -44,3 +44,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+#skills
+skills/*
+thingstodo.md
+context_flow.md
+backend_architecture.mmd
+backend_architecture.svg
+MERGE_PLAN_testing-vs-local-vs-todo.md
+analyze_output.txt
+analyze_output_after.txt

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
@@ -156,7 +155,7 @@ class BookProvider extends ChangeNotifier {
 
     try {
       if (isLiveMode) {
-        debugPrint('BookProvider: Using LIVE API for book processing');
+        debugPrint('BookProvider: Using live API for book processing');
         _currentBook = await _processBookWithApi(bookId);
       } else {
         debugPrint('BookProvider: Using MOCK data for book processing');
@@ -442,7 +441,7 @@ class BookProvider extends ChangeNotifier {
         }
 
         debugPrint(
-          'BookProvider: Processing text with LIVE API (lazy loading)',
+          'BookProvider: Processing text with live API (lazy loading)',
         );
         await _initializeLazyLoading(
           textContent,

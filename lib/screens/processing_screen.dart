@@ -62,7 +62,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
 
     if (hasUploadedContent && isLiveMode) {
       // Process uploaded PDF with real backend
-      debugPrint('ProcessingScreen: Processing uploaded content with LIVE API');
+      debugPrint('ProcessingScreen: Processing uploaded content with live API');
 
       // Update steps for live processing
       setState(() {
@@ -126,7 +126,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.paperLight,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -140,7 +140,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                   .animate(onPlay: (c) => c.repeat())
                   .shimmer(
                     duration: 1500.ms,
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: AppColors.accent.withValues(alpha: 0.3),
                   ),
 
               const SizedBox(height: 48),
@@ -151,7 +151,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                 style: GoogleFonts.libreBaskerville(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.inkLight,
+                  color: AppColors.textPrimary,
                 ),
               ).animate().fadeIn(duration: 600.ms),
 
@@ -206,14 +206,14 @@ class _ProcessingScreenState extends State<ProcessingScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.05),
+                  color: AppColors.accent.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.auto_awesome_rounded,
-                      color: AppColors.primary,
+                      color: AppColors.accent,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -222,7 +222,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                         'AI is structuring this book for optimal learning',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: AppColors.inkLight.withValues(alpha: 0.8),
+                          color: AppColors.textPrimary.withValues(alpha: 0.8),
                         ),
                       ),
                     ),
@@ -250,7 +250,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             child: CircularProgressIndicator(
               strokeWidth: 3,
               valueColor: AlwaysStoppedAnimation(
-                AppColors.primary.withValues(alpha: 0.2),
+                AppColors.accent.withValues(alpha: 0.2),
               ),
             ),
           ).animate(onPlay: (c) => c.repeat()).rotate(duration: 3.seconds),
@@ -262,8 +262,8 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             child: CircularProgressIndicator(
               strokeWidth: 3,
               value: (_currentStep + 1) / _processingSteps.length,
-              valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+              valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+              backgroundColor: AppColors.accent.withValues(alpha: 0.1),
             ),
           ),
 
@@ -272,12 +272,12 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.accent.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.auto_stories_rounded,
-              color: AppColors.primary,
+              color: AppColors.accent,
               size: 28,
             ),
           ),
@@ -293,7 +293,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       height: 6,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: AppColors.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(3),
       ),
       child: FractionallySizedBox(
@@ -301,7 +301,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
         widthFactor: progress,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.primary,
+            color: AppColors.accent,
             borderRadius: BorderRadius.circular(3),
           ),
         ),

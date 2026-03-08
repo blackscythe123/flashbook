@@ -7,13 +7,15 @@ import '../models/models.dart';
 import '../state/state.dart';
 import '../widgets/learning_card.dart';
 import 'progress_screen.dart';
-import '../theme/theme_provider.dart';
 
 /// Learning Feed Screen - the CORE experience.
 /// Features Instagram-style vertical scrolling with one card per page.
 /// Design inspired by the Figma learning_feed_(core_experience) template.
 class LearningFeedScreen extends StatefulWidget {
-  const LearningFeedScreen({super.key});
+  final String? bookId;
+  final int? initialCardIndex;
+
+  const LearningFeedScreen({super.key, this.bookId, this.initialCardIndex});
 
   @override
   State<LearningFeedScreen> createState() => _LearningFeedScreenState();
@@ -28,10 +30,22 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
-    // Jump to resume position after the first frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    _pageController = PageController(initialPage: widget.initialCardIndex ?? 0);
+
+    // Ensure requested book is loaded when opening from bookmarks.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final bookProvider = context.read<BookProvider>();
+      if (widget.bookId != null &&
+          (bookProvider.currentBook == null ||
+              bookProvider.currentBook!.id != widget.bookId)) {
+        await bookProvider.processBook(widget.bookId!);
+      }
+
+      if (!mounted || widget.initialCardIndex != null) {
+        return;
+      }
+
+      // Jump to resume position after content is rendered for regular flow.
       final resumeIndex = bookProvider.resumeBlockIndex;
       if (resumeIndex > 0) {
         setState(() => _currentPage = resumeIndex);
@@ -39,6 +53,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
         bookProvider.clearResumePosition();
       }
     });
+
+    // Keep initial index in local state for progress label/logic.
+    if ((widget.initialCardIndex ?? 0) > 0) {
+      _currentPage = widget.initialCardIndex!;
+    }
   }
 
   @override
@@ -114,7 +133,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   return LearningCard(
                     block: block,
                     chapter: chapter,
+                    bookId: book.id,
                     bookTitle: book.title,
+                    cardIndex: index,
                     progress: (index + 1) / allBlocks.length,
                     isFirst: index == 0,
                     isLast: index == allBlocks.length - 1,
@@ -198,7 +219,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           'Reset',
                           style: GoogleFonts.inter(
                             fontSize: 14,
-                            color: AppColors.primary,
+                            color: AppColors.accent,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -225,7 +246,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           min: 14,
                           max: 24,
                           divisions: 10,
-                          activeColor: AppColors.primary,
+                          activeColor: AppColors.accent,
                           onChanged: (value) {
                             setSheetState(() => tempFontSize = value);
                             setState(() => _fontSize = value);
@@ -261,11 +282,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           'Regular',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w400,
-                            color: !tempIsBold ? Colors.white : null,
+                            color: !tempIsBold ? AppColors.textPrimary : null,
                           ),
                         ),
                         selected: !tempIsBold,
-                        selectedColor: AppColors.primary,
+                        selectedColor: AppColors.accent,
                         onSelected: (selected) {
                           if (selected) {
                             setSheetState(() => tempIsBold = false);
@@ -279,11 +300,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           'Bold',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w700,
-                            color: tempIsBold ? Colors.white : null,
+                            color: tempIsBold ? AppColors.textPrimary : null,
                           ),
                         ),
                         selected: tempIsBold,
-                        selectedColor: AppColors.primary,
+                        selectedColor: AppColors.accent,
                         onSelected: (selected) {
                           if (selected) {
                             setSheetState(() => tempIsBold = true);
@@ -331,7 +352,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+                          color: Theme.of(
+                            context,
+                          ).shadowColor.withValues(alpha: 0.1),
                           blurRadius: 10,
                         ),
                       ],
@@ -360,17 +383,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
               const SizedBox(width: 8),
 
               // Theme Toggle Button
-              Builder(
-                builder: (context) {
-                  final isDark = Theme.of(context).brightness == Brightness.dark;
-                  return _buildNavButton(
-                    icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                    onTap: () {
-                      context.read<ThemeProvider>().toggleTheme(!isDark);
-                    },
-                  );
-                }
-              ),
+              _buildNavButton(icon: Icons.dark_mode_rounded, onTap: () {}),
             ],
           ),
         ),
@@ -425,9 +438,10 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.light
-                  ? AppColors.inkLight.withValues(alpha: 0.95)
-                  : Theme.of(context).cardColor.withValues(alpha: 0.95),
+              color:
+                  Theme.of(context).brightness == Brightness.light
+                      ? AppColors.textPrimary.withValues(alpha: 0.95)
+                      : Theme.of(context).cardColor.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
@@ -451,9 +465,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
-                        color: Theme.of(context).brightness == Brightness.light
-                            ? Colors.white.withValues(alpha: 0.6)
-                            : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                        color:
+                            Theme.of(context).brightness == Brightness.light
+                                ? AppColors.textPrimary.withValues(alpha: 0.6)
+                                : Theme.of(context).textTheme.bodySmall?.color
+                                    ?.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -462,9 +478,10 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).brightness == Brightness.light
-                            ? Colors.white
-                            : Theme.of(context).textTheme.bodyLarge?.color,
+                        color:
+                            Theme.of(context).brightness == Brightness.light
+                                ? AppColors.textPrimary
+                                : Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                   ],
@@ -474,9 +491,12 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   width: 1,
                   height: 24,
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                  color:
+                      Theme.of(context).brightness == Brightness.light
+                          ? AppColors.textPrimary.withValues(alpha: 0.2)
+                          : Theme.of(
+                            context,
+                          ).dividerColor.withValues(alpha: 0.3),
                 ),
 
                 // Progress indicator
@@ -485,9 +505,12 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     Icon(
                       Icons.style_rounded,
                       size: 16,
-                      color: Theme.of(context).brightness == Brightness.light
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : Theme.of(context).iconTheme.color?.withValues(alpha: 0.8),
+                      color:
+                          Theme.of(context).brightness == Brightness.light
+                              ? AppColors.textPrimary.withValues(alpha: 0.8)
+                              : Theme.of(
+                                context,
+                              ).iconTheme.color?.withValues(alpha: 0.8),
                     ),
                     const SizedBox(width: 8),
                     Column(
@@ -502,9 +525,17 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1,
-                                color: Theme.of(context).brightness == Brightness.light
-                                    ? Colors.white.withValues(alpha: 0.6)
-                                    : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? AppColors.textPrimary.withValues(
+                                          alpha: 0.6,
+                                        )
+                                        : Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.color
+                                            ?.withValues(alpha: 0.6),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -513,9 +544,17 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                               style: GoogleFonts.inter(
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).brightness == Brightness.light
-                                    ? Colors.white.withValues(alpha: 0.6)
-                                    : Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                                color:
+                                    Theme.of(context).brightness ==
+                                            Brightness.light
+                                        ? AppColors.textPrimary.withValues(
+                                          alpha: 0.6,
+                                        )
+                                        : Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.color
+                                            ?.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
@@ -525,9 +564,14 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           width: 80,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? Colors.white.withValues(alpha: 0.2)
-                                : Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? AppColors.textPrimary.withValues(
+                                      alpha: 0.2,
+                                    )
+                                    : Theme.of(
+                                      context,
+                                    ).dividerColor.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: FractionallySizedBox(
@@ -535,7 +579,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                             widthFactor: (_currentPage + 1) / totalBlocks,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
+                                color: AppColors.accent,
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),

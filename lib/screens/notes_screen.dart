@@ -6,7 +6,7 @@ import '../theme/app_colors.dart';
 import '../widgets/note_input_dialog.dart';
 
 class NotesScreen extends StatefulWidget {
-  const NotesScreen({Key? key}) : super(key: key);
+  const NotesScreen({super.key});
 
   @override
   State<NotesScreen> createState() => _NotesScreenState();
@@ -21,11 +21,11 @@ class _NotesScreenState extends State<NotesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Notes'),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        foregroundColor: AppColors.inkLight,
+        backgroundColor: AppColors.background,
+        elevation: 0,
+        foregroundColor: AppColors.textPrimary,
       ),
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.background,
       body: Consumer2<NoteProvider, BookProvider>(
         builder: (context, noteProvider, bookProvider, child) {
           final currentBook = bookProvider.currentBook;
@@ -37,8 +37,11 @@ class _NotesScreenState extends State<NotesScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // FIXED: Changed .withValues to .withOpacity
-                    Icon(Icons.note_outlined, size: 64, color: AppColors.inkLight.withOpacity(0.3)),
+                    Icon(
+                      Icons.note_outlined,
+                      size: 64,
+                      color: AppColors.textPrimary.withValues(alpha: 0.3),
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'No book selected',
@@ -59,8 +62,11 @@ class _NotesScreenState extends State<NotesScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // FIXED: Changed .withValues to .withOpacity
-                    Icon(Icons.note_add_outlined, size: 64, color: AppColors.accentBlue.withOpacity(0.5)),
+                    Icon(
+                      Icons.note_add_outlined,
+                      size: 64,
+                      color: AppColors.accent.withValues(alpha: 0.5),
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       'No notes yet',
@@ -69,9 +75,8 @@ class _NotesScreenState extends State<NotesScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'Add notes while reading to see them here',
-                      // FIXED: Changed .withValues to .withOpacity
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.inkLight.withOpacity(0.6),
+                        color: AppColors.textPrimary.withValues(alpha: 0.6),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -97,7 +102,12 @@ class _NotesScreenState extends State<NotesScreen> {
   Widget _buildNoteCard(BuildContext context, NoteProvider noteProvider, Note note) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      elevation: 1,
+      elevation: 0,
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.border, width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -107,7 +117,7 @@ class _NotesScreenState extends State<NotesScreen> {
             Text(
               note.cardTitle,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: AppColors.accentBlue,
+                color: AppColors.accent,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 2,
@@ -119,7 +129,7 @@ class _NotesScreenState extends State<NotesScreen> {
             Text(
               note.noteText,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.inkLight,
+                color: AppColors.textPrimary,
                 height: 1.5,
               ),
             ),
@@ -132,9 +142,8 @@ class _NotesScreenState extends State<NotesScreen> {
                 Expanded(
                   child: Text(
                     'Saved ${_formatDate(note.updatedAt)}',
-                    // FIXED: Changed .withValues to .withOpacity
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.inkLight.withOpacity(0.5),
+                      color: AppColors.textPrimary.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -143,7 +152,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     // Edit button
                     IconButton(
                       icon: const Icon(Icons.edit, size: 18),
-                      color: AppColors.accentBlue,
+                      color: AppColors.accent,
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -166,7 +175,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     // Delete button
                     IconButton(
                       icon: const Icon(Icons.delete, size: 18),
-                      color: Colors.red,
+                      color: AppColors.accent,
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -180,8 +189,8 @@ class _NotesScreenState extends State<NotesScreen> {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: AppColors.accent,
+                                  foregroundColor: AppColors.textPrimary,
                                 ),
                                 onPressed: () {
                                   noteProvider.deleteNote(note.id);

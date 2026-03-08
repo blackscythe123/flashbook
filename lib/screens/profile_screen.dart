@@ -40,7 +40,9 @@ class ProfileScreen extends StatelessWidget {
                     icon: const Icon(Icons.settings_rounded, size: 24),
                     onPressed: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
                       );
                     },
                   ),
@@ -57,7 +59,7 @@ class ProfileScreen extends StatelessWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        color: AppColors.accent,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Center(
@@ -66,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 28,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ),
@@ -81,9 +83,12 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.accentDim,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -91,7 +96,7 @@ class ProfileScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.primary,
+                          color: AppColors.accent,
                         ),
                       ),
                     ),
@@ -103,39 +108,53 @@ class ProfileScreen extends StatelessWidget {
 
               // Stats row
               Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.06)
-                        : Colors.black.withOpacity(0.06),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatItem(value: '0', label: 'Books'),
-                    Container(
-                      width: 1,
-                      height: 36,
-                      color: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.06),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surface : AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            isDark
+                                ? AppColors.textPrimary.withValues(alpha: 0.06)
+                                : AppColors.background.withValues(alpha: 0.06),
+                      ),
                     ),
-                    _StatItem(value: '0', label: 'Cards Read'),
-                    Container(
-                      width: 1,
-                      height: 36,
-                      color: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.06),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _StatItem(value: '0', label: 'Books'),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color:
+                              isDark
+                                  ? AppColors.textPrimary.withValues(
+                                    alpha: 0.08,
+                                  )
+                                  : AppColors.background.withValues(
+                                    alpha: 0.06,
+                                  ),
+                        ),
+                        _StatItem(value: '0', label: 'Cards Read'),
+                        Container(
+                          width: 1,
+                          height: 36,
+                          color:
+                              isDark
+                                  ? AppColors.textPrimary.withValues(
+                                    alpha: 0.08,
+                                  )
+                                  : AppColors.background.withValues(
+                                    alpha: 0.06,
+                                  ),
+                        ),
+                        _StatItem(value: '0h', label: 'Time'),
+                      ],
                     ),
-                    _StatItem(value: '0h', label: 'Time'),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.05),
+                  )
+                  .animate()
+                  .fadeIn(delay: 200.ms, duration: 400.ms)
+                  .slideY(begin: 0.05),
 
               const SizedBox(height: 24),
 
@@ -151,108 +170,123 @@ class ProfileScreen extends StatelessWidget {
 
               // Reading streak card
               Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.06)
-                        : Colors.black.withOpacity(0.06),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentGold.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.local_fire_department_rounded,
-                        color: AppColors.accentGold,
-                        size: 24,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surface : AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            isDark
+                                ? AppColors.textPrimary.withValues(alpha: 0.06)
+                                : AppColors.background.withValues(alpha: 0.06),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '0 Day Streak',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Start reading to build your streak!',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: AppColors.textMuted,
-                            ),
+                          child: const Icon(
+                            Icons.local_fire_department_rounded,
+                            color: AppColors.warning,
+                            size: 24,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '0 Day Streak',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Start reading to build your streak!',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 350.ms, duration: 400.ms).slideY(begin: 0.05),
+                  )
+                  .animate()
+                  .fadeIn(delay: 350.ms, duration: 400.ms)
+                  .slideY(begin: 0.05),
 
               const SizedBox(height: 16),
 
               // Weekly goal card
               Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.06)
-                        : Colors.black.withOpacity(0.06),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.surface : AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            isDark
+                                ? AppColors.textPrimary.withValues(alpha: 0.06)
+                                : AppColors.background.withValues(alpha: 0.06),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Weekly Goal',
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Weekly Goal',
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '0 / 50 cards',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '0 / 50 cards',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: AppColors.textMuted,
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: 0,
+                            minHeight: 8,
+                            backgroundColor:
+                                isDark
+                                    ? AppColors.textPrimary.withValues(
+                                      alpha: 0.06,
+                                    )
+                                    : AppColors.background.withValues(
+                                      alpha: 0.06,
+                                    ),
+                            valueColor: const AlwaysStoppedAnimation(
+                              AppColors.accent,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: 0,
-                        minHeight: 8,
-                        backgroundColor: isDark
-                            ? Colors.white.withOpacity(0.06)
-                            : Colors.black.withOpacity(0.06),
-                        valueColor: const AlwaysStoppedAnimation(AppColors.primary),
-                      ),
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 400.ms, duration: 400.ms).slideY(begin: 0.05),
+                  )
+                  .animate()
+                  .fadeIn(delay: 400.ms, duration: 400.ms)
+                  .slideY(begin: 0.05),
 
               const SizedBox(height: 32),
 
@@ -270,11 +304,12 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.dark_mode_rounded,
                 label: 'Dark Mode',
                 trailing: Consumer<ThemeProvider>(
-                  builder: (context, theme, _) => Switch(
-                    value: theme.isDarkMode,
-                    onChanged: (v) => theme.toggleTheme(v),
-                    activeThumbColor: AppColors.primary,
-                  ),
+                  builder:
+                      (context, theme, _) => Switch(
+                        value: theme.isDarkMode,
+                        onChanged: null,
+                        activeThumbColor: AppColors.accent,
+                      ),
                 ),
               ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
               const SizedBox(height: 8),
@@ -344,12 +379,13 @@ class _ActionTile extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        color: isDark ? AppColors.surface : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.06),
+          color:
+              isDark
+                  ? AppColors.textPrimary.withValues(alpha: 0.06)
+                  : AppColors.background.withValues(alpha: 0.06),
         ),
       ),
       child: ListTile(

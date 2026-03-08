@@ -12,7 +12,7 @@ class UpgradeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.paperLight,
+      backgroundColor: AppColors.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -41,17 +41,13 @@ class UpgradeScreen extends StatelessWidget {
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.primary.withValues(alpha: 0.1),
-                                AppColors.accentGold.withValues(alpha: 0.1),
-                              ],
-                            ),
+                            color: AppColors.elevated,
                             shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.border),
                           ),
                           child: Icon(
                             Icons.auto_awesome_rounded,
-                            color: AppColors.primary,
+                            color: AppColors.accent,
                             size: 28,
                           ),
                         )
@@ -71,7 +67,7 @@ class UpgradeScreen extends StatelessWidget {
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 32,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.inkLight,
+                        color: AppColors.textPrimary,
                         height: 1.2,
                       ),
                     ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -94,7 +90,7 @@ class UpgradeScreen extends StatelessWidget {
                     // Features
                     _buildFeatureItem(
                       icon: Icons.palette_rounded,
-                      iconColor: AppColors.primary,
+                      iconColor: AppColors.accent,
                       title: 'Illustrated explanations',
                       subtitle: 'Understand complex ideas visually',
                       delay: 400,
@@ -102,7 +98,7 @@ class UpgradeScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildFeatureItem(
                       icon: Icons.play_circle_rounded,
-                      iconColor: Colors.purple,
+                      iconColor: AppColors.accent,
                       title: 'Short visual clips',
                       subtitle: 'Cinematic summaries on the go',
                       delay: 500,
@@ -110,7 +106,7 @@ class UpgradeScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildFeatureItem(
                       icon: Icons.wifi_off_rounded,
-                      iconColor: Colors.green,
+                      iconColor: AppColors.success,
                       title: 'Offline reading',
                       subtitle: 'Your library, available anywhere',
                       delay: 600,
@@ -141,8 +137,8 @@ class UpgradeScreen extends StatelessWidget {
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.inkLight,
-                            foregroundColor: Colors.white,
+                            backgroundColor: AppColors.textPrimary,
+                            foregroundColor: AppColors.textPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -182,7 +178,7 @@ class UpgradeScreen extends StatelessWidget {
                         height: 4,
                         margin: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: AppColors.border,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -217,9 +213,9 @@ class UpgradeScreen extends StatelessWidget {
     return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
@@ -242,7 +238,7 @@ class UpgradeScreen extends StatelessWidget {
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.inkLight,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),

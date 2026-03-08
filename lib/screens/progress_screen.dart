@@ -15,7 +15,7 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Consumer2<BookProvider, ReadingProgressProvider>(
           builder: (context, bookProvider, progressProvider, child) {
@@ -145,11 +145,11 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppColors.background.withValues(alpha: 0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -162,10 +162,16 @@ class ProgressScreen extends StatelessWidget {
             width: 72,
             height: 90,
             decoration: BoxDecoration(
-              color: isPdf ? Colors.red.shade50 : Colors.blue.shade50,
+              color:
+                  isPdf
+                      ? AppColors.accent.withValues(alpha: 0.08)
+                      : AppColors.accentDim,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isPdf ? Colors.red.shade200 : Colors.blue.shade200,
+                color:
+                    isPdf
+                        ? AppColors.accent.withValues(alpha: 0.35)
+                        : AppColors.accent.withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -178,7 +184,7 @@ class ProgressScreen extends StatelessWidget {
                       ? Icons.picture_as_pdf_rounded
                       : Icons.description_rounded,
                   size: 36,
-                  color: isPdf ? Colors.red.shade400 : Colors.blue.shade400,
+                  color: AppColors.accent,
                 ),
                 // File extension badge
                 Positioned(
@@ -189,7 +195,7 @@ class ProgressScreen extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: isPdf ? Colors.red.shade400 : Colors.blue.shade400,
+                      color: AppColors.accent,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -197,7 +203,7 @@ class ProgressScreen extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -220,7 +226,7 @@ class ProgressScreen extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.inkLight,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -249,7 +255,7 @@ class ProgressScreen extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.accentSage.withValues(alpha: 0.2),
+                    color: AppColors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
@@ -258,7 +264,7 @@ class ProgressScreen extends StatelessWidget {
                       Icon(
                         Icons.check_circle_rounded,
                         size: 12,
-                        color: AppColors.accentSage,
+                        color: AppColors.success,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -266,7 +272,7 @@ class ProgressScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.accentSage,
+                          color: AppColors.success,
                         ),
                       ),
                     ],
@@ -288,7 +294,7 @@ class ProgressScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 48,
             fontWeight: FontWeight.bold,
-            color: AppColors.inkLight,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 4),
@@ -297,7 +303,7 @@ class ProgressScreen extends StatelessWidget {
           style: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w500,
-            color: AppColors.inkLight,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 8),
@@ -326,11 +332,11 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.background.withValues(alpha: 0.25),
             blurRadius: 10,
           ),
         ],
@@ -350,7 +356,7 @@ class ProgressScreen extends StatelessWidget {
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
-                      color: AppColors.primary,
+                      color: AppColors.accent,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -359,7 +365,7 @@ class ProgressScreen extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.inkLight,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -367,7 +373,7 @@ class ProgressScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
+                  color: AppColors.background,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -389,7 +395,7 @@ class ProgressScreen extends StatelessWidget {
               Container(
                 height: 8,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: AppColors.accent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -398,7 +404,7 @@ class ProgressScreen extends StatelessWidget {
                 child: Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: AppColors.accent,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -446,14 +452,9 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.05),
-            Colors.blue.withValues(alpha: 0.05),
-          ],
-        ),
+        color: AppColors.accentDim,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.1)),
       ),
       child: Row(
         children: [
@@ -461,10 +462,10 @@ class ProgressScreen extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+            child: Icon(Icons.auto_awesome_rounded, color: AppColors.accent),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -476,7 +477,7 @@ class ProgressScreen extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                    color: AppColors.accent,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -484,7 +485,7 @@ class ProgressScreen extends StatelessWidget {
                   'You learned about the "Focus Flow" technique in the last session. Ready to apply it?',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: AppColors.inkLight.withValues(alpha: 0.7),
+                    color: AppColors.textPrimary.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -501,7 +502,7 @@ class ProgressScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             icon: Icons.local_fire_department_rounded,
-            iconColor: Colors.orange,
+            iconColor: AppColors.warning,
             value: '${progress?.readingStreak ?? 4} Days',
             label: 'Streak',
           ),
@@ -510,7 +511,7 @@ class ProgressScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             icon: Icons.bookmark_added_rounded,
-            iconColor: Colors.green,
+            iconColor: AppColors.success,
             value: '12',
             label: 'Highlights',
           ),
@@ -528,9 +529,9 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
@@ -541,7 +542,7 @@ class ProgressScreen extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.inkLight,
+              color: AppColors.textPrimary,
             ),
           ),
           Text(
@@ -557,15 +558,8 @@ class ProgressScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight,
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.backgroundLight.withValues(alpha: 0),
-            AppColors.backgroundLight,
-          ],
-        ),
+        color: AppColors.background,
+        border: const Border(top: BorderSide(color: AppColors.border)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -583,8 +577,8 @@ class ProgressScreen extends StatelessWidget {
               icon: const Icon(Icons.menu_book_rounded),
               label: const Text('Continue Reading'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.accent,
+                foregroundColor: AppColors.textPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

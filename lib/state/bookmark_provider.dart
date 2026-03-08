@@ -60,8 +60,14 @@ class BookmarkProvider extends ChangeNotifier {
   /// Add a new bookmark
   Future<void> addBookmark({
     required String bookId,
+    required String bookTitle,
     required String chapterId,
+    required String cardId,
     required String blockId,
+    required String cardTitle,
+    required String cardHeadline,
+    required String cardType,
+    required int cardIndex,
     required BookmarkType type,
     String? highlightText,
     String? note,
@@ -69,8 +75,14 @@ class BookmarkProvider extends ChangeNotifier {
     final bookmark = Bookmark(
       id: 'bm_${DateTime.now().millisecondsSinceEpoch}',
       bookId: bookId,
+      bookTitle: bookTitle,
       chapterId: chapterId,
+      cardId: cardId,
       blockId: blockId,
+      cardTitle: cardTitle,
+      cardHeadline: cardHeadline,
+      cardType: cardType,
+      cardIndex: cardIndex,
       type: type,
       highlightText: highlightText,
       note: note,
@@ -94,11 +106,17 @@ class BookmarkProvider extends ChangeNotifier {
   /// Toggle bookmark for a block
   Future<void> toggleBookmark({
     required String bookId,
+    required String bookTitle,
     required String chapterId,
+    required String cardId,
     required String blockId,
+    required String cardTitle,
+    required String cardHeadline,
+    required String cardType,
+    required int cardIndex,
   }) async {
     final existingIndex = _bookmarks.indexWhere(
-      (b) => b.blockId == blockId && b.type == BookmarkType.position,
+      (b) => b.cardId == cardId && b.type == BookmarkType.position,
     );
 
     if (existingIndex >= 0) {
@@ -106,8 +124,14 @@ class BookmarkProvider extends ChangeNotifier {
     } else {
       await addBookmark(
         bookId: bookId,
+        bookTitle: bookTitle,
         chapterId: chapterId,
+        cardId: cardId,
         blockId: blockId,
+        cardTitle: cardTitle,
+        cardHeadline: cardHeadline,
+        cardType: cardType,
+        cardIndex: cardIndex,
         type: BookmarkType.position,
       );
     }
@@ -115,7 +139,7 @@ class BookmarkProvider extends ChangeNotifier {
 
   /// Check if a block is bookmarked
   bool isBlockBookmarked(String blockId) {
-    return _bookmarks.any((b) => b.blockId == blockId);
+    return _bookmarks.any((b) => b.cardId == blockId || b.blockId == blockId);
   }
 
   /// Get bookmarks sorted by date (most recent first)

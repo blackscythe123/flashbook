@@ -25,7 +25,9 @@ class BookSourceScreen extends StatelessWidget {
           // Semi-transparent backdrop
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: Container(color: Colors.black.withValues(alpha: 0.3)),
+            child: Container(
+              color: AppColors.background.withValues(alpha: 0.45),
+            ),
           ),
 
           // Bottom sheet
@@ -41,7 +43,7 @@ class BookSourceScreen extends StatelessWidget {
   Widget _buildBottomSheet(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: SafeArea(
@@ -69,7 +71,7 @@ class BookSourceScreen extends StatelessWidget {
                     style: GoogleFonts.libreBaskerville(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.inkLight,
+                      color: AppColors.textPrimary,
                     ),
                   )
                   .animate()
@@ -95,8 +97,8 @@ class BookSourceScreen extends StatelessWidget {
               _buildSourceOption(
                     context,
                     icon: Icons.local_library_rounded,
-                    iconColor: AppColors.primary,
-                    iconBgColor: AppColors.primary.withValues(alpha: 0.1),
+                    iconColor: AppColors.accent,
+                    iconBgColor: AppColors.accent.withValues(alpha: 0.1),
                     title: 'Public Library',
                     subtitle:
                         'Explore thousands of timeless classics and public domain works.',
@@ -112,8 +114,8 @@ class BookSourceScreen extends StatelessWidget {
               _buildSourceOption(
                     context,
                     icon: Icons.cloud_upload_rounded,
-                    iconColor: AppColors.accentGold,
-                    iconBgColor: AppColors.accentGold.withValues(alpha: 0.1),
+                    iconColor: AppColors.warning,
+                    iconBgColor: AppColors.warning.withValues(alpha: 0.1),
                     title: 'Upload Document',
                     subtitle:
                         'Import .pdf or .txt files. PDF text extraction is now supported.',
@@ -159,7 +161,7 @@ class BookSourceScreen extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: AppColors.backgroundLight,
+      color: AppColors.background,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -191,7 +193,7 @@ class BookSourceScreen extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.inkLight,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -296,7 +298,7 @@ class BookSourceScreen extends StatelessWidget {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return Dialog(
-                  backgroundColor: AppColors.backgroundLight,
+                  backgroundColor: AppColors.background,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -305,14 +307,14 @@ class BookSourceScreen extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(color: AppColors.primary),
+                        CircularProgressIndicator(color: AppColors.accent),
                         const SizedBox(height: 24),
                         Text(
                           'Uploading PDF to cloud...',
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.inkLight,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -351,7 +353,7 @@ class BookSourceScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(bookProvider.errorMessage!),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.error,
                 ),
               );
             }
@@ -395,7 +397,7 @@ class BookSourceScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Could not read file content.'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: AppColors.error,
                 ),
               );
             }
@@ -430,7 +432,7 @@ class BookSourceScreen extends StatelessWidget {
           SnackBar(
             content: Text('Error picking file: $e'),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }

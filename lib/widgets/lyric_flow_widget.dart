@@ -118,19 +118,19 @@ class _LyricFlowWidgetState extends State<LyricFlowWidget>
   @override
   Widget build(BuildContext context) {
     final textColor =
-        widget.textColor ?? AppColors.inkLight.withValues(alpha: 0.85);
+        widget.textColor ?? AppColors.textPrimary.withValues(alpha: 0.85);
 
     // Text shadows for image backgrounds
     final textShadows =
         widget.hasImageBackground
             ? [
               Shadow(
-                color: Colors.black.withValues(alpha: 0.7),
+                color: AppColors.background.withValues(alpha: 0.7),
                 blurRadius: 6,
                 offset: const Offset(0, 1),
               ),
               Shadow(
-                color: Colors.black.withValues(alpha: 0.4),
+                color: AppColors.background.withValues(alpha: 0.4),
                 blurRadius: 12,
                 offset: const Offset(0, 2),
               ),
@@ -221,7 +221,7 @@ class LyricFlowPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = textColor ?? AppColors.inkLight.withValues(alpha: 0.85);
+    final color = textColor ?? AppColors.textPrimary.withValues(alpha: 0.85);
 
     return Text(
       text,

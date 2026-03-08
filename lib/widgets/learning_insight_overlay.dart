@@ -25,10 +25,10 @@ class LearningInsightOverlay extends StatelessWidget {
     return GestureDetector(
       onTap: onDismiss,
       child: Container(
-        color: AppColors.paperLight.withValues(alpha: 0.9),
+        color: AppColors.surface.withValues(alpha: 0.9),
         child: BackdropFilter(
           filter: ColorFilter.mode(
-            Colors.white.withValues(alpha: 0.1),
+            AppColors.surface.withValues(alpha: 0.1),
             BlendMode.overlay,
           ),
           child: Center(
@@ -39,11 +39,11 @@ class LearningInsightOverlay extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 360),
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: AppColors.background.withValues(alpha: 0.3),
                           blurRadius: 40,
                           offset: const Offset(0, 20),
                         ),
@@ -57,17 +57,17 @@ class LearningInsightOverlay extends StatelessWidget {
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
+                                color: AppColors.accent.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppColors.primary.withValues(
+                                  color: AppColors.accent.withValues(
                                     alpha: 0.2,
                                   ),
                                 ),
                               ),
                               child: Icon(
                                 Icons.auto_awesome_rounded,
-                                color: AppColors.primary,
+                                color: AppColors.accent,
                                 size: 32,
                               ),
                             )
@@ -87,7 +87,7 @@ class LearningInsightOverlay extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.inkLight,
+                            color: AppColors.textPrimary,
                           ),
                         ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
 
@@ -112,8 +112,8 @@ class LearningInsightOverlay extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: onContinue,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: AppColors.accent,
+                                  foregroundColor: AppColors.textPrimary,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),
@@ -121,7 +121,7 @@ class LearningInsightOverlay extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   elevation: 4,
-                                  shadowColor: AppColors.primary.withValues(
+                                  shadowColor: AppColors.accent.withValues(
                                     alpha: 0.3,
                                   ),
                                 ),

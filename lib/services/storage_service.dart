@@ -1,7 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
-import '../models/note.dart';
 
 /// Storage service for user progress and bookmarks.
 /// Uses mock data for hackathon demo (would use Firestore in production).
@@ -81,11 +81,9 @@ class StorageService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final notesJson = prefs.getStringList('notes') ?? [];
-      return notesJson
-          .map((json) => Note.fromJson(jsonDecode(json)))
-          .toList();
+      return notesJson.map((json) => Note.fromJson(jsonDecode(json))).toList();
     } catch (e) {
-      print('Error loading notes: $e');
+      debugPrint('Error loading notes: $e');
       return [];
     }
   }
@@ -97,7 +95,7 @@ class StorageService {
       final notesJson = notes.map((note) => jsonEncode(note.toJson())).toList();
       await prefs.setStringList('notes', notesJson);
     } catch (e) {
-      print('Error saving notes: $e');
+      debugPrint('Error saving notes: $e');
     }
   }
 
@@ -112,8 +110,14 @@ class StorageService {
       Bookmark(
         id: 'bm_1',
         bookId: 'atomic_habits_001',
+        bookTitle: 'Atomic Habits',
         chapterId: 'ch_1',
+        cardId: 'block_1_3',
         blockId: 'block_1_3',
+        cardTitle: 'Systems Over Goals',
+        cardHeadline: 'You rise to your systems, not your goals',
+        cardType: 'REVEAL',
+        cardIndex: 2,
         type: BookmarkType.highlight,
         highlightText:
             'You do not rise to the level of your goals. You fall to the level of your systems.',
@@ -122,16 +126,28 @@ class StorageService {
       Bookmark(
         id: 'bm_2',
         bookId: 'sapiens_001',
+        bookTitle: 'Sapiens',
         chapterId: 'sapiens_ch_1',
+        cardId: 'sapiens_block_1_1',
         blockId: 'sapiens_block_1_1',
+        cardTitle: 'The Cognitive Revolution',
+        cardHeadline: 'A leap in imagination changed everything',
+        cardType: 'SCENE',
+        cardIndex: 0,
         type: BookmarkType.position,
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ),
       Bookmark(
         id: 'bm_3',
         bookId: 'psychology_money_001',
+        bookTitle: 'The Psychology of Money',
         chapterId: 'money_ch_1',
+        cardId: 'money_block_1_1',
         blockId: 'money_block_1_1',
+        cardTitle: 'Signals and Spending',
+        cardHeadline: 'Trying to look rich can make you poor',
+        cardType: 'INSIGHT',
+        cardIndex: 0,
         type: BookmarkType.highlight,
         highlightText:
             'Spending money to show people how much money you have is the fastest way to have less money.',

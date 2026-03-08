@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class ApiConfig extends ChangeNotifier {
   static const String _backendUrlKey = 'backend_url';
   // NEW (paste your ApiUrl):
-  static const String PROD_URL =
+  static const String prodUrl =
       "https://lnvkdza1u2.execute-api.ap-south-1.amazonaws.com/Prod/";
 
   String? _backendUrl;
@@ -45,13 +45,13 @@ class ApiConfig extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('ApiConfig: Testing connection to PROD_URL: $PROD_URL');
+      debugPrint('ApiConfig: Testing connection to PROD_URL: $prodUrl');
 
       // Handle potential trailing slash in PROD_URL
       final baseUrl =
-          PROD_URL.endsWith('/')
-              ? PROD_URL.substring(0, PROD_URL.length - 1)
-              : PROD_URL;
+          prodUrl.endsWith('/')
+            ? prodUrl.substring(0, prodUrl.length - 1)
+            : prodUrl;
 
       final response = await http
           .get(Uri.parse('$baseUrl/health'))
@@ -59,7 +59,7 @@ class ApiConfig extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         debugPrint('ApiConfig: Connection successful!');
-        _backendUrl = PROD_URL;
+        _backendUrl = prodUrl;
         _isConnected = true;
         _lastError = null;
       } else {

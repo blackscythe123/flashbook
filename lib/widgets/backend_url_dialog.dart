@@ -97,7 +97,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-          backgroundColor: AppColors.paperLight,
+          backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -113,12 +113,12 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.cloud_outlined,
-                        color: AppColors.primary,
+                        color: AppColors.accent,
                         size: 28,
                       ),
                     ),
@@ -132,7 +132,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                             style: GoogleFonts.libreBaskerville(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.inkLight,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -164,7 +164,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: AppColors.surface,
                     ),
                     keyboardType: TextInputType.url,
                     autocorrect: false,
@@ -185,8 +185,8 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                     decoration: BoxDecoration(
                       color:
                           _isSuccess
-                              ? Colors.green.withValues(alpha: 0.1)
-                              : Colors.orange.withValues(alpha: 0.1),
+                              ? AppColors.success.withValues(alpha: 0.1)
+                              : AppColors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -204,7 +204,9 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                                 : Icons.info_outline,
                             size: 16,
                             color:
-                                _isSuccess ? Colors.green : Colors.orange[700],
+                                _isSuccess
+                                    ? AppColors.success
+                                    : AppColors.warning,
                           ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -214,8 +216,8 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                               fontSize: 12,
                               color:
                                   _isSuccess
-                                      ? Colors.green[700]
-                                      : Colors.orange[700],
+                                      ? AppColors.success
+                                      : AppColors.warning,
                             ),
                           ),
                         ),
@@ -229,7 +231,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundLight,
+                    color: AppColors.background,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -240,7 +242,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.inkLight,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -283,8 +285,8 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                       child: ElevatedButton(
                         onPressed: _isChecking ? null : _checkConnection,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: AppColors.textPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -298,7 +300,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation(
-                                      Colors.white,
+                                      AppColors.textPrimary,
                                     ),
                                   ),
                                 )
@@ -335,7 +337,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
             width: 18,
             height: 18,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: AppColors.accent.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(9),
             ),
             child: Center(
@@ -344,7 +346,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
                 style: GoogleFonts.inter(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: AppColors.accent,
                 ),
               ),
             ),

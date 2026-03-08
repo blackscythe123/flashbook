@@ -35,7 +35,7 @@ class NoteProvider extends ChangeNotifier {
       _notes = await _storageService.getNotes();
     } catch (e) {
       _errorMessage = 'Failed to load notes: $e';
-      print('Error loading notes: $e');
+      debugPrint('Error loading notes: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -66,7 +66,7 @@ class NoteProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Failed to add note: $e';
-      print('Error adding note: $e');
+      debugPrint('Error adding note: $e');
     }
   }
 
@@ -84,7 +84,7 @@ class NoteProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'Failed to update note: $e';
-      print('Error updating note: $e');
+      debugPrint('Error updating note: $e');
     }
   }
 
@@ -96,7 +96,7 @@ class NoteProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Failed to delete note: $e';
-      print('Error deleting note: $e');
+      debugPrint('Error deleting note: $e');
     }
   }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/services.dart';
 import '../theme/app_colors.dart';
-import 'book_source_screen.dart';
 
 /// Entry screen - the first screen users see.
 /// Features a calm, full-screen layout with book imagery and a CTA.
@@ -14,14 +14,7 @@ class EntryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          // Paper-like gradient background
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.paperLight, AppColors.backgroundLight],
-          ),
-        ),
+        color: AppColors.background,
         child: SafeArea(
           child: Column(
             children: [
@@ -46,7 +39,7 @@ class EntryScreen extends StatelessWidget {
                         style: GoogleFonts.libreBaskerville(
                           fontSize: 48,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.inkLight,
+                          color: AppColors.textPrimary,
                           height: 1.1,
                         ),
                       ).animate().fadeIn(delay: 200.ms, duration: 800.ms),
@@ -57,7 +50,7 @@ class EntryScreen extends StatelessWidget {
                           fontSize: 48,
                           fontWeight: FontWeight.w400,
                           fontStyle: FontStyle.italic,
-                          color: AppColors.accentWarm,
+                          color: AppColors.accent,
                           height: 1.1,
                         ),
                       ).animate().fadeIn(delay: 400.ms, duration: 800.ms),
@@ -71,7 +64,7 @@ class EntryScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w300,
-                          color: AppColors.inkLight.withValues(alpha: 0.7),
+                          color: AppColors.textPrimary.withValues(alpha: 0.7),
                           height: 1.6,
                         ),
                       ).animate().fadeIn(delay: 600.ms, duration: 800.ms),
@@ -139,7 +132,7 @@ class EntryScreen extends StatelessWidget {
             width: 96,
             height: 128,
             decoration: BoxDecoration(
-              color: AppColors.paperLight,
+              color: AppColors.surface,
               borderRadius: const BorderRadius.only(
                 topRight: Radius.circular(12),
                 bottomRight: Radius.circular(12),
@@ -148,13 +141,13 @@ class EntryScreen extends StatelessWidget {
               ),
               border: Border(
                 left: BorderSide(
-                  color: AppColors.accentWarm.withValues(alpha: 0.5),
+                  color: AppColors.accent.withValues(alpha: 0.5),
                   width: 4,
                 ),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: AppColors.background.withValues(alpha: 0.4),
                   blurRadius: 10,
                   offset: const Offset(2, 4),
                 ),
@@ -170,7 +163,7 @@ class EntryScreen extends StatelessWidget {
             width: 96,
             height: 128,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: const BorderRadius.only(
                 topRight: Radius.circular(12),
                 bottomRight: Radius.circular(12),
@@ -178,11 +171,11 @@ class EntryScreen extends StatelessWidget {
                 bottomLeft: Radius.circular(4),
               ),
               border: Border(
-                left: BorderSide(color: AppColors.accentWarm, width: 4),
+                left: BorderSide(color: AppColors.accent, width: 4),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
+                  color: AppColors.background.withValues(alpha: 0.5),
                   blurRadius: 20,
                   offset: const Offset(4, 8),
                 ),
@@ -199,7 +192,7 @@ class EntryScreen extends StatelessWidget {
                       height: 4,
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.inkLight.withValues(alpha: 0.15),
+                        color: AppColors.textPrimary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -218,32 +211,17 @@ class EntryScreen extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder:
-                  (context, animation, secondaryAnimation) =>
-                      const BookSourceScreen(),
-              transitionsBuilder: (
-                context,
-                animation,
-                secondaryAnimation,
-                child,
-              ) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              transitionDuration: const Duration(milliseconds: 400),
-            ),
-          );
+          pickAndUploadPDF(context);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accentWarm,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.accent,
+          foregroundColor: AppColors.textPrimary,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           elevation: 4,
-          shadowColor: AppColors.accentWarm.withValues(alpha: 0.4),
+          shadowColor: AppColors.accent.withValues(alpha: 0.4),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -259,7 +237,7 @@ class EntryScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: AppColors.accentDim,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(Icons.arrow_forward_rounded, size: 20),

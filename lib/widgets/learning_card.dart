@@ -9,7 +9,6 @@ import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
 import 'package:http/http.dart' as http;
-import 'dart:typed_data';
 import 'dart:convert'; // For base64Decode
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:permission_handler/permission_handler.dart';
@@ -24,7 +23,9 @@ import 'note_input_dialog.dart';
 class LearningCard extends StatefulWidget {
   final LearningBlock block;
   final Chapter? chapter;
+  final String bookId;
   final String bookTitle;
+  final int cardIndex;
   final double progress;
   final bool isFirst;
   final bool isLast;
@@ -36,7 +37,9 @@ class LearningCard extends StatefulWidget {
     super.key,
     required this.block,
     required this.chapter,
+    required this.bookId,
     required this.bookTitle,
+    required this.cardIndex,
     required this.progress,
     this.isFirst = false,
     this.isLast = false,
@@ -108,7 +111,7 @@ class _LearningCardState extends State<LearningCard> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Please enable photo permission in settings'),
-                backgroundColor: Colors.orange,
+                backgroundColor: AppColors.warning,
               ),
             );
           }
@@ -149,7 +152,7 @@ class _LearningCardState extends State<LearningCard> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Image saved to gallery!'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -162,7 +165,7 @@ class _LearningCardState extends State<LearningCard> {
             content: Text(
               'Failed to save: ${e.toString().replaceAll('Exception: ', '')}',
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.accent,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
@@ -222,7 +225,7 @@ class _LearningCardState extends State<LearningCard> {
                                 fontWeight: FontWeight.w800,
                                 color:
                                     _hasImage
-                                        ? Colors.white
+                                        ? AppColors.textPrimary
                                         : Theme.of(
                                           context,
                                         ).textTheme.headlineLarge?.color,
@@ -232,9 +235,8 @@ class _LearningCardState extends State<LearningCard> {
                                     _hasImage
                                         ? [
                                           Shadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.5,
-                                            ),
+                                            color: AppColors.background
+                                                .withValues(alpha: 0.5),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
@@ -255,13 +257,15 @@ class _LearningCardState extends State<LearningCard> {
                               fontSize: widget.fontSize,
                               textColor:
                                   _hasImage
-                                      ? Colors.white.withValues(alpha: 0.95)
+                                      ? AppColors.textPrimary.withValues(
+                                        alpha: 0.95,
+                                      )
                                       : Theme.of(context)
                                               .textTheme
                                               .bodyLarge
                                               ?.color
                                               ?.withValues(alpha: 0.85) ??
-                                          AppColors.inkLight.withValues(
+                                          AppColors.textPrimary.withValues(
                                             alpha: 0.85,
                                           ),
                               hasImageBackground: _hasImage,
@@ -270,16 +274,21 @@ class _LearningCardState extends State<LearningCard> {
                               widget.block.content,
                               style: GoogleFonts.libreBaskerville(
                                 fontSize: widget.fontSize,
-                                fontWeight: widget.isBold ? FontWeight.bold : FontWeight.normal,
+                                fontWeight:
+                                    widget.isBold
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
                                 color:
                                     _hasImage
-                                        ? Colors.white.withValues(alpha: 0.95)
+                                        ? AppColors.textPrimary.withValues(
+                                          alpha: 0.95,
+                                        )
                                         : Theme.of(context)
                                                 .textTheme
                                                 .bodyLarge
                                                 ?.color
                                                 ?.withValues(alpha: 0.85) ??
-                                            AppColors.inkLight.withValues(
+                                            AppColors.textPrimary.withValues(
                                               alpha: 0.85,
                                             ),
                                 height: 1.8,
@@ -287,9 +296,8 @@ class _LearningCardState extends State<LearningCard> {
                                     _hasImage
                                         ? [
                                           Shadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.5,
-                                            ),
+                                            color: AppColors.background
+                                                .withValues(alpha: 0.5),
                                             blurRadius: 6,
                                             offset: const Offset(0, 1),
                                           ),
@@ -361,9 +369,9 @@ class _LearningCardState extends State<LearningCard> {
         fit: BoxFit.cover,
         placeholder:
             (context, url) => Container(
-              color: AppColors.backgroundLight,
+              color: AppColors.background,
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(color: AppColors.accent),
               ),
             ),
         errorWidget: (context, url, error) => _buildErrorWidget(),
@@ -373,7 +381,7 @@ class _LearningCardState extends State<LearningCard> {
 
   Widget _buildErrorWidget() {
     return Container(
-      color: AppColors.backgroundLight,
+      color: AppColors.background,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -386,7 +394,7 @@ class _LearningCardState extends State<LearningCard> {
             const SizedBox(height: 8),
             Text(
               'Image unavailable',
-              style: TextStyle(color: AppColors.textMuted),
+              style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted),
             ),
           ],
         ),
@@ -394,24 +402,10 @@ class _LearningCardState extends State<LearningCard> {
     );
   }
 
-  /// Gradient overlay for text readability on image backgrounds
+  /// Overlay tint for text readability on image backgrounds
   Widget _buildGradientOverlay() {
     return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.5),
-              Colors.black.withValues(alpha: 0.3),
-              Colors.black.withValues(alpha: 0.4),
-              Colors.black.withValues(alpha: 0.7),
-            ],
-            stops: const [0.0, 0.3, 0.6, 1.0],
-          ),
-        ),
-      ),
+      child: Container(color: AppColors.background.withValues(alpha: 0.5)),
     );
   }
 
@@ -430,7 +424,7 @@ class _LearningCardState extends State<LearningCard> {
               height: 50,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
               ),
             ).animate(onPlay: (c) => c.repeat()).rotate(duration: 2.seconds),
             const SizedBox(height: 24),
@@ -489,7 +483,7 @@ class _LearningCardState extends State<LearningCard> {
     return Container(
       height: 3,
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: AppColors.accent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
       child: FractionallySizedBox(
@@ -497,9 +491,7 @@ class _LearningCardState extends State<LearningCard> {
         widthFactor: widget.progress,
         child: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primary, AppColors.accentGold],
-            ),
+            color: AppColors.accent,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -513,13 +505,13 @@ class _LearningCardState extends State<LearningCard> {
       decoration: BoxDecoration(
         color:
             _hasImage
-                ? Colors.white.withValues(alpha: 0.2)
+                ? AppColors.textPrimary.withValues(alpha: 0.2)
                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
-                  ? Colors.white.withValues(alpha: 0.3)
+                  ? AppColors.textPrimary.withValues(alpha: 0.3)
                   : Theme.of(
                     context,
                   ).colorScheme.primary.withValues(alpha: 0.3),
@@ -532,12 +524,14 @@ class _LearningCardState extends State<LearningCard> {
           fontWeight: FontWeight.w700,
           letterSpacing: 1.5,
           color:
-              _hasImage ? Colors.white : Theme.of(context).colorScheme.primary,
+              _hasImage
+                  ? AppColors.textPrimary
+                  : Theme.of(context).colorScheme.primary,
           shadows:
               _hasImage
                   ? [
                     Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: AppColors.background.withValues(alpha: 0.3),
                       blurRadius: 4,
                     ),
                   ]
@@ -553,13 +547,13 @@ class _LearningCardState extends State<LearningCard> {
       decoration: BoxDecoration(
         color:
             _hasImage
-                ? Colors.white.withValues(alpha: 0.15)
+                ? AppColors.textPrimary.withValues(alpha: 0.15)
                 : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
-                  ? Colors.white.withValues(alpha: 0.2)
+                  ? AppColors.textPrimary.withValues(alpha: 0.2)
                   : Theme.of(context).dividerColor.withValues(alpha: 0.3),
         ),
       ),
@@ -574,7 +568,7 @@ class _LearningCardState extends State<LearningCard> {
               letterSpacing: 1.5,
               color:
                   _hasImage
-                      ? Colors.white.withValues(alpha: 0.7)
+                      ? AppColors.textPrimary.withValues(alpha: 0.7)
                       : Theme.of(
                         context,
                       ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
@@ -588,14 +582,14 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? Colors.white
+                      ? AppColors.textPrimary
                       : Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: AppColors.background.withValues(alpha: 0.3),
                           blurRadius: 4,
                         ),
                       ]
@@ -616,7 +610,7 @@ class _LearningCardState extends State<LearningCard> {
           decoration: BoxDecoration(
             color:
                 _hasImage
-                    ? Colors.white.withValues(alpha: 0.15)
+                    ? AppColors.textPrimary.withValues(alpha: 0.15)
                     : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -627,13 +621,13 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? Colors.white
+                      ? AppColors.textPrimary
                       : Theme.of(context).textTheme.bodySmall?.color,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: Colors.black.withValues(alpha: 0.3),
+                          color: AppColors.background.withValues(alpha: 0.3),
                           blurRadius: 4,
                         ),
                       ]
@@ -716,11 +710,19 @@ class _LearningCardState extends State<LearningCard> {
                 isActive: isBookmarked,
                 onTap: () {
                   HapticFeedback.mediumImpact();
-                  final wasBookmarked = provider.isBlockBookmarked(widget.block.id);
+                  final wasBookmarked = provider.isBlockBookmarked(
+                    widget.block.id,
+                  );
                   provider.toggleBookmark(
-                    bookId: widget.bookTitle,
+                    bookId: widget.bookId,
+                    bookTitle: widget.bookTitle,
                     chapterId: widget.chapter?.id ?? '',
+                    cardId: widget.block.id,
                     blockId: widget.block.id,
+                    cardTitle: widget.block.headline,
+                    cardHeadline: widget.block.headline,
+                    cardType: widget.block.tag ?? 'CARD',
+                    cardIndex: widget.cardIndex,
                   );
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -728,17 +730,24 @@ class _LearningCardState extends State<LearningCard> {
                       content: Row(
                         children: [
                           Icon(
-                            wasBookmarked ? Icons.bookmark_remove_rounded : Icons.check_circle_rounded,
-                            color: Colors.white,
+                            wasBookmarked
+                                ? Icons.bookmark_remove_rounded
+                                : Icons.check_circle_rounded,
+                            color: AppColors.textPrimary,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
-                          Text(wasBookmarked ? 'Bookmark removed' : 'Bookmarked!'),
+                          Text(
+                            wasBookmarked ? 'Bookmark removed' : 'Bookmarked!',
+                          ),
                         ],
                       ),
                       behavior: SnackBarBehavior.floating,
                       duration: const Duration(seconds: 2),
-                      backgroundColor: wasBookmarked ? AppColors.textMuted : AppColors.primary,
+                      backgroundColor:
+                          wasBookmarked
+                              ? AppColors.textMuted
+                              : AppColors.accent,
                     ),
                   );
                 },
@@ -793,7 +802,7 @@ class _LearningCardState extends State<LearningCard> {
     return Material(
       color:
           _hasImage
-              ? Colors.black.withValues(alpha: 0.3)
+              ? AppColors.background.withValues(alpha: 0.3)
               : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
       elevation: _hasImage ? 0 : 2,
@@ -809,9 +818,9 @@ class _LearningCardState extends State<LearningCard> {
             icon,
             color:
                 isActive
-                    ? AppColors.accentGold
+                    ? AppColors.warning
                     : (_hasImage
-                        ? Colors.white
+                        ? AppColors.textPrimary
                         : Theme.of(
                           context,
                         ).iconTheme.color?.withValues(alpha: 0.6)),

@@ -41,9 +41,7 @@ class BookDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Hero gradient header
-            _buildHeader(title)
-                .animate()
-                .fadeIn(duration: 500.ms),
+            _buildHeader(title).animate().fadeIn(duration: 500.ms),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -54,13 +52,16 @@ class BookDetailScreen extends StatelessWidget {
 
                   // Title
                   Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideY(begin: 0.1),
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 100.ms, duration: 400.ms)
+                      .slideY(begin: 0.1),
 
                   const SizedBox(height: 6),
                   Text(
@@ -82,9 +83,9 @@ class BookDetailScreen extends StatelessWidget {
                   const SizedBox(height: 28),
 
                   // Card preview section
-                  _buildCardPreview(totalPages)
-                      .animate()
-                      .fadeIn(delay: 300.ms, duration: 400.ms),
+                  _buildCardPreview(
+                    totalPages,
+                  ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
 
                   const SizedBox(height: 36),
 
@@ -103,7 +104,11 @@ class BookDetailScreen extends StatelessWidget {
                         onDelete();
                         Navigator.pop(context, 'deleted');
                       },
-                      icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        size: 18,
+                        color: AppColors.error,
+                      ),
                       label: Text(
                         'Delete Book',
                         style: GoogleFonts.inter(
@@ -140,13 +145,13 @@ class BookDetailScreen extends StatelessWidget {
           width: 72,
           height: 90,
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.surfaceBorder),
+            border: Border.all(color: AppColors.border),
           ),
           child: const Icon(
             Icons.menu_book_rounded,
-            color: AppColors.primaryLight,
+            color: AppColors.accent,
             size: 36,
           ),
         ),
@@ -161,7 +166,11 @@ class BookDetailScreen extends StatelessWidget {
         const SizedBox(width: 24),
         _buildStatItem(Icons.trending_up_rounded, '$progress%', 'Progress'),
         const SizedBox(width: 24),
-        _buildStatItem(Icons.schedule_rounded, '${estimatedMinutes}m', 'Est. Time'),
+        _buildStatItem(
+          Icons.schedule_rounded,
+          '${estimatedMinutes}m',
+          'Est. Time',
+        ),
       ],
     );
   }
@@ -176,7 +185,7 @@ class BookDetailScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 20, color: AppColors.primary),
+            Icon(icon, size: 20, color: AppColors.accent),
             const SizedBox(height: 6),
             Text(
               value,
@@ -219,19 +228,21 @@ class BookDetailScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: AppColors.surfaceBorder,
-            ),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.accentDim,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.layers_rounded, size: 20, color: AppColors.primary),
+                child: const Icon(
+                  Icons.layers_rounded,
+                  size: 20,
+                  color: AppColors.accent,
+                ),
               ),
               const SizedBox(width: 14),
               Text(
@@ -255,7 +266,7 @@ class BookDetailScreen extends StatelessWidget {
       height: 54,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: AppColors.accent,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Material(
@@ -267,14 +278,18 @@ class BookDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 22),
+                  const Icon(
+                    Icons.play_arrow_rounded,
+                    color: AppColors.textPrimary,
+                    size: 22,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     isReading ? 'Continue Reading' : 'Start Reading',
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
