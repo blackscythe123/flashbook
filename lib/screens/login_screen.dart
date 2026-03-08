@@ -249,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
             _isSignUp ? 'Create your account to get started' : 'Welcome back',
             style: GoogleFonts.inter(
               fontSize: 15,
-              color: cs.outline,
+              color: cs.secondary,
               height: 1.4,
             ),
           ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -274,8 +274,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
                         color: cs.onSurface,
                       ),
                       decoration: _inputDecoration(
@@ -293,8 +293,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
                         color: cs.onSurface,
                       ),
                       decoration: _inputDecoration(
@@ -389,7 +389,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         : "Don't have an account? ",
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: cs.outline,
+                      color: cs.secondary,
                     ),
                   ),
                   TextSpan(
@@ -577,11 +577,11 @@ class _LoginScreenState extends State<LoginScreen> {
         borderSide: BorderSide(color: cs.primary, width: 1.5),
       ),
       hintStyle: GoogleFonts.plusJakartaSans(
-        color: cs.outline,
+        color: cs.secondary,
         fontSize: 14,
       ),
       labelStyle: GoogleFonts.plusJakartaSans(
-        color: cs.outline,
+        color: cs.secondary,
         fontSize: 14,
       ),
       prefixIcon: Icon(icon, color: cs.secondary, size: 20),

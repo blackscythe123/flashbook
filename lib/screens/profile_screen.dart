@@ -65,10 +65,10 @@ class ProfileScreen extends StatelessWidget {
                       child: Center(
                         child: Text(
                           _getInitials(auth.user?.email),
-                          style: GoogleFonts.inter(
-                            fontSize: 28,
+                          style: GoogleFonts.syne(
+                            fontSize: 32,
                             fontWeight: FontWeight.w700,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -302,12 +302,15 @@ class ProfileScreen extends StatelessWidget {
 
               _ActionTile(
                 icon: Icons.dark_mode_rounded,
-                label: 'Dark Mode',
+                label:
+                    context.watch<ThemeProvider>().isDarkMode
+                        ? 'Dark Mode'
+                        : 'Light Mode',
                 trailing: Consumer<ThemeProvider>(
                   builder:
                       (context, theme, _) => Switch(
                         value: theme.isDarkMode,
-                        onChanged: null,
+                        onChanged: (_) => theme.toggleTheme(),
                         activeThumbColor: Theme.of(context).colorScheme.primary,
                       ),
                 ),

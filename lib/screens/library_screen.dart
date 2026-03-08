@@ -265,7 +265,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                               Icon(
                                 Icons.add_rounded,
                                 size: 20,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: Theme.of(context).colorScheme.onPrimary,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -273,7 +273,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               ),
                             ],

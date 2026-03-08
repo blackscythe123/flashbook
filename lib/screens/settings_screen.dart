@@ -70,8 +70,8 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           Text(
                             themeProvider.isDarkMode
-                                ? 'Dark mode'
-                                : 'Light mode',
+                                ? 'Dark Mode'
+                                : 'Light Mode',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13,
                               color: Theme.of(context).colorScheme.secondary,
