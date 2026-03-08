@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +19,9 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
     if (result == null || result.files.isEmpty) return;
 
     final file = result.files.first;
-    if (file.path == null && file.bytes == null) return;
+    // On web, accessing file.path throws — check bytes only on web
+    if (kIsWeb ? file.bytes == null : (file.path == null && file.bytes == null))
+      return;
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -119,10 +122,8 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
       context,
       PageRouteBuilder(
         pageBuilder:
-            (_, __, ___) => ProcessingScreen(
-              bookId: uploadedBookId,
-              fileName: file.name,
-            ),
+            (_, __, ___) =>
+                ProcessingScreen(bookId: uploadedBookId, fileName: file.name),
         transitionDuration: const Duration(milliseconds: 300),
         transitionsBuilder:
             (_, animation, __, child) =>
@@ -144,7 +145,9 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
           backgroundColor: AppColors.error,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }

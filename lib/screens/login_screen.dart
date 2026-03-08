@@ -3,7 +3,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/services.dart';
 import '../state/auth_provider.dart';
+import '../state/book_provider.dart';
+import '../state/bookmark_provider.dart';
+import '../state/reading_progress_provider.dart';
 import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
@@ -88,6 +92,22 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (!mounted) return;
+
+    // Wire up all providers that need auth — mirrors what splash_screen does
+    // when the user was already logged in on startup.
+    final apiConfig = context.read<ApiConfig>();
+    final bookProvider = context.read<BookProvider>();
+    final progressProvider = context.read<ReadingProgressProvider>();
+    final bookmarkProvider = context.read<BookmarkProvider>();
+
+    bookProvider.setApiConfig(apiConfig);
+    bookProvider.setTokenGetter(() => auth.idToken);
+    progressProvider.setUserId(auth.userId);
+    bookmarkProvider.setUserId(auth.userId);
+
+    final progressClient = BackendApiClient(apiConfig);
+    progressClient.setTokenGetter(() => auth.idToken);
+    progressProvider.setApiClient(progressClient);
 
     Navigator.pushAndRemoveUntil(
       context,
