@@ -128,10 +128,13 @@ class UpgradeScreen extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () {
                             // Mock upgrade - just close the modal
+                            final cs = Theme.of(context).colorScheme;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
+                                backgroundColor: cs.surface,
                                 content: Text(
                                   'Premium upgrade simulated for demo',
+                                  style: GoogleFonts.inter(color: cs.onSurface),
                                 ),
                                 behavior: SnackBarBehavior.floating,
                               ),

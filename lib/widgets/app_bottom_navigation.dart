@@ -24,30 +24,33 @@ class AppBottomNavigation extends StatelessWidget {
         ),
       ),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(
-                context: context,
-                icon: Icons.home_rounded,
-                label: 'Home',
-                index: 0,
-              ),
-              _buildNavItem(
-                context: context,
-                icon: Icons.add_circle_outline_rounded,
-                label: 'Add',
-                index: 1,
-              ),
-              _buildNavItem(
-                context: context,
-                icon: Icons.bookmark_border_rounded,
-                label: 'Saved',
-                index: 2,
-              ),
-            ],
+        child: SizedBox(
+          height: 65,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.home_rounded,
+                  label: 'Home',
+                  index: 0,
+                ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.add_circle_outline_rounded,
+                  label: 'Add',
+                  index: 1,
+                ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.bookmark_border_rounded,
+                  label: 'Saved',
+                  index: 2,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -81,7 +84,7 @@ class AppBottomNavigation extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.plusJakartaSans(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: iconColor,
               ),

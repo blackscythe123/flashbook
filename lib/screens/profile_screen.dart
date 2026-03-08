@@ -8,13 +8,41 @@ import 'settings_screen.dart';
 import 'login_screen.dart';
 
 /// Profile screen — user stats, reading activity, and settings access.
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _requestedBooks = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _requestedBooks) return;
+      _requestedBooks = true;
+      context.read<BookProvider>().fetchBooks();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final auth = context.watch<AuthProvider>();
+    final books = context.watch<BookProvider>().userBooks;
+    final progress = context.watch<ReadingProgressProvider>();
+
+    final bookCount = books.length;
+    final cardsRead = progress.totalCardsRead;
+    final minutesRead = (cardsRead * 0.5).round();
+    final timeDisplay =
+        minutesRead >= 60
+            ? '${(minutesRead / 60).toStringAsFixed(1)}h'
+            : '${minutesRead}m';
 
     return Scaffold(
       body: SafeArea(
@@ -122,7 +150,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _StatItem(value: '0', label: 'Books'),
+                        _StatItem(value: '$bookCount', label: 'Books'),
                         Container(
                           width: 1,
                           height: 36,
@@ -135,7 +163,7 @@ class ProfileScreen extends StatelessWidget {
                                     alpha: 0.06,
                                   ),
                         ),
-                        _StatItem(value: '0', label: 'Cards Read'),
+                        _StatItem(value: '$cardsRead', label: 'Cards Read'),
                         Container(
                           width: 1,
                           height: 36,
@@ -148,7 +176,7 @@ class ProfileScreen extends StatelessWidget {
                                     alpha: 0.06,
                                   ),
                         ),
-                        _StatItem(value: '0h', label: 'Time'),
+                        _StatItem(value: timeDisplay, label: 'Time'),
                       ],
                     ),
                   )
@@ -302,17 +330,102 @@ class ProfileScreen extends StatelessWidget {
               ).animate().fadeIn(delay: 450.ms, duration: 400.ms),
               const SizedBox(height: 12),
 
-              _ActionTile(
-                icon: Icons.dark_mode_rounded,
-                label: 'Dark Mode',
-                trailing: Consumer<ThemeProvider>(
-                  builder:
-                      (context, theme, _) => Switch(
-                        value: theme.isDarkMode,
-                        onChanged: (_) => theme.toggleTheme(),
-                        activeThumbColor: Theme.of(context).colorScheme.primary,
+              Consumer<ThemeProvider>(
+                builder: (context, themeProvider, _) {
+                  final isDarkMode = themeProvider.isDarkMode;
+                  return GestureDetector(
+                    onTap: () => themeProvider.toggleTheme(),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
                       ),
-                ),
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: cs.outline, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isDarkMode ? 'Dark Mode' : 'Light Mode',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: cs.onSurface,
+                                  ),
+                                ),
+                                Text(
+                                  isDarkMode
+                                      ? 'Tap to switch to light'
+                                      : 'Tap to switch to dark',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    color: cs.secondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 80,
+                            height: 40,
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color:
+                                  isDarkMode
+                                      ? const Color(0xFF1A1A1A)
+                                      : const Color(0xFFE8F0FE),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color:
+                                    isDarkMode
+                                        ? const Color(0xFFC41E24)
+                                        : const Color(0xFF0B3061),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Stack(
+                              children: [
+                                AnimatedAlign(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                  alignment:
+                                      isDarkMode
+                                          ? Alignment.centerRight
+                                          : Alignment.centerLeft,
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isDarkMode
+                                              ? const Color(0xFFC41E24)
+                                              : const Color(0xFF0B3061),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      isDarkMode
+                                          ? Icons.dark_mode_rounded
+                                          : Icons.light_mode_rounded,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
               const SizedBox(height: 8),
 
@@ -378,13 +491,11 @@ class _StatItem extends StatelessWidget {
 class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Widget? trailing;
   final VoidCallback? onTap;
 
   const _ActionTile({
     required this.icon,
     required this.label,
-    this.trailing,
     this.onTap,
   });
 
@@ -411,7 +522,7 @@ class _ActionTile extends StatelessWidget {
           label,
           style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500),
         ),
-        trailing: trailing ?? const Icon(Icons.chevron_right_rounded, size: 20),
+        trailing: const Icon(Icons.chevron_right_rounded, size: 20),
       ),
     );
   }

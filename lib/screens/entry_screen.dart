@@ -95,9 +95,14 @@ class EntryScreen extends StatelessWidget {
                     TextButton(
                       onPressed: () {
                         // Mock restore purchases
+                        final cs = Theme.of(context).colorScheme;
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('No previous purchases found'),
+                          SnackBar(
+                            backgroundColor: cs.surface,
+                            content: Text(
+                              'No previous purchases found',
+                              style: GoogleFonts.inter(color: cs.onSurface),
+                            ),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );

@@ -467,10 +467,10 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     decoration: BoxDecoration(
                       color: cs.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: cs.outline, width: 1),
                     ),
                     child: Text(
                       book.title,
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

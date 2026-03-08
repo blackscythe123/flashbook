@@ -80,7 +80,10 @@ class _LoginScreenState extends State<LoginScreen> {
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error, style: GoogleFonts.plusJakartaSans()),
+            content: Text(
+              error,
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
             backgroundColor: cs.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -140,7 +143,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email == null || password == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Email verified. Please sign in.', style: GoogleFonts.inter()),
+          content: Text(
+            'Email verified. Please sign in.',
+            style: GoogleFonts.inter(color: Colors.white),
+          ),
           backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
         ),
@@ -161,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(
             auth.errorMessage ?? 'Could not sign in automatically.',
-            style: GoogleFonts.plusJakartaSans(),
+            style: GoogleFonts.plusJakartaSans(color: Colors.white),
           ),
           backgroundColor: cs.error,
           behavior: SnackBarBehavior.floating,

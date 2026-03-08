@@ -71,7 +71,7 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
             'Upload failed: $message',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              color: cs.onSurface,
+              color: Colors.white,
             ),
           ),
           backgroundColor: cs.error,
@@ -137,7 +137,7 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
             'Upload failed: ${e.toString()}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              color: cs.onSurface,
+              color: Colors.white,
             ),
           ),
           backgroundColor: cs.error,

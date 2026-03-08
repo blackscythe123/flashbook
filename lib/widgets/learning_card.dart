@@ -108,8 +108,11 @@ class _LearningCardState extends State<LearningCard> {
         if (status.isPermanentlyDenied) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please enable photo permission in settings'),
+              SnackBar(
+                content: Text(
+                  'Please enable photo permission in settings',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white),
+                ),
                 backgroundColor: Color(0xFFF59E0B),
               ),
             );
@@ -121,9 +124,14 @@ class _LearningCardState extends State<LearningCard> {
 
       // Show loading
       if (mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Downloading image...'),
+          SnackBar(
+            backgroundColor: cs.surface,
+            content: Text(
+              'Downloading image...',
+              style: GoogleFonts.plusJakartaSans(color: cs.onSurface),
+            ),
             duration: Duration(seconds: 1),
           ),
         );
@@ -149,8 +157,11 @@ class _LearningCardState extends State<LearningCard> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image saved to gallery!'),
+          SnackBar(
+            content: Text(
+              'Image saved to gallery!',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
             backgroundColor: Color(0xFF22C55E),
             behavior: SnackBarBehavior.floating,
           ),
@@ -163,6 +174,7 @@ class _LearningCardState extends State<LearningCard> {
           SnackBar(
             content: Text(
               'Failed to save: ${e.toString().replaceAll('Exception: ', '')}',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
             ),
             backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
@@ -207,7 +219,10 @@ class _LearningCardState extends State<LearningCard> {
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          _hasImage
+                              ? CrossAxisAlignment.start
+                              : CrossAxisAlignment.center,
                       children: [
                         // Tag
                         if (widget.block.tag != null)
@@ -217,72 +232,97 @@ class _LearningCardState extends State<LearningCard> {
 
                         const SizedBox(height: 16),
 
-                        // Headline
-                        Text(
-                              widget.block.headline,
-                              style: GoogleFonts.syne(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: _hasImage ? Colors.white : cs.onSurface,
-                                letterSpacing: -0.3,
-                                shadows:
-                                    _hasImage
-                                        ? [
-                                          const Shadow(
-                                            color: Colors.black,
-                                            offset: Offset(0, 1),
-                                            blurRadius: 12,
-                                          ),
-                                          Shadow(
-                                            color: Colors.black.withValues(alpha: 0.5),
-                                            offset: const Offset(0, 0),
-                                            blurRadius: 20,
-                                          ),
-                                        ]
-                                        : null,
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(delay: 100.ms, duration: 400.ms)
-                            .slideY(begin: 0.1, end: 0),
-
-                        const SizedBox(height: 20),
-
-                        // Content text
-                        _needsLyricFlow
-                            ? LyricFlowWidget(
-                              text: widget.block.content,
-                              fontSize: 15,
-                              textColor:
+                        Padding(
+                          padding:
+                              _hasImage
+                                  ? EdgeInsets.zero
+                                  : const EdgeInsets.only(right: 72),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              crossAxisAlignment:
                                   _hasImage
-                                      ? Colors.white
-                                      : Theme.of(context).colorScheme.onSurface,
-                              hasImageBackground: _hasImage,
-                            )
-                            : Text(
-                              widget.block.content,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: _hasImage ? Colors.white : cs.onSurface,
-                                height: 1.6,
-                                shadows:
-                                    _hasImage
-                                        ? [
-                                          const Shadow(
-                                            color: Colors.black,
-                                            offset: Offset(0, 1),
-                                            blurRadius: 12,
-                                          ),
-                                          Shadow(
-                                            color: Colors.black.withValues(alpha: 0.5),
-                                            offset: const Offset(0, 0),
-                                            blurRadius: 20,
-                                          ),
-                                        ]
-                                        : null,
-                              ),
-                            ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                                      ? CrossAxisAlignment.start
+                                      : CrossAxisAlignment.center,
+                              children: [
+                                // Headline
+                                Text(
+                                      widget.block.headline,
+                                      textAlign:
+                                          _hasImage
+                                              ? TextAlign.start
+                                              : TextAlign.center,
+                                      style: GoogleFonts.syne(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: _hasImage ? Colors.white : cs.onSurface,
+                                        letterSpacing: -0.3,
+                                        shadows:
+                                            _hasImage
+                                                ? [
+                                                  const Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(0, 1),
+                                                    blurRadius: 12,
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black.withValues(alpha: 0.5),
+                                                    offset: const Offset(0, 0),
+                                                    blurRadius: 20,
+                                                  ),
+                                                ]
+                                                : null,
+                                      ),
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 100.ms, duration: 400.ms)
+                                    .slideY(begin: 0.1, end: 0),
+
+                                const SizedBox(height: 20),
+
+                                // Content text
+                                _needsLyricFlow
+                                    ? LyricFlowWidget(
+                                      text: widget.block.content,
+                                      fontSize: 15,
+                                      textColor:
+                                          _hasImage
+                                              ? Colors.white
+                                              : Theme.of(context).colorScheme.onSurface,
+                                      hasImageBackground: _hasImage,
+                                    )
+                                    : Text(
+                                      widget.block.content,
+                                      textAlign:
+                                          _hasImage
+                                              ? TextAlign.start
+                                              : TextAlign.center,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        color: _hasImage ? Colors.white : cs.onSurface,
+                                        height: 1.6,
+                                        shadows:
+                                            _hasImage
+                                                ? [
+                                                  const Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(0, 1),
+                                                    blurRadius: 12,
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black.withValues(alpha: 0.5),
+                                                    offset: const Offset(0, 0),
+                                                    blurRadius: 20,
+                                                  ),
+                                                ]
+                                                : null,
+                                      ),
+                                    ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                              ],
+                            ),
+                          ),
+                        ),
 
                         // Takeaway box
                         if (widget.block.takeaway != null) ...[
@@ -674,8 +714,17 @@ class _LearningCardState extends State<LearningCard> {
                                   existingNote.id,
                                   noteText,
                                 );
+                                final cs = Theme.of(context).colorScheme;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Note updated')),
+                                  SnackBar(
+                                    backgroundColor: cs.surface,
+                                    content: Text(
+                                      'Note updated',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                  ),
                                 );
                               } else {
                                 const uuid = Uuid();
@@ -686,8 +735,17 @@ class _LearningCardState extends State<LearningCard> {
                                   cardTitle: widget.block.headline,
                                   noteText: noteText,
                                 );
+                                final cs = Theme.of(context).colorScheme;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Note saved')),
+                                  SnackBar(
+                                    backgroundColor: cs.surface,
+                                    content: Text(
+                                      'Note saved',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                  ),
                                 );
                               }
                             }
@@ -734,12 +792,15 @@ class _LearningCardState extends State<LearningCard> {
                             wasBookmarked
                                 ? Icons.bookmark_remove_rounded
                                 : Icons.check_circle_rounded,
-                            color: Theme.of(context).colorScheme.onPrimary,
+                            color: Colors.white,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             wasBookmarked ? 'Bookmark removed' : 'Bookmarked!',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -769,9 +830,14 @@ class _LearningCardState extends State<LearningCard> {
           _buildActionButton(
             icon: Icons.share_rounded,
             onTap: () {
+              final cs = Theme.of(context).colorScheme;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Share feature coming soon'),
+                SnackBar(
+                  backgroundColor: cs.surface,
+                  content: Text(
+                    'Share feature coming soon',
+                    style: GoogleFonts.plusJakartaSans(color: cs.onSurface),
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -782,9 +848,14 @@ class _LearningCardState extends State<LearningCard> {
           _buildActionButton(
             icon: Icons.more_vert_rounded,
             onTap: () {
+              final cs = Theme.of(context).colorScheme;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('More options coming soon'),
+                SnackBar(
+                  backgroundColor: cs.surface,
+                  content: Text(
+                    'More options coming soon',
+                    style: GoogleFonts.plusJakartaSans(color: cs.onSurface),
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );

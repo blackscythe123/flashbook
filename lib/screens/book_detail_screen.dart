@@ -17,6 +17,7 @@ class BookDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final title = book['title'] as String? ?? 'Untitled';
     final totalPages = (book['total_pages'] as num?)?.toInt() ?? 0;
     final progress = (book['progress_pct'] as num?)?.toInt() ?? 0;
@@ -67,7 +68,7 @@ class BookDetailScreen extends StatelessWidget {
                     status == 'reading' ? 'Currently reading' : 'Ready to read',
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.outline,
+                      color: cs.secondary,
                     ),
                   ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
 
@@ -216,7 +217,7 @@ class BookDetailScreen extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                color: Theme.of(context).colorScheme.outline,
+                color: Theme.of(context).colorScheme.secondary,
               ),
             ),
           ],

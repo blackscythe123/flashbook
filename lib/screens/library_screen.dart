@@ -201,9 +201,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
       await _loadBooks();
     } catch (e) {
       if (mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to delete: $e')));
+        ).showSnackBar(
+          SnackBar(
+            backgroundColor: cs.error,
+            content: Text(
+              'Failed to delete: $e',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
+          ),
+        );
       }
     }
   }
@@ -603,14 +612,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? Theme.of(context).colorScheme.surface : Theme.of(context).colorScheme.surface,
+        color: cs.primary,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color:
-              isDark
-                  ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)
-                  : Theme.of(context).colorScheme.surface.withValues(alpha: 0.06),
-        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -627,12 +630,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
                         Icons.auto_stories_rounded,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: Colors.white,
                         size: 20,
                       ),
                     ),
@@ -642,7 +645,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: cs.secondary,
+                        color: Colors.white70,
                       ),
                     ),
                   ],
@@ -652,8 +655,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   title,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -663,7 +666,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   'Continue where you left off',
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: cs.secondary,
+                    color: Colors.white70,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -675,16 +678,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         child: LinearProgressIndicator(
                           value: progress / 100,
                           minHeight: 5,
-                          backgroundColor:
-                              isDark
-                                  ? Theme.of(context).colorScheme.onSurface.withValues(
-                                    alpha: 0.06,
-                                  )
-                                  : Theme.of(context).colorScheme.surface.withValues(
-                                    alpha: 0.06,
-                                  ),
+                          backgroundColor: Colors.white24,
                           valueColor: AlwaysStoppedAnimation(
-                            Theme.of(context).colorScheme.primary,
+                            Colors.white,
                           ),
                         ),
                       ),
@@ -695,7 +691,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: cs.onSurface,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -705,7 +701,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   '${(book['total_pages'] as num?)?.toInt() ?? 0} pages · ~${((book['total_pages'] as num?)?.toInt() ?? 0) * 2} min · $progress%',
                   style: GoogleFonts.inter(
                     fontSize: 12,
-                    color: cs.secondary,
+                    color: Colors.white70,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -717,7 +713,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -725,7 +721,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: cs.onPrimary,
+                        color: cs.primary,
                       ),
                     ),
                   ),

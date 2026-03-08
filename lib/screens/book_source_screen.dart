@@ -249,10 +249,13 @@ class BookSourceScreen extends StatelessWidget {
     // Check if in live mode
     if (!apiConfig.isConnected || apiConfig.isDemoMode) {
       // Demo mode - use mock book
+      final cs = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
+          backgroundColor: cs.surface,
           content: Text(
             'Demo mode: Using sample book. Connect to backend for real PDF processing.',
+            style: GoogleFonts.inter(color: cs.onSurface),
           ),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 3),
@@ -352,7 +355,10 @@ class BookSourceScreen extends StatelessWidget {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(bookProvider.errorMessage!),
+                  content: Text(
+                    bookProvider.errorMessage!,
+                    style: GoogleFonts.inter(color: Colors.white),
+                  ),
                   backgroundColor: AppColors.error,
                 ),
               );
@@ -395,8 +401,11 @@ class BookSourceScreen extends StatelessWidget {
           if (textContent == null || textContent.isEmpty) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Could not read file content.'),
+                SnackBar(
+                  content: Text(
+                    'Could not read file content.',
+                    style: GoogleFonts.inter(color: Colors.white),
+                  ),
                   backgroundColor: AppColors.error,
                 ),
               );
@@ -430,7 +439,10 @@ class BookSourceScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error picking file: $e'),
+            content: Text(
+              'Error picking file: $e',
+              style: GoogleFonts.inter(color: Colors.white),
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.error,
           ),

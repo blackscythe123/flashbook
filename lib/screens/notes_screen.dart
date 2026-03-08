@@ -161,8 +161,18 @@ class _NotesScreenState extends State<NotesScreen> {
                             onSave: (newText) {
                               if (newText.isNotEmpty) {
                                 noteProvider.updateNote(note.id, newText);
+                                final cs = Theme.of(context).colorScheme;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Note updated')),
+                                  SnackBar(
+                                    backgroundColor: cs.surface,
+                                    content: Text(
+                                      'Note updated',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(color: cs.onSurface),
+                                    ),
+                                  ),
                                 );
                               }
                             },
@@ -194,8 +204,18 @@ class _NotesScreenState extends State<NotesScreen> {
                                 onPressed: () {
                                   noteProvider.deleteNote(note.id);
                                   Navigator.pop(context);
+                                  final cs = Theme.of(context).colorScheme;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Note deleted')),
+                                    SnackBar(
+                                      backgroundColor: cs.surface,
+                                      content: Text(
+                                        'Note deleted',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: cs.onSurface),
+                                      ),
+                                    ),
                                   );
                                 },
                                 child: const Text('Delete'),
