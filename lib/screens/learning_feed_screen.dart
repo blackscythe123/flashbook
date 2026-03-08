@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../state/state.dart';
+import '../theme/theme_provider.dart';
 import '../widgets/learning_card.dart';
 import 'progress_screen.dart';
 
@@ -23,7 +24,7 @@ class LearningFeedScreen extends StatefulWidget {
 class _LearningFeedScreenState extends State<LearningFeedScreen> {
   late PageController _pageController;
   int _currentPage = 0;
-  double _fontSize = 18.0;
+  double _fontSize = 15.0;
   bool _isBold = false;
   bool _isInitialBookLoading = false;
   bool _bookLoadFailed = false;
@@ -279,9 +280,6 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
       context: context,
       backgroundColor: cs.surface,
       builder: (context) {
-        double tempFontSize = _fontSize;
-        bool tempIsBold = _isBold;
-
         return StatefulBuilder(
           builder: (context, setSheetState) {
             return Container(
@@ -322,14 +320,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          setSheetState(() {
-                            tempFontSize = 18.0;
-                            tempIsBold = false;
-                          });
                           setState(() {
-                            _fontSize = 18.0;
+                            _fontSize = 15.0;
                             _isBold = false;
                           });
+                          setSheetState(() {});
                         },
                         child: Text(
                           'Reset',
@@ -358,20 +353,19 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     children: [
                       Expanded(
                         child: Slider(
-                          value: tempFontSize,
-                          min: 14,
+                          value: _fontSize,
+                          min: 12,
                           max: 24,
-                          divisions: 10,
                           activeColor: cs.primary,
                           onChanged: (value) {
-                            setSheetState(() => tempFontSize = value);
                             setState(() => _fontSize = value);
+                            setSheetState(() {});
                           },
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '${tempFontSize.round()}px',
+                        '${_fontSize.round()}px',
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -393,40 +387,54 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      ChoiceChip(
-                        label: Text(
-                          'Regular',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w400,
-                            color: !tempIsBold ? cs.onPrimary : null,
+                      GestureDetector(
+                        onTap: () {
+                          setState(() => _isBold = false);
+                          setSheetState(() {});
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: !_isBold ? cs.primary : cs.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cs.outline.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            'Regular',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w500,
+                              color: !_isBold ? Colors.white : cs.onSurface,
+                            ),
                           ),
                         ),
-                        selected: !tempIsBold,
-                        selectedColor: cs.primary,
-                        onSelected: (selected) {
-                          if (selected) {
-                            setSheetState(() => tempIsBold = false);
-                            setState(() => _isBold = false);
-                          }
-                        },
                       ),
                       const SizedBox(width: 12),
-                      ChoiceChip(
-                        label: Text(
-                          'Bold',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w700,
-                            color: tempIsBold ? cs.onPrimary : null,
+                      GestureDetector(
+                        onTap: () {
+                          setState(() => _isBold = true);
+                          setSheetState(() {});
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _isBold ? cs.primary : cs.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: cs.outline.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            'Bold',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              color: _isBold ? Colors.white : cs.onSurface,
+                            ),
                           ),
                         ),
-                        selected: tempIsBold,
-                        selectedColor: cs.primary,
-                        onSelected: (selected) {
-                          if (selected) {
-                            setSheetState(() => tempIsBold = true);
-                            setState(() => _isBold = true);
-                          }
-                        },
                       ),
                     ],
                   ),
@@ -441,6 +449,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
 
   Widget _buildTopNavigation(BuildContext context, Book book) {
     final cs = Theme.of(context).colorScheme;
+    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
     return Positioned(
       top: 0,
       left: 0,
@@ -492,7 +501,15 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
               const SizedBox(width: 8),
 
               // Theme Toggle Button
-              _buildNavButton(icon: Icons.dark_mode_rounded, onTap: () {}),
+              _buildNavButton(
+                icon:
+                    isDarkMode
+                        ? Icons.light_mode_rounded
+                        : Icons.dark_mode_rounded,
+                onTap: () {
+                  context.read<ThemeProvider>().toggleTheme();
+                },
+              ),
             ],
           ),
         ),

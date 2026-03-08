@@ -43,7 +43,7 @@ class LearningCard extends StatefulWidget {
     this.isFirst = false,
     this.isLast = false,
     this.isLoading = false,
-    this.fontSize = 18.0,
+    this.fontSize = 15.0,
     this.isBold = false,
   });
 
@@ -284,7 +284,11 @@ class _LearningCardState extends State<LearningCard> {
                                 _needsLyricFlow
                                     ? LyricFlowWidget(
                                       text: widget.block.content,
-                                      fontSize: 15,
+                                      fontSize: widget.fontSize,
+                                      textAlign:
+                                          _hasImage
+                                              ? TextAlign.start
+                                              : TextAlign.center,
                                       textColor:
                                           _hasImage
                                               ? Colors.white
@@ -298,8 +302,11 @@ class _LearningCardState extends State<LearningCard> {
                                               ? TextAlign.start
                                               : TextAlign.center,
                                       style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
+                                        fontSize: widget.fontSize,
+                                        fontWeight:
+                                            widget.isBold
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
                                         color: _hasImage ? Colors.white : cs.onSurface,
                                         height: 1.6,
                                         shadows:
