@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../state/state.dart';
 import '../services/services.dart';
 import 'learning_feed_screen.dart';
-import 'home_screen.dart';
 
 /// Processing screen - shows while book is being processed.
 /// Features animated loading indicator and progress text.
@@ -76,13 +75,17 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       Navigator.pushAndRemoveUntil(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const HomeScreen(),
+          pageBuilder:
+              (_, __, ___) => LearningFeedScreen(
+                bookId: widget.bookId,
+                initialCardIndex: 0,
+              ),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder:
               (_, animation, __, child) =>
                   FadeTransition(opacity: animation, child: child),
         ),
-        (route) => false,
+        (route) => route.isFirst,
       );
       return;
     }

@@ -25,6 +25,43 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   int _currentPage = 0;
   double _fontSize = 18.0;
   bool _isBold = false;
+  bool _isInitialBookLoading = false;
+  bool _bookLoadFailed = false;
+  static const int _maxBookLoadAttempts = 3;
+
+  Future<void> _loadRequestedBookWithRetry(BookProvider bookProvider) async {
+    if (widget.bookId == null) return;
+
+    setState(() {
+      _isInitialBookLoading = true;
+      _bookLoadFailed = false;
+    });
+
+    for (int attempt = 1; attempt <= _maxBookLoadAttempts; attempt++) {
+      await bookProvider.processBook(widget.bookId!);
+      if (!mounted) return;
+
+      final hasRequestedBook = bookProvider.currentBook?.id == widget.bookId;
+      final hasCards = bookProvider.allBlocks.isNotEmpty;
+      if (hasRequestedBook && hasCards) {
+        setState(() {
+          _isInitialBookLoading = false;
+          _bookLoadFailed = false;
+        });
+        return;
+      }
+
+      if (attempt < _maxBookLoadAttempts) {
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isInitialBookLoading = false;
+      _bookLoadFailed = true;
+    });
+  }
 
   @override
   void initState() {
@@ -34,10 +71,14 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
     // Ensure requested book is loaded when opening from bookmarks.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final bookProvider = context.read<BookProvider>();
-      if (widget.bookId != null &&
-          (bookProvider.currentBook == null ||
-              bookProvider.currentBook!.id != widget.bookId)) {
-        await bookProvider.processBook(widget.bookId!);
+      if (widget.bookId != null) {
+        final needsLoad =
+            bookProvider.currentBook == null ||
+            bookProvider.currentBook!.id != widget.bookId ||
+            bookProvider.allBlocks.isEmpty;
+        if (needsLoad) {
+          await _loadRequestedBookWithRetry(bookProvider);
+        }
       }
 
       if (!mounted || widget.initialCardIndex != null) {
@@ -71,9 +112,84 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
       builder: (context, bookProvider, child) {
         final book = bookProvider.currentBook;
 
+        if (widget.bookId != null && _isInitialBookLoading) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading your book...',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        if (widget.bookId != null && _bookLoadFailed) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Could not load your book after $_maxBookLoadAttempts attempts.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () => _loadRequestedBookWithRetry(bookProvider),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
         if (book == null && bookProvider.isLoading) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (book != null && bookProvider.allBlocks.isEmpty && widget.bookId != null) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading your book...',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         }
 
