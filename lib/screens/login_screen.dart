@@ -8,7 +8,9 @@ import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? prefillEmail;
+
+  const LoginScreen({super.key, this.prefillEmail});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -22,10 +24,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isSignUp = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  String? _pendingSignupEmail;
+  String? _pendingSignupPassword;
 
   @override
   void initState() {
     super.initState();
+    if (widget.prefillEmail != null) {
+      _emailController.text = widget.prefillEmail!;
+    }
     _loadRememberMe();
   }
 
@@ -58,6 +65,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_isSignUp) {
       success = await auth.createAccount(email, password);
+      if (success) {
+        _pendingSignupEmail = email;
+        _pendingSignupPassword = password;
+      }
     } else {
       success = await auth.signInWithEmail(email, password);
     }
@@ -74,6 +85,22 @@ class _LoginScreenState extends State<LoginScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+
+        if (_isSignUp &&
+            error == 'An account with this email already exists.') {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => LoginScreen(prefillEmail: email),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder:
+                  (_, animation, __, child) =>
+                      FadeTransition(opacity: animation, child: child),
+            ),
+          );
+        }
       }
       return;
     }
@@ -108,25 +135,57 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthProvider>();
     final success = await auth.verifyEmail(code);
-    if (success && mounted) {
+    if (!success || !mounted) return;
+
+    final email = _pendingSignupEmail ?? auth.pendingVerificationEmail;
+    final password = _pendingSignupPassword;
+
+    if (email == null || password == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Email verified! Please sign in.',
+            'Email verified. Please sign in.',
             style: GoogleFonts.inter(),
           ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       );
       setState(() {
         _isSignUp = false;
         _codeController.clear();
       });
+      return;
     }
+
+    final signedIn = await auth.signInWithEmail(email, password);
+    if (!mounted) return;
+
+    if (!signedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            auth.errorMessage ?? 'Could not sign in automatically.',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const HomeScreen(),
+        transitionDuration: const Duration(milliseconds: 400),
+        transitionsBuilder:
+            (_, animation, __, child) =>
+                FadeTransition(opacity: animation, child: child),
+      ),
+      (route) => false,
+    );
   }
 
   @override

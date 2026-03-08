@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/theme_provider.dart';
 import '../state/state.dart';
 import '../services/services.dart';
+import 'login_screen.dart';
 
 /// Settings screen — app configuration, account, and about.
 class SettingsScreen extends StatelessWidget {
@@ -108,14 +109,15 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.cloud_outlined,
             iconColor: AppColors.accent,
             title: 'Backend Status',
-            subtitle: context.watch<ApiConfig>().isDemoMode ? 'Demo Mode' : 'Connected',
+            subtitle: context.watch<ApiConfig>().isConnected ? 'Connected' : 'Disconnected',
             trailing: Container(
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: context.watch<ApiConfig>().isDemoMode
-                    ? AppColors.warning
-                    : AppColors.success,
+                color:
+                    context.watch<ApiConfig>().isConnected
+                        ? AppColors.success
+                        : AppColors.warning,
                 shape: BoxShape.circle,
               ),
             ),
@@ -163,7 +165,19 @@ class SettingsScreen extends StatelessWidget {
               ),
               onTap: () async {
                 await context.read<AuthProvider>().signOut();
-                if (context.mounted) Navigator.of(context).pop();
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, __, ___) => const LoginScreen(),
+                      transitionDuration: const Duration(milliseconds: 400),
+                      transitionsBuilder:
+                          (_, animation, __, child) =>
+                              FadeTransition(opacity: animation, child: child),
+                    ),
+                    (route) => false,
+                  );
+                }
               },
             ),
           ).animate().fadeIn(delay: 360.ms, duration: 400.ms),

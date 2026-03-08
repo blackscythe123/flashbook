@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import '../theme/theme_provider.dart';
 import '../state/state.dart';
 import 'settings_screen.dart';
+import 'login_screen.dart';
 
 /// Profile screen — user stats, reading activity, and settings access.
 class ProfileScreen extends StatelessWidget {
@@ -319,6 +320,19 @@ class ProfileScreen extends StatelessWidget {
                 label: 'Sign Out',
                 onTap: () async {
                   await context.read<AuthProvider>().signOut();
+                  if (context.mounted) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (_, __, ___) => const LoginScreen(),
+                        transitionDuration: const Duration(milliseconds: 400),
+                        transitionsBuilder:
+                            (_, animation, __, child) =>
+                                FadeTransition(opacity: animation, child: child),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 },
               ).animate().fadeIn(delay: 550.ms, duration: 400.ms),
 
