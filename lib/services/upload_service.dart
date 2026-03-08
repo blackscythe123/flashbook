@@ -4,9 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../screens/processing_screen.dart';
 import '../state/book_provider.dart';
-import '../theme/app_colors.dart';
 
 Future<void> pickAndUploadPDF(BuildContext context) async {
+  final cs = Theme.of(context).colorScheme;
   try {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -20,17 +20,16 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
     final file = result.files.first;
     if (file.path == null && file.bytes == null) return;
     if (!context.mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const SizedBox(
+            SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: AppColors.accent,
+                color: cs.primary,
               ),
             ),
             const SizedBox(width: 12),
@@ -39,14 +38,14 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
                 'Uploading ${file.name}...',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
-                  color: AppColors.textPrimary,
+                  color: cs.onSurface,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: cs.surface,
         duration: const Duration(seconds: 10),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -72,10 +71,10 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
             'Upload failed: $message',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: cs.error,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -95,7 +94,7 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
           children: [
             const Icon(
               Icons.check_circle_outline_rounded,
-              color: AppColors.success,
+              color: Color(0xFF22C55E),
               size: 18,
             ),
             const SizedBox(width: 12),
@@ -103,12 +102,12 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
               'Upload complete! Processing...',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
-                color: AppColors.textPrimary,
+                color: cs.onSurface,
               ),
             ),
           ],
         ),
-        backgroundColor: AppColors.surface,
+        backgroundColor: cs.surface,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -138,10 +137,10 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
             'Upload failed: ${e.toString()}',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 14,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: cs.error,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

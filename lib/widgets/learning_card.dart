@@ -175,12 +175,13 @@ class _LearningCardState extends State<LearningCard> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (widget.isLoading || widget.block.tag == 'LOADING') {
       return _buildLoadingCard(context);
     }
 
     return Container(
-      color: _hasImage ? null : Theme.of(context).scaffoldBackgroundColor,
+      color: _hasImage ? null : cs.surface,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -222,15 +223,23 @@ class _LearningCardState extends State<LearningCard> {
                               style: GoogleFonts.syne(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: _hasImage ? Colors.white : cs.onSurface,
                                 letterSpacing: -0.3,
-                                shadows: const [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    offset: Offset(0, 1),
-                                    blurRadius: 8,
-                                  ),
-                                ],
+                                shadows:
+                                    _hasImage
+                                        ? [
+                                          const Shadow(
+                                            color: Colors.black,
+                                            offset: Offset(0, 1),
+                                            blurRadius: 12,
+                                          ),
+                                          Shadow(
+                                            color: Colors.black.withValues(alpha: 0.5),
+                                            offset: const Offset(0, 0),
+                                            blurRadius: 20,
+                                          ),
+                                        ]
+                                        : null,
                               ),
                             )
                             .animate()
@@ -244,7 +253,10 @@ class _LearningCardState extends State<LearningCard> {
                             ? LyricFlowWidget(
                               text: widget.block.content,
                               fontSize: 15,
-                              textColor: Theme.of(context).colorScheme.onSurface,
+                              textColor:
+                                  _hasImage
+                                      ? Colors.white
+                                      : Theme.of(context).colorScheme.onSurface,
                               hasImageBackground: _hasImage,
                             )
                             : Text(
@@ -252,15 +264,23 @@ class _LearningCardState extends State<LearningCard> {
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onSurface,
+                                color: _hasImage ? Colors.white : cs.onSurface,
                                 height: 1.6,
-                                shadows: const [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    offset: Offset(0, 1),
-                                    blurRadius: 6,
-                                  ),
-                                ],
+                                shadows:
+                                    _hasImage
+                                        ? [
+                                          const Shadow(
+                                            color: Colors.black,
+                                            offset: Offset(0, 1),
+                                            blurRadius: 12,
+                                          ),
+                                          Shadow(
+                                            color: Colors.black.withValues(alpha: 0.5),
+                                            offset: const Offset(0, 0),
+                                            blurRadius: 20,
+                                          ),
+                                        ]
+                                        : null,
                               ),
                             ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
 
@@ -367,18 +387,36 @@ class _LearningCardState extends State<LearningCard> {
   /// Overlay tint for text readability on image backgrounds
   Widget _buildGradientOverlay() {
     return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.7),
-            ],
-            stops: [0.3, 1.0],
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.5),
+                  Colors.black.withValues(alpha: 0.85),
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
           ),
-        ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.4),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.3],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -497,7 +535,7 @@ class _LearningCardState extends State<LearningCard> {
         style: GoogleFonts.plusJakartaSans(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: Theme.of(context).colorScheme.secondary,
+          color: _hasImage ? Colors.white70 : Theme.of(context).colorScheme.secondary,
           letterSpacing: 2.0,
         ),
       ),
@@ -511,7 +549,7 @@ class _LearningCardState extends State<LearningCard> {
         color:
             _hasImage
                 ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)
-                : Theme.of(context).cardColor,
+                : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
@@ -531,7 +569,7 @@ class _LearningCardState extends State<LearningCard> {
               letterSpacing: 1.5,
               color:
                   _hasImage
-                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
+                      ? Colors.white70
                       : Theme.of(
                         context,
                       ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
@@ -545,15 +583,15 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? Theme.of(context).colorScheme.onSurface
+                    ? Colors.white
                       : Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 12,
                         ),
                       ]
                       : null,
@@ -584,14 +622,14 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? Theme.of(context).colorScheme.onSurface
+                    ? Colors.white
                       : Theme.of(context).textTheme.bodySmall?.color,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 12,
                         ),
                       ]
                       : null,

@@ -205,6 +205,7 @@ class ProfileScreen extends StatelessWidget {
                                 style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.secondary,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -212,7 +213,7 @@ class ProfileScreen extends StatelessWidget {
                                 'Start reading to build your streak!',
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: Theme.of(context).colorScheme.outline,
+                                  color: Theme.of(context).colorScheme.secondary,
                                 ),
                               ),
                             ],
@@ -251,13 +252,14 @@ class ProfileScreen extends StatelessWidget {
                               style: GoogleFonts.inter(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             Text(
                               '0 / 50 cards',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: Theme.of(context).colorScheme.outline,
+                                color: Theme.of(context).colorScheme.secondary,
                               ),
                             ),
                           ],
@@ -302,10 +304,7 @@ class ProfileScreen extends StatelessWidget {
 
               _ActionTile(
                 icon: Icons.dark_mode_rounded,
-                label:
-                    context.watch<ThemeProvider>().isDarkMode
-                        ? 'Dark Mode'
-                        : 'Light Mode',
+                label: 'Dark Mode',
                 trailing: Consumer<ThemeProvider>(
                   builder:
                       (context, theme, _) => Switch(
@@ -369,7 +368,7 @@ class _StatItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.outline),
+          style: GoogleFonts.inter(fontSize: 12, color: Theme.of(context).colorScheme.secondary),
         ),
       ],
     );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
 import '../widgets/learning_card.dart';
@@ -159,9 +158,10 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   }
 
   void _showReadingSettings(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: cs.surface,
       builder: (context) {
         double tempFontSize = _fontSize;
         bool tempIsBold = _isBold;
@@ -170,7 +170,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
           builder: (context, setSheetState) {
             return Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
+                color: cs.surface,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(24),
                 ),
@@ -186,7 +186,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                        color: cs.outline.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -219,7 +219,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           'Reset',
                           style: GoogleFonts.inter(
                             fontSize: 14,
-                            color: AppColors.accent,
+                            color: cs.primary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -234,7 +234,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
+                      color: cs.secondary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -246,7 +246,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           min: 14,
                           max: 24,
                           divisions: 10,
-                          activeColor: AppColors.accent,
+                          activeColor: cs.primary,
                           onChanged: (value) {
                             setSheetState(() => tempFontSize = value);
                             setState(() => _fontSize = value);
@@ -271,7 +271,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textMuted,
+                      color: cs.secondary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -282,11 +282,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           'Regular',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w400,
-                            color: !tempIsBold ? AppColors.textPrimary : null,
+                            color: !tempIsBold ? cs.onPrimary : null,
                           ),
                         ),
                         selected: !tempIsBold,
-                        selectedColor: AppColors.accent,
+                        selectedColor: cs.primary,
                         onSelected: (selected) {
                           if (selected) {
                             setSheetState(() => tempIsBold = false);
@@ -300,11 +300,11 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           'Bold',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w700,
-                            color: tempIsBold ? AppColors.textPrimary : null,
+                            color: tempIsBold ? cs.onPrimary : null,
                           ),
                         ),
                         selected: tempIsBold,
-                        selectedColor: AppColors.accent,
+                        selectedColor: cs.primary,
                         onSelected: (selected) {
                           if (selected) {
                             setSheetState(() => tempIsBold = true);
@@ -324,6 +324,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   }
 
   Widget _buildTopNavigation(BuildContext context, Book book) {
+    final cs = Theme.of(context).colorScheme;
     return Positioned(
       top: 0,
       left: 0,
@@ -348,24 +349,16 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor.withValues(alpha: 0.9),
+                      color: cs.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).shadowColor.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                        ),
-                      ],
+                      border: Border.all(color: cs.outline, width: 1),
                     ),
                     child: Text(
                       book.title,
-                      style: GoogleFonts.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -397,8 +390,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   }) {
     return Builder(
       builder: (context) {
+        final cs = Theme.of(context).colorScheme;
         return Material(
-          color: Theme.of(context).cardColor.withValues(alpha: 0.9),
+          color: cs.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
             onTap: onTap,
@@ -410,7 +404,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
               child: Icon(
                 icon,
                 size: 20,
-                color: Theme.of(context).iconTheme.color,
+                color: cs.onSurface,
               ),
             ),
           ),
@@ -424,6 +418,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
     Book book,
     int totalBlocks,
   ) {
+    final cs = Theme.of(context).colorScheme;
     return Positioned(
       bottom: 24,
       left: 0,
@@ -438,11 +433,9 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color:
-                  Theme.of(context).brightness == Brightness.light
-                      ? AppColors.textPrimary.withValues(alpha: 0.95)
-                      : Theme.of(context).cardColor.withValues(alpha: 0.95),
+              color: cs.surface,
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: cs.outline, width: 1),
               boxShadow: [
                 BoxShadow(
                   color: Theme.of(context).shadowColor.withValues(alpha: 0.3),
@@ -465,11 +458,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
-                        color:
-                            Theme.of(context).brightness == Brightness.light
-                                ? AppColors.textPrimary.withValues(alpha: 0.6)
-                                : Theme.of(context).textTheme.bodySmall?.color
-                                    ?.withValues(alpha: 0.6),
+                        color: cs.secondary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -478,10 +467,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color:
-                            Theme.of(context).brightness == Brightness.light
-                                ? AppColors.textPrimary
-                                : Theme.of(context).textTheme.bodyLarge?.color,
+                        color: cs.onSurface,
                       ),
                     ),
                   ],
@@ -491,12 +477,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                   width: 1,
                   height: 24,
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  color:
-                      Theme.of(context).brightness == Brightness.light
-                          ? AppColors.textPrimary.withValues(alpha: 0.2)
-                          : Theme.of(
-                            context,
-                          ).dividerColor.withValues(alpha: 0.3),
+                  color: cs.outline,
                 ),
 
                 // Progress indicator
@@ -505,12 +486,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                     Icon(
                       Icons.style_rounded,
                       size: 16,
-                      color:
-                          Theme.of(context).brightness == Brightness.light
-                              ? AppColors.textPrimary.withValues(alpha: 0.8)
-                              : Theme.of(
-                                context,
-                              ).iconTheme.color?.withValues(alpha: 0.8),
+                      color: cs.secondary,
                     ),
                     const SizedBox(width: 8),
                     Column(
@@ -525,17 +501,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1,
-                                color:
-                                    Theme.of(context).brightness ==
-                                            Brightness.light
-                                        ? AppColors.textPrimary.withValues(
-                                          alpha: 0.6,
-                                        )
-                                        : Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.color
-                                            ?.withValues(alpha: 0.6),
+                                color: cs.secondary,
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -544,17 +510,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                               style: GoogleFonts.inter(
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
-                                color:
-                                    Theme.of(context).brightness ==
-                                            Brightness.light
-                                        ? AppColors.textPrimary.withValues(
-                                          alpha: 0.6,
-                                        )
-                                        : Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.color
-                                            ?.withValues(alpha: 0.6),
+                                color: cs.onSurface,
                               ),
                             ),
                           ],
@@ -564,14 +520,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                           width: 80,
                           height: 4,
                           decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).brightness == Brightness.light
-                                    ? AppColors.textPrimary.withValues(
-                                      alpha: 0.2,
-                                    )
-                                    : Theme.of(
-                                      context,
-                                    ).dividerColor.withValues(alpha: 0.3),
+                            color: cs.outline.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(2),
                           ),
                           child: FractionallySizedBox(
@@ -579,7 +528,7 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
                             widthFactor: (_currentPage + 1) / totalBlocks,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: AppColors.accent,
+                                color: cs.primary,
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),

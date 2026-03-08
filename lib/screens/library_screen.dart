@@ -436,6 +436,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _buildBookList() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final continueBook = _pickMostRecentBook();
 
     return RefreshIndicator(
@@ -521,7 +522,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                                       : '$totalPages pages · ~${totalPages * 2} min · $progress%',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: Theme.of(context).colorScheme.outline,
+                                    color: cs.secondary,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -595,6 +596,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Widget _buildContinueReadingCard(Map<String, dynamic> book, bool isDark) {
+    final cs = Theme.of(context).colorScheme;
     final title = book['title'] as String? ?? 'Untitled';
     final progress = (book['progress_pct'] as num?)?.toInt() ?? 0;
 
@@ -640,7 +642,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.outline,
+                        color: cs.secondary,
                       ),
                     ),
                   ],
@@ -661,7 +663,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   'Continue where you left off',
                   style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: Theme.of(context).colorScheme.outline,
+                    color: cs.secondary,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -693,9 +695,18 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
+                        color: cs.onSurface,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${(book['total_pages'] as num?)?.toInt() ?? 0} pages · ~${((book['total_pages'] as num?)?.toInt() ?? 0) * 2} min · $progress%',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: cs.secondary,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 Align(
@@ -714,7 +725,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface,
+                        color: cs.onPrimary,
                       ),
                     ),
                   ),
