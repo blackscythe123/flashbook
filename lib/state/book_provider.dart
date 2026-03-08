@@ -15,6 +15,7 @@ class BookProvider extends ChangeNotifier {
   List<Book> _availableBooks = [];
   bool _isLoading = false;
   String? _errorMessage;
+  String _uploadStage = '';
   String? _uploadedPdfPath;
   String? _uploadedPdfContent;
   Uint8List? _uploadedPdfBytes; // Store PDF bytes for preview
@@ -69,6 +70,7 @@ class BookProvider extends ChangeNotifier {
   List<Book> get availableBooks => _availableBooks;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String get uploadStage => _uploadStage;
   bool get hasCurrentBook => _currentBook != null;
   bool get hasUploadedPdf =>
       _uploadedPdfPath != null && _uploadedPdfContent != null;
@@ -915,6 +917,8 @@ class BookProvider extends ChangeNotifier {
       _uploadedPdfBytes = Uint8List.fromList(bytes);
 
       // 1. Get presigned upload URL
+      _uploadStage = 'Getting upload URL...';
+      notifyListeners();
       debugPrint('BookProvider: Requesting presigned upload URL');
       final uploadData = await _apiClient!.requestPdfUpload(
         filename: filename,
@@ -926,6 +930,8 @@ class BookProvider extends ChangeNotifier {
       final s3Key = uploadData['s3_key'] as String;
 
       // 2. Upload PDF bytes to S3
+      _uploadStage = 'Uploading file to cloud...';
+      notifyListeners();
       debugPrint('BookProvider: Uploading PDF to S3...');
       await _apiClient!.uploadPdfToS3(
         presignedUrl: uploadUrl,
@@ -933,11 +939,15 @@ class BookProvider extends ChangeNotifier {
       );
 
       // 3. Confirm upload → backend counts pages
+      _uploadStage = 'Counting pages...';
+      notifyListeners();
       debugPrint('BookProvider: Confirming upload...');
       final confirmData = await _apiClient!.confirmPdfUpload(bookId);
       final totalPages = (confirmData['total_pages'] as num).toInt();
 
       // 4. Extract first batch
+      _uploadStage = 'Extracting first 50 pages...';
+      notifyListeners();
       debugPrint('BookProvider: Extracting first batch (pages 0-49)...');
       final batchData = await _apiClient!.extractBatch(
         s3Key: s3Key,
@@ -969,6 +979,7 @@ class BookProvider extends ChangeNotifier {
       _errorMessage = 'Failed to upload PDF: $e';
       debugPrint('BookProvider: S3 upload error: $e');
     } finally {
+      _uploadStage = '';
       _isLoading = false;
       notifyListeners();
     }

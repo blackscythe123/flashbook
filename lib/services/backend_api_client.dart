@@ -578,7 +578,7 @@ class BackendApiClient {
     final url = Uri.parse('${_config.apiBaseUrl}/books/$bookId/confirm');
     final response = await _httpClient
         .post(url, headers: _headers())
-        .timeout(const Duration(seconds: 30));
+        .timeout(const Duration(seconds: 60));
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body) as Map<String, dynamic>;

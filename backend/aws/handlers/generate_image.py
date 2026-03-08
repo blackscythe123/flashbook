@@ -135,7 +135,7 @@ def _call_gemini(prompt: str, style: str, book_title: str, character_context: st
         ),
     )
 
-    if response.candidates and response.candidates[0].content.parts:
+    if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
         for part in response.candidates[0].content.parts:
             if hasattr(part, "inline_data") and part.inline_data:
                 raw = part.inline_data.data

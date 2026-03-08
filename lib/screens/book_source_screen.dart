@@ -302,29 +302,36 @@ class BookSourceScreen extends StatelessWidget {
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(color: AppColors.primary),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Uploading PDF to cloud...',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.inkLight,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Uploading to S3 and extracting first 50 pages',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: AppColors.textMuted,
-                          ),
-                        ),
-                      ],
+                    child: Consumer<BookProvider>(
+                      builder: (context, provider, _) {
+                        final stage = provider.uploadStage;
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(color: AppColors.primary),
+                            const SizedBox(height: 24),
+                            Text(
+                              'Preparing Your Book',
+                              style: GoogleFonts.inter(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.inkLight,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              stage.isNotEmpty
+                                  ? stage
+                                  : 'Starting upload...',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 );
