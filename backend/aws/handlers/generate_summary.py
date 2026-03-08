@@ -178,6 +178,10 @@ def _parse_response(raw: str, chapter_title: str) -> dict:
 
     data = json.loads(cleaned)
 
+    # Gemini occasionally returns a bare JSON array instead of {"blocks": [...]}
+    if isinstance(data, list):
+        data = {"blocks": data}
+
     blocks = []
     visual_count = 0
     for b in data.get("blocks", [])[:8]:

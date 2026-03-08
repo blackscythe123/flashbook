@@ -15,7 +15,6 @@ import os
 import re
 
 import boto3
-import pypdf
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -111,6 +110,7 @@ def _extract_batch(body: dict) -> dict:
         return _err(404, f"PDF not found in S3: {s3_key}")
 
     try:
+        import pypdf
         reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
         total_pages = len(reader.pages)
 
@@ -191,6 +191,7 @@ def lambda_handler(event, context):
         return _err(400, "File must be a PDF")
 
     try:
+        import pypdf
         reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
 
         pages_text = []
