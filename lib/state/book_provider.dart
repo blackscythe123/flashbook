@@ -12,6 +12,7 @@ import '../services/services.dart';
 class BookProvider extends ChangeNotifier {
   Book? _currentBook;
   List<Book> _availableBooks = [];
+  List<Map<String, dynamic>> _userBooks = [];
   bool _isLoading = false;
   String? _errorMessage;
   String _uploadStage = '';
@@ -67,6 +68,7 @@ class BookProvider extends ChangeNotifier {
   // Getters
   Book? get currentBook => _currentBook;
   List<Book> get availableBooks => _availableBooks;
+  List<Map<String, dynamic>> get userBooks => _userBooks;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String get uploadStage => _uploadStage;
@@ -76,6 +78,8 @@ class BookProvider extends ChangeNotifier {
   String? get uploadedPdfPath => _uploadedPdfPath;
   String? get uploadedPdfContent => _uploadedPdfContent;
   Uint8List? get uploadedPdfBytes => _uploadedPdfBytes;
+  String? get currentBookId => _currentBookId;
+  String? get currentBookTitle => _currentBookTitle;
 
   // Resume position getter
   int get resumeBlockIndex => _resumeBlockIndex;
@@ -140,6 +144,27 @@ class BookProvider extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Fetch the authenticated user's uploaded books from backend.
+  Future<List<Map<String, dynamic>>> fetchBooks() async {
+    if (_apiConfig == null || _apiClient == null || _apiConfig!.isDemoMode) {
+      _userBooks = [];
+      notifyListeners();
+      return _userBooks;
+    }
+
+    try {
+      final books = await _apiClient!.getUserBooks();
+      _userBooks = books;
+      notifyListeners();
+      return _userBooks;
+    } catch (e) {
+      _errorMessage = 'Failed to fetch books: $e';
+      debugPrint('BookProvider: Error fetching books: $e');
+      notifyListeners();
+      return _userBooks;
     }
   }
 
@@ -974,6 +999,9 @@ class BookProvider extends ChangeNotifier {
         pagesExtracted: endPage,
         status: 'reading',
       );
+
+      // Force a fresh library sync right after successful upload.
+      await fetchBooks();
     } catch (e) {
       _errorMessage = 'Failed to upload PDF: $e';
       debugPrint('BookProvider: S3 upload error: $e');

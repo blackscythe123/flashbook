@@ -25,7 +25,30 @@ class _LibraryScreenState extends State<LibraryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadBooks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadBooks();
+    });
+  }
+
+  List<Map<String, dynamic>> _filterValidBooks(
+    List<Map<String, dynamic>> books,
+  ) {
+    return books.where((b) {
+      final pages = (b['total_pages'] as num?)?.toInt() ?? 0;
+      final status = b['status'] as String? ?? '';
+      return pages > 0 || status == 'uploading';
+    }).toList();
+  }
+
+  Map<String, dynamic>? _pickMostRecentBook() {
+    if (_books.isEmpty) return null;
+    final sorted = List<Map<String, dynamic>>.from(_books);
+    sorted.sort((a, b) {
+      final aTime = (a['updated_at'] ?? a['created_at'] ?? '').toString();
+      final bTime = (b['updated_at'] ?? b['created_at'] ?? '').toString();
+      return bTime.compareTo(aTime);
+    });
+    return sorted.first;
   }
 
   Future<void> _loadBooks() async {
@@ -35,18 +58,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     });
 
     try {
-      final apiConfig = context.read<ApiConfig>();
-      final authProvider = context.read<AuthProvider>();
-      final client = BackendApiClient(apiConfig);
-      client.setTokenGetter(() => authProvider.idToken);
-      final books = await client.getUserBooks();
-      // Filter out incomplete/ghost books (0 pages or still uploading with no title)
-      final validBooks =
-          books.where((b) {
-            final pages = (b['total_pages'] as num?)?.toInt() ?? 0;
-            final status = b['status'] as String? ?? '';
-            return pages > 0 || status == 'uploading';
-          }).toList();
+      final books = await context.read<BookProvider>().fetchBooks();
+      final validBooks = _filterValidBooks(books);
       if (mounted) {
         setState(() {
           _books = validBooks;
@@ -63,8 +76,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
+  Future<void> _refreshBooks() async {
+    final books = await context.read<BookProvider>().fetchBooks();
+    if (!mounted) return;
+    setState(() {
+      _books = _filterValidBooks(books);
+      _error = null;
+    });
+  }
+
   Future<void> _openBookSource() async {
     await pickAndUploadPDF(context);
+    if (mounted) {
+      await _loadBooks();
+    }
   }
 
   void _resumeBook(Map<String, dynamic> book) {
@@ -412,22 +437,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _buildBookList() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Find "continue reading" candidate: highest progress that isn't 100%
-    Map<String, dynamic>? continueBook;
-    for (final b in _books) {
-      final p = (b['progress_pct'] as num?)?.toInt() ?? 0;
-      if (p > 0 && p < 100) {
-        if (continueBook == null ||
-            p > ((continueBook['progress_pct'] as num?)?.toInt() ?? 0)) {
-          continueBook = b;
-        }
-      }
-    }
+    final continueBook = _pickMostRecentBook();
 
     return RefreshIndicator(
-      onRefresh: _loadBooks,
+      onRefresh: _refreshBooks,
       color: AppColors.accent,
+      backgroundColor: AppColors.surface,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         itemCount: _books.length + (continueBook != null ? 1 : 0),

@@ -6,12 +6,16 @@ import '../theme/app_colors.dart';
 import '../state/state.dart';
 import '../services/services.dart';
 import 'learning_feed_screen.dart';
+import 'home_screen.dart';
 
 /// Processing screen - shows while book is being processed.
 /// Features animated loading indicator and progress text.
 /// Design inspired by the Figma processing/_preparation_screen template.
 class ProcessingScreen extends StatefulWidget {
-  const ProcessingScreen({super.key});
+  final String? bookId;
+  final String? fileName;
+
+  const ProcessingScreen({super.key, this.bookId, this.fileName});
 
   @override
   State<ProcessingScreen> createState() => _ProcessingScreenState();
@@ -55,6 +59,34 @@ class _ProcessingScreenState extends State<ProcessingScreen>
     final bookProvider = context.read<BookProvider>();
     final progressProvider = context.read<ReadingProgressProvider>();
     final apiConfig = context.read<ApiConfig>();
+
+    // Upload flow: backend upload already completed, so only show staged prep UI.
+    if (widget.bookId != null) {
+      for (int i = 0; i < _processingSteps.length; i++) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) {
+          setState(() {
+            _currentStep = i;
+          });
+        }
+      }
+
+      await bookProvider.fetchBooks();
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const HomeScreen(),
+          transitionDuration: const Duration(milliseconds: 400),
+          transitionsBuilder:
+              (_, animation, __, child) =>
+                  FadeTransition(opacity: animation, child: child),
+        ),
+        (route) => false,
+      );
+      return;
+    }
 
     // Check if we have uploaded content to process
     final hasUploadedContent = bookProvider.hasUploadedPdf;
@@ -183,6 +215,20 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                   ),
                 ),
               ),
+
+              if (widget.fileName != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  widget.fileName!,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
 
               const Spacer(flex: 1),
 
