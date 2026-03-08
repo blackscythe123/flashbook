@@ -17,8 +17,8 @@ Globals:
     Environment:
       Variables:
         GEMINI_API_KEY: !Ref GeminiApiKeyParam
-        GEMINI_MODEL_TEXT: "gemini-3-flash-preview"
-        GEMINI_MODEL_IMAGE: "gemini-2.5-flash-image"
+        GEMINI_MODEL_TEXT: "gemini-2.0-flash"
+        GEMINI_MODEL_IMAGE: "gemini-2.0-flash-exp-image-generation"
         SLIDES_TABLE: !Ref SlidesTable
         NOTES_TABLE: !Ref NotesTable
         IMAGES_BUCKET: !Ref ImagesBucket
@@ -213,7 +213,7 @@ Resources:
       CodeUri: handlers/
       Handler: generate_image.lambda_handler
       MemorySize: 1024
-      Timeout: 60
+      Timeout: 29
       Policies:
         - S3CrudPolicy:
             BucketName: !Ref ImagesBucket

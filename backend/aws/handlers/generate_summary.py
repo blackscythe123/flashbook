@@ -11,6 +11,8 @@ import time
 from typing import Optional
 
 import boto3
+import google.generativeai as genai
+from google.generativeai.types import GenerationConfig
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -34,7 +36,7 @@ def _slides_table():
     return _get_dynamo().Table(os.environ["SLIDES_TABLE"])
 
 # ── Gemini ────────────────────────────────────────────────────────────────────
-_genai_client = None
+_gemini_model = None
 
 SYSTEM_PROMPT = """You are a passionate story narrator and learning architect. You LOVE stories and get genuinely excited about plot twists, character development, and emotional moments. Your vibe is like a friend who just finished an amazing book and can't wait to share the best parts.
 
@@ -65,32 +67,6 @@ FOR EACH SLIDE YOU CREATE:
 3. "body": The actual content - brief but vivid (2-4 sentences capturing what's happening)
 4. "image_hint": true/false - set true for visually rich scenes
 5. "image_prompt": If image_hint is true, describe the scene for image generation
-6. "visual_type": one of "scene | diagram | concept | historical | portrait"
-
-IMAGE PROMPT RULES (CRITICAL):
-When image_hint=true, image_prompt MUST include:
-- Main subject
-- Environment/location
-- Character appearance (if applicable)
-- Mood/emotion
-- Lighting
-- Camera framing
-- Visual style appropriate to the content
-
-Do NOT write vague prompts like:
-- "Person thinking"
-- "Character standing"
-
-Write rich prompts like cinematic scene descriptions, concept-art directions,
-or educational diagram briefs depending on content.
-
-WHEN TO USE image_hint=true:
-- Action scenes
-- Strong emotional expressions
-- Unique locations
-- Symbolic objects
-- Historical moments
-- Scientific diagrams or explanations
 
 FORMATTING:
 - Headlines should NOT repeat the body content
@@ -108,7 +84,6 @@ OUTPUT FORMAT (strict JSON):
       "body": "The narrative content describing what's happening",
       "lyric_lines": [],
       "image_hint": false,
-            "visual_type": "scene",
       "image_prompt": ""
     }
   ],
@@ -122,14 +97,24 @@ OUTPUT FORMAT (strict JSON):
 RESPOND ONLY WITH VALID JSON. NO MARKDOWN, NO EXPLANATIONS. BE A STORYTELLER!"""
 
 
-def _get_client():
-    global _genai_client
-    if _genai_client is None:
-        from google import genai
+def _get_model():
+    global _gemini_model
+    if _gemini_model is None:
         api_key = os.environ.get("GEMINI_API_KEY", "")
-        _genai_client = genai.Client(api_key=api_key)
-        logger.info("Gemini client initialised")
-    return _genai_client
+        model_name = os.environ.get("GEMINI_MODEL_TEXT", "gemini-2.0-flash")
+        genai.configure(api_key=api_key)
+        _gemini_model = genai.GenerativeModel(
+            model_name=model_name,
+            system_instruction=SYSTEM_PROMPT,
+            generation_config=GenerationConfig(
+                temperature=0.7,
+                top_p=0.9,
+                max_output_tokens=4096,
+                response_mime_type="application/json",
+            ),
+        )
+        logger.info(f"Gemini model initialised: {model_name}")
+    return _gemini_model
 
 
 # ── Cache helpers ─────────────────────────────────────────────────────────────
@@ -178,10 +163,6 @@ def _parse_response(raw: str, chapter_title: str) -> dict:
 
     data = json.loads(cleaned)
 
-    # Gemini occasionally returns a bare JSON array instead of {"blocks": [...]}
-    if isinstance(data, list):
-        data = {"blocks": data}
-
     blocks = []
     visual_count = 0
     for b in data.get("blocks", [])[:8]:
@@ -197,7 +178,6 @@ def _parse_response(raw: str, chapter_title: str) -> dict:
             "text": body_text,
             "lyric_lines": b.get("lyric_lines") or [],
             "image_hint": image_hint,
-            "visual_type": b.get("visual_type", "scene"),
             "image_prompt": b.get("image_prompt", "") if image_hint else "",
         })
 
@@ -279,20 +259,8 @@ def lambda_handler(event, context):
 
     # ── Call Gemini ───────────────────────────────────────────────────────────
     try:
-        from google.genai import types
-        model_name = os.environ.get("GEMINI_MODEL_TEXT", "gemini-2.0-flash")
-        client = _get_client()
-        response = client.models.generate_content(
-            model=model_name,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.7,
-                top_p=0.9,
-                max_output_tokens=4096,
-                response_mime_type="application/json",
-            ),
-        )
+        model = _get_model()
+        response = model.generate_content(user_prompt)
         if not response.text:
             raise ValueError("Empty response from Gemini")
 
