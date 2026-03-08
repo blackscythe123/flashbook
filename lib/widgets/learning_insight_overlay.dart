@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Learning Insight Overlay - AI-powered insight modal.
 /// Shows when user interacts with certain elements.
@@ -25,10 +24,10 @@ class LearningInsightOverlay extends StatelessWidget {
     return GestureDetector(
       onTap: onDismiss,
       child: Container(
-        color: AppColors.surface.withValues(alpha: 0.9),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
         child: BackdropFilter(
           filter: ColorFilter.mode(
-            AppColors.surface.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
             BlendMode.overlay,
           ),
           child: Center(
@@ -39,11 +38,11 @@ class LearningInsightOverlay extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 360),
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: AppColors.surface,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.background.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                           blurRadius: 40,
                           offset: const Offset(0, 20),
                         ),
@@ -57,17 +56,17 @@ class LearningInsightOverlay extends StatelessWidget {
                               width: 64,
                               height: 64,
                               decoration: BoxDecoration(
-                                color: AppColors.accent.withValues(alpha: 0.1),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: AppColors.accent.withValues(
+                                  color: Theme.of(context).colorScheme.primary.withValues(
                                     alpha: 0.2,
                                   ),
                                 ),
                               ),
                               child: Icon(
                                 Icons.auto_awesome_rounded,
-                                color: AppColors.accent,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 32,
                               ),
                             )
@@ -87,7 +86,7 @@ class LearningInsightOverlay extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
 
@@ -99,7 +98,7 @@ class LearningInsightOverlay extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 15,
-                            color: AppColors.textMuted,
+                            color: Theme.of(context).colorScheme.outline,
                             height: 1.5,
                           ),
                         ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -112,8 +111,8 @@ class LearningInsightOverlay extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: onContinue,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.accent,
-                                  foregroundColor: AppColors.textPrimary,
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context).colorScheme.onSurface,
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                   ),
@@ -121,7 +120,7 @@ class LearningInsightOverlay extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   elevation: 4,
-                                  shadowColor: AppColors.accent.withValues(
+                                  shadowColor: Theme.of(context).colorScheme.primary.withValues(
                                     alpha: 0.3,
                                   ),
                                 ),
@@ -172,3 +171,4 @@ Future<void> showLearningInsight({
         ),
   );
 }
+

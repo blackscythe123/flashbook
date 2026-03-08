@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../theme/app_colors.dart';
 import 'login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -98,10 +97,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isLastSlide = _currentPage == _pages.length - 1;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -134,8 +133,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           decoration: BoxDecoration(
                             color:
                                 _currentPage == index
-                                    ? AppColors.accent
-                                    : AppColors.border,
+                                    ? cs.primary
+                                    : cs.outline,
                             borderRadius: BorderRadius.circular(3),
                           ),
                         ),
@@ -151,7 +150,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          color: cs.secondary,
                         ),
                       ),
                     ),
@@ -161,20 +160,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _nextPage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: AppColors.textPrimary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
                       child: Text(
                         isLastSlide ? 'Get Started' : 'Continue',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: cs.onPrimary,
                         ),
                       ),
                     ),
@@ -190,6 +181,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
   Widget _buildSlide(int index) {
     final page = _pages[index];
+    final cs = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -224,7 +216,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         fontSize: 38,
                         height: 1.05,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -237,7 +229,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           fontSize: 15,
                           height: 1.6,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          color: cs.secondary,
                         ),
                       ),
                     ),
@@ -263,7 +255,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 fontSize: 120,
                 height: 0.9,
                 fontWeight: FontWeight.w800,
-                color: AppColors.accent,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(height: 8),
@@ -272,7 +264,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.secondary,
                 letterSpacing: 3.0,
               ),
             ),
@@ -303,16 +295,16 @@ class _ModeChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
       ),
       child: Text(
         label,
         style: GoogleFonts.plusJakartaSans(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -346,7 +338,7 @@ class _StatDivider extends StatelessWidget {
       width: 1,
       height: 52,
       margin: const EdgeInsets.symmetric(horizontal: 18),
-      color: AppColors.divider,
+      color: Theme.of(context).colorScheme.outlineVariant,
     );
   }
 }
@@ -367,7 +359,7 @@ class _StatBlock extends StatelessWidget {
           style: GoogleFonts.syne(
             fontSize: 32,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 6),
@@ -376,7 +368,7 @@ class _StatBlock extends StatelessWidget {
           style: GoogleFonts.plusJakartaSans(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.secondary,
             letterSpacing: 2.0,
           ),
         ),
@@ -391,3 +383,4 @@ class _OnboardingPageContent {
   final String headline;
   final String body;
 }
+

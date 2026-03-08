@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../theme/app_colors.dart';
 import '../state/state.dart';
 import '../services/services.dart';
+import '../theme/app_colors.dart';
 import 'learning_feed_screen.dart';
 
 /// Processing screen - shows while book is being processed.
@@ -128,13 +128,17 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       Navigator.pushAndRemoveUntil(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const LearningFeedScreen(),
+          pageBuilder:
+              (_, __, ___) => LearningFeedScreen(
+                bookId: widget.bookId,
+                initialCardIndex: 0,
+              ),
           transitionDuration: const Duration(milliseconds: 400),
           transitionsBuilder:
               (_, animation, __, child) =>
                   FadeTransition(opacity: animation, child: child),
         ),
-        (route) => false,
+        (route) => route.isFirst,
       );
       return;
     }
@@ -208,8 +212,9 @@ class _ProcessingScreenState extends State<ProcessingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: cs.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -223,7 +228,9 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                   .animate(onPlay: (c) => c.repeat())
                   .shimmer(
                     duration: 1500.ms,
-                    color: AppColors.accent.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.3),
                   ),
 
               const SizedBox(height: 48),
@@ -234,7 +241,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                 style: GoogleFonts.libreBaskerville(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ).animate().fadeIn(duration: 600.ms),
 
@@ -288,7 +295,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                   widget.fileName!,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
-                    color: AppColors.textMuted,
+                    color: cs.secondary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -319,14 +326,16 @@ class _ProcessingScreenState extends State<ProcessingScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.05),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.auto_awesome_rounded,
-                      color: AppColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -335,7 +344,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
                         'AI is structuring this book for optimal learning',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: AppColors.textPrimary.withValues(alpha: 0.8),
+                          color: cs.secondary,
                         ),
                       ),
                     ),
@@ -363,7 +372,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             child: CircularProgressIndicator(
               strokeWidth: 3,
               valueColor: AlwaysStoppedAnimation(
-                AppColors.accent.withValues(alpha: 0.2),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
               ),
             ),
           ).animate(onPlay: (c) => c.repeat()).rotate(duration: 3.seconds),
@@ -388,12 +397,14 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.auto_stories_rounded,
-              color: AppColors.accent,
+              color: Theme.of(context).colorScheme.primary,
               size: 28,
             ),
           ),
@@ -427,7 +438,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       height: 6,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.1),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(3),
       ),
       child: FractionallySizedBox(
@@ -435,7 +446,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
         widthFactor: progress,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.accent,
+            color: Theme.of(context).colorScheme.primary,
             borderRadius: BorderRadius.circular(3),
           ),
         ),

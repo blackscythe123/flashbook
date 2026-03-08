@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Upgrade screen - premium upsell modal.
 /// Shows premium features without real payment integration.
@@ -12,7 +11,7 @@ class UpgradeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -23,7 +22,7 @@ class UpgradeScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: IconButton(
                   icon: const Icon(Icons.close_rounded),
-                  color: AppColors.textMuted,
+                  color: Theme.of(context).colorScheme.outline,
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -41,13 +40,13 @@ class UpgradeScreen extends StatelessWidget {
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
-                            color: AppColors.elevated,
+                            color: Theme.of(context).colorScheme.surfaceContainerHighest,
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.border),
+                            border: Border.all(color: Theme.of(context).colorScheme.outline),
                           ),
                           child: Icon(
                             Icons.auto_awesome_rounded,
-                            color: AppColors.accent,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 28,
                           ),
                         )
@@ -67,7 +66,7 @@ class UpgradeScreen extends StatelessWidget {
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 32,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         height: 1.2,
                       ),
                     ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
@@ -80,7 +79,7 @@ class UpgradeScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 15,
-                        color: AppColors.textMuted,
+                        color: Theme.of(context).colorScheme.outline,
                         height: 1.5,
                       ),
                     ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
@@ -89,24 +88,27 @@ class UpgradeScreen extends StatelessWidget {
 
                     // Features
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.palette_rounded,
-                      iconColor: AppColors.accent,
+                      iconColor: Theme.of(context).colorScheme.primary,
                       title: 'Illustrated explanations',
                       subtitle: 'Understand complex ideas visually',
                       delay: 400,
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.play_circle_rounded,
-                      iconColor: AppColors.accent,
+                      iconColor: Theme.of(context).colorScheme.primary,
                       title: 'Short visual clips',
                       subtitle: 'Cinematic summaries on the go',
                       delay: 500,
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
+                      context: context,
                       icon: Icons.wifi_off_rounded,
-                      iconColor: AppColors.success,
+                      iconColor: const Color(0xFF22C55E),
                       title: 'Offline reading',
                       subtitle: 'Your library, available anywhere',
                       delay: 600,
@@ -126,10 +128,13 @@ class UpgradeScreen extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () {
                             // Mock upgrade - just close the modal
+                            final cs = Theme.of(context).colorScheme;
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
+                                backgroundColor: cs.surface,
                                 content: Text(
                                   'Premium upgrade simulated for demo',
+                                  style: GoogleFonts.inter(color: cs.onSurface),
                                 ),
                                 behavior: SnackBarBehavior.floating,
                               ),
@@ -137,8 +142,8 @@ class UpgradeScreen extends StatelessWidget {
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.textPrimary,
-                            foregroundColor: AppColors.textPrimary,
+                            backgroundColor: Theme.of(context).colorScheme.onSurface,
+                            foregroundColor: Theme.of(context).colorScheme.onSurface,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -169,7 +174,7 @@ class UpgradeScreen extends StatelessWidget {
                           'Restore Purchases',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
                       ),
@@ -178,7 +183,7 @@ class UpgradeScreen extends StatelessWidget {
                         height: 4,
                         margin: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
-                          color: AppColors.border,
+                          color: Theme.of(context).colorScheme.outline,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -188,7 +193,7 @@ class UpgradeScreen extends StatelessWidget {
                           'Terms',
                           style: GoogleFonts.inter(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: Theme.of(context).colorScheme.outline,
                           ),
                         ),
                       ),
@@ -204,6 +209,7 @@ class UpgradeScreen extends StatelessWidget {
   }
 
   Widget _buildFeatureItem({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -213,9 +219,9 @@ class UpgradeScreen extends StatelessWidget {
     return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
           ),
           child: Row(
             children: [
@@ -238,7 +244,7 @@ class UpgradeScreen extends StatelessWidget {
                       style: GoogleFonts.libreBaskerville(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -246,7 +252,7 @@ class UpgradeScreen extends StatelessWidget {
                       subtitle,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: Theme.of(context).colorScheme.outline,
                       ),
                     ),
                   ],
@@ -260,3 +266,4 @@ class UpgradeScreen extends StatelessWidget {
         .slideX(begin: -0.1, end: 0);
   }
 }
+

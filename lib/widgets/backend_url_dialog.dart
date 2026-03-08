@@ -27,9 +27,7 @@ class _BackendUrlDialogState extends State<BackendUrlDialog> {
     super.initState();
     // Pre-fill with saved URL if exists
     final config = context.read<ApiConfig>();
-    if (config.backendUrl != null) {
-      _urlController.text = config.backendUrl!;
-    }
+    _urlController.text = config.backendUrl;
   }
 
   @override

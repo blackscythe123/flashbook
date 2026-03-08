@@ -18,7 +18,15 @@ class FlashbookApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ApiConfig()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => BookProvider()..initialize()),
+        ChangeNotifierProxyProvider2<ApiConfig, AuthProvider, BookProvider>(
+          create: (_) => BookProvider()..initialize(),
+          update: (_, apiConfig, authProvider, bookProvider) {
+            final provider = bookProvider ?? (BookProvider()..initialize());
+            provider.setApiConfig(apiConfig);
+            provider.setTokenGetter(() => authProvider.idToken);
+            return provider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => ReadingProgressProvider()),
         ChangeNotifierProvider(create: (_) => BookmarkProvider()),
         ChangeNotifierProvider(create: (_) => NoteProvider()),
@@ -28,9 +36,9 @@ class FlashbookApp extends StatelessWidget {
           return MaterialApp(
             title: 'Flashbook',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             darkTheme: AppTheme.dark,
-            themeMode: ThemeMode.dark,
+            themeMode: themeProvider.themeMode,
             home: const SplashScreen(),
           );
         },

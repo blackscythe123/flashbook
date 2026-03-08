@@ -12,7 +12,9 @@ import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? prefillEmail;
+
+  const LoginScreen({super.key, this.prefillEmail});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -26,10 +28,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isSignUp = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  String? _pendingSignupEmail;
+  String? _pendingSignupPassword;
 
   @override
   void initState() {
     super.initState();
+    if (widget.prefillEmail != null) {
+      _emailController.text = widget.prefillEmail!;
+    }
     _loadRememberMe();
   }
 
@@ -62,6 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_isSignUp) {
       success = await auth.createAccount(email, password);
+      if (success) {
+        _pendingSignupEmail = email;
+        _pendingSignupPassword = password;
+      }
     } else {
       success = await auth.signInWithEmail(email, password);
     }
@@ -71,13 +82,33 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!success) {
       final error = auth.errorMessage;
       if (error != null && error.isNotEmpty) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error, style: GoogleFonts.plusJakartaSans()),
-            backgroundColor: AppColors.error,
+            content: Text(
+              error,
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
+            backgroundColor: cs.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
+
+        if (_isSignUp &&
+            error == 'An account with this email already exists.') {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => LoginScreen(prefillEmail: email),
+              transitionDuration: const Duration(milliseconds: 400),
+              transitionsBuilder:
+                  (_, animation, __, child) =>
+                      FadeTransition(opacity: animation, child: child),
+            ),
+          );
+        }
       }
       return;
     }
@@ -128,44 +159,74 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthProvider>();
     final success = await auth.verifyEmail(code);
-    if (success && mounted) {
+    if (!success || !mounted) return;
+
+    final email = _pendingSignupEmail ?? auth.pendingVerificationEmail;
+    final password = _pendingSignupPassword;
+
+    if (email == null || password == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Email verified! Please sign in.',
-            style: GoogleFonts.inter(),
+            'Email verified. Please sign in.',
+            style: GoogleFonts.inter(color: Colors.white),
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       );
       setState(() {
         _isSignUp = false;
         _codeController.clear();
       });
+      return;
     }
+
+    final signedIn = await auth.signInWithEmail(email, password);
+    if (!mounted) return;
+
+    if (!signedIn) {
+      final cs = Theme.of(context).colorScheme;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            auth.errorMessage ?? 'Could not sign in automatically.',
+            style: GoogleFonts.plusJakartaSans(color: Colors.white),
+          ),
+          backgroundColor: cs.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const HomeScreen(),
+        transitionDuration: const Duration(milliseconds: 400),
+        transitionsBuilder:
+            (_, animation, __, child) =>
+                FadeTransition(opacity: animation, child: child),
+      ),
+      (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: AppColors.background,
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Consumer<AuthProvider>(
-                builder: (context, auth, _) {
-                  if (auth.authState == AuthState.needsVerification) {
-                    return _buildVerificationForm(auth);
-                  }
-                  return _buildAuthForm(auth);
-                },
-              ),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Consumer<AuthProvider>(
+              builder: (context, auth, _) {
+                if (auth.authState == AuthState.needsVerification) {
+                  return _buildVerificationForm(auth);
+                }
+                return _buildAuthForm(auth);
+              },
             ),
           ),
         ),
@@ -174,31 +235,31 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildAuthForm(AuthProvider auth) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+
     return Form(
       key: _formKey,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Logo
           Container(
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.accent,
+                  color: cs.primary,
                   borderRadius: BorderRadius.circular(22),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.accent.withValues(alpha: 0.3),
+                      color: cs.primary.withValues(alpha: 0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.auto_stories_rounded,
                   size: 40,
-                  color: AppColors.textPrimary,
+                  color: cs.onPrimary,
                 ),
               )
               .animate()
@@ -211,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: GoogleFonts.inter(
               fontSize: 32,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: cs.onSurface,
             ),
           ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
           const SizedBox(height: 6),
@@ -219,70 +280,54 @@ class _LoginScreenState extends State<LoginScreen> {
             _isSignUp ? 'Create your account to get started' : 'Welcome back',
             style: GoogleFonts.inter(
               fontSize: 15,
-              color: AppColors.textMuted,
+              color: cs.secondary,
               height: 1.4,
             ),
           ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
           const SizedBox(height: 36),
 
-          // Form card
           Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.surface : AppColors.surface,
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border:
-                      isDark
-                          ? Border.all(
-                            color: AppColors.textPrimary.withValues(
-                              alpha: 0.06,
-                            ),
-                          )
-                          : null,
-                  boxShadow:
-                      isDark
-                          ? null
-                          : [
-                            BoxShadow(
-                              color: AppColors.background.withValues(
-                                alpha: 0.4,
-                              ),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                  border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: cs.outline.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
-                    // Email
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        color: cs.onSurface,
                       ),
                       decoration: _inputDecoration(
                         label: 'Email',
                         icon: Icons.email_outlined,
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
+                        if (v == null || v.trim().isEmpty)
                           return 'Email is required';
-                        }
                         if (!v.contains('@')) return 'Enter a valid email';
                         return null;
                       },
                     ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
                     const SizedBox(height: 14),
 
-                    // Password
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        color: AppColors.textPrimary,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        color: cs.onSurface,
                       ),
                       decoration: _inputDecoration(
                         label: 'Password',
@@ -292,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             _obscurePassword
                                 ? Icons.visibility_off_outlined
                                 : Icons.visibility_outlined,
-                            color: AppColors.textMuted,
+                            color: cs.secondary,
                             size: 20,
                           ),
                           onPressed:
@@ -302,12 +347,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) {
+                        if (v == null || v.isEmpty)
                           return 'Password is required';
-                        }
-                        if (_isSignUp && v.length < 8) {
+                        if (_isSignUp && v.length < 8)
                           return 'Min 8 characters';
-                        }
                         return null;
                       },
                     ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
@@ -316,22 +359,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Checkbox(
                           value: _rememberMe,
-                          onChanged: (_) {
-                            setState(() => _rememberMe = !_rememberMe);
-                          },
+                          onChanged:
+                              (_) => setState(() => _rememberMe = !_rememberMe),
                         ),
                         Text(
                           'Remember me',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.textSecondary,
+                            color: cs.secondary,
                           ),
                         ),
                       ],
                     ),
 
-                    // Error
                     if (auth.errorMessage != null) ...[
                       const SizedBox(height: 12),
                       _buildErrorBanner(auth.errorMessage!),
@@ -339,28 +380,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Submit
                     SizedBox(
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
                         onPressed: auth.isLoading ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accent,
-                          foregroundColor: AppColors.textPrimary,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
                         child:
                             auth.isLoading
-                                ? const SizedBox(
+                                ? SizedBox(
                                   width: 22,
                                   height: 22,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.5,
-                                    color: AppColors.textPrimary,
+                                    color: cs.onPrimary,
                                   ),
                                 )
                                 : Text(
@@ -381,7 +413,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 20),
 
-          // Toggle
           TextButton(
             onPressed: () {
               auth.clearError();
@@ -395,17 +426,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         _isSignUp
                             ? 'Already have an account? '
                             : "Don't have an account? ",
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: AppColors.textMuted,
-                    ),
+                    style: GoogleFonts.inter(fontSize: 14, color: cs.secondary),
                   ),
                   TextSpan(
                     text: _isSignUp ? 'Sign In' : 'Sign Up',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.accent,
+                      color: cs.primary,
                     ),
                   ),
                 ],
@@ -418,7 +446,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildVerificationForm(AuthProvider auth) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -426,13 +455,13 @@ class _LoginScreenState extends State<LoginScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.15),
+                color: const Color(0xFF22C55E).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: const Icon(
                 Icons.mark_email_read_outlined,
                 size: 40,
-                color: AppColors.success,
+                color: Color(0xFF22C55E),
               ),
             )
             .animate()
@@ -444,13 +473,13 @@ class _LoginScreenState extends State<LoginScreen> {
           style: GoogleFonts.inter(
             fontSize: 26,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: cs.onSurface,
           ),
         ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
         const SizedBox(height: 8),
         Text(
           'We sent a 6-digit code to',
-          style: GoogleFonts.inter(fontSize: 14, color: AppColors.textMuted),
+          style: GoogleFonts.inter(fontSize: 14, color: cs.outline),
         ).animate().fadeIn(delay: 200.ms),
         const SizedBox(height: 2),
         Text(
@@ -458,33 +487,24 @@ class _LoginScreenState extends State<LoginScreen> {
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: cs.onSurface,
           ),
         ).animate().fadeIn(delay: 250.ms),
         const SizedBox(height: 28),
 
-        // Code card
         Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.surface : AppColors.surface,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(20),
-                border:
-                    isDark
-                        ? Border.all(
-                          color: AppColors.textPrimary.withValues(alpha: 0.06),
-                        )
-                        : null,
-                boxShadow:
-                    isDark
-                        ? null
-                        : [
-                          BoxShadow(
-                            color: AppColors.background.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.outline.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -496,7 +516,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontSize: 28,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 12,
-                      color: AppColors.textPrimary,
+                      color: cs.onSurface,
                     ),
                     decoration: InputDecoration(
                       hintText: '000000',
@@ -504,7 +524,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 28,
                         fontWeight: FontWeight.w400,
                         letterSpacing: 12,
-                        color: AppColors.textMuted.withValues(alpha: 0.3),
+                        color: cs.outline.withValues(alpha: 0.3),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -525,22 +545,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: auth.isLoading ? null : _verify,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
-                        foregroundColor: AppColors.textPrimary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
                       child:
                           auth.isLoading
-                              ? const SizedBox(
+                              ? SizedBox(
                                 width: 22,
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  color: AppColors.textPrimary,
+                                  color: cs.onPrimary,
                                 ),
                               )
                               : Text(
@@ -570,7 +582,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.accent,
+              color: cs.primary,
             ),
           ),
         ).animate().fadeIn(delay: 500.ms),
@@ -583,33 +595,57 @@ class _LoginScreenState extends State<LoginScreen> {
     required IconData icon,
     Widget? suffixIcon,
   }) {
+    final cs = Theme.of(context).colorScheme;
+
     return InputDecoration(
       labelText: label,
-      labelStyle: GoogleFonts.inter(color: AppColors.textMuted),
-      prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
+      filled: true,
+      fillColor: cs.surfaceContainerHighest,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: cs.outline, width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: cs.outline, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: cs.primary, width: 1.5),
+      ),
+      hintStyle: GoogleFonts.plusJakartaSans(color: cs.secondary, fontSize: 14),
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: cs.secondary,
+        fontSize: 14,
+      ),
+      prefixIcon: Icon(icon, color: cs.secondary, size: 20),
+      prefixIconColor: cs.secondary,
+      suffixIconColor: cs.secondary,
       suffixIcon: suffixIcon,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }
 
   Widget _buildErrorBanner(String message) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.08),
+        color: cs.error.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, color: AppColors.error, size: 18),
+          Icon(Icons.error_outline, color: cs.error, size: 18),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
               style: GoogleFonts.inter(
                 fontSize: 13,
-                color: AppColors.error,
+                color: cs.error,
                 height: 1.3,
               ),
             ),

@@ -127,8 +127,6 @@ class BackendApiClient {
 
   /// Check if backend is reachable and healthy
   Future<bool> checkHealth() async {
-    if (_config.isDemoMode) return false;
-
     _config.setChecking(true);
 
     try {
@@ -170,11 +168,6 @@ class BackendApiClient {
     String? prevContext,
     String? nextContext,
   }) async {
-    if (_config.isDemoMode) {
-      debugPrint('BackendApiClient: Demo mode, skipping API call');
-      return null;
-    }
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/generateSummary');
 
@@ -218,10 +211,6 @@ class BackendApiClient {
     List<int>? fileBytes,
     String? fileName,
   }) async {
-    if (_config.isDemoMode) {
-      throw Exception('Cannot extract PDF text in demo mode');
-    }
-
     final uri = Uri.parse('${_config.apiBaseUrl}/extractText');
     final request = http.MultipartRequest('POST', uri);
     final token = _tokenGetter?.call();
@@ -264,8 +253,6 @@ class BackendApiClient {
 
   /// Get cache statistics from backend
   Future<Map<String, dynamic>?> getCacheStats() async {
-    if (_config.isDemoMode) return null;
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/cache/stats');
       final response = await _httpClient
@@ -291,8 +278,6 @@ class BackendApiClient {
     String bookTitle = '',
     String characterContext = '',
   }) async {
-    if (_config.isDemoMode) return null;
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/generateImage');
       final body = {
@@ -345,10 +330,6 @@ class BackendApiClient {
     required String cardTitle,
     required String noteText,
   }) async {
-    if (_config.isDemoMode) {
-      throw Exception('Cannot create note in demo mode');
-    }
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/notes/create');
       final body = {
@@ -377,8 +358,6 @@ class BackendApiClient {
 
   /// Get a note by ID
   Future<Map<String, dynamic>?> getNote(String noteId) async {
-    if (_config.isDemoMode) return null;
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/notes/$noteId');
       final response = await _httpClient
@@ -403,10 +382,6 @@ class BackendApiClient {
     String noteId,
     String noteText,
   ) async {
-    if (_config.isDemoMode) {
-      throw Exception('Cannot update note in demo mode');
-    }
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/notes/$noteId');
       final body = {'note_text': noteText};
@@ -430,10 +405,6 @@ class BackendApiClient {
 
   /// Delete a note
   Future<void> deleteNote(String noteId) async {
-    if (_config.isDemoMode) {
-      throw Exception('Cannot delete note in demo mode');
-    }
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/notes/$noteId');
       final response = await _httpClient
@@ -453,8 +424,6 @@ class BackendApiClient {
 
   /// Get all notes for a book
   Future<List<Map<String, dynamic>>> getNotesForBook(String bookId) async {
-    if (_config.isDemoMode) return [];
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/notes/book/$bookId');
       final response = await _httpClient
@@ -476,8 +445,6 @@ class BackendApiClient {
 
   /// Get all notes
   Future<List<Map<String, dynamic>>> getAllNotes() async {
-    if (_config.isDemoMode) return [];
-
     try {
       final url = Uri.parse('${_config.apiBaseUrl}/notes/');
       final response = await _httpClient
@@ -613,8 +580,6 @@ class BackendApiClient {
 
   /// Get all books for the current user.
   Future<List<Map<String, dynamic>>> getUserBooks() async {
-    if (_config.isDemoMode) return [];
-
     final url = Uri.parse('${_config.apiBaseUrl}/books');
     final response = await _httpClient
         .get(url, headers: _headers())

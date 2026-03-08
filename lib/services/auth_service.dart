@@ -44,10 +44,7 @@ class CognitoAuthService implements AuthService {
   @override
   String? get idToken => _idToken;
 
-  String? get _baseUrl {
-    final url = _apiConfig.apiBaseUrl;
-    return url;
-  }
+  String get _baseUrl => _apiConfig.apiBaseUrl;
 
   /// Try to restore a previous session from stored tokens.
   @override
@@ -55,7 +52,6 @@ class CognitoAuthService implements AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final storedRefresh = prefs.getString(_keyRefreshToken);
-      final storedId = prefs.getString(_keyIdToken);
       final storedUserId = prefs.getString(_keyUserId);
       final storedEmail = prefs.getString(_keyEmail);
 
@@ -63,19 +59,6 @@ class CognitoAuthService implements AuthService {
 
       // Try refreshing the token
       final base = _baseUrl;
-      if (base == null) {
-        // No backend — use stored user info as-is
-        _idToken = storedId;
-        _refreshToken = storedRefresh;
-        _currentUser = AppUser(
-          id: storedUserId,
-          email: storedEmail,
-          isAnonymous: false,
-          createdAt: DateTime.now(),
-        );
-        _authStateController.add(_currentUser);
-        return true;
-      }
 
       final resp = await http
           .post(
@@ -109,7 +92,6 @@ class CognitoAuthService implements AuthService {
   @override
   Future<AppUser?> signInWithEmail(String email, String password) async {
     final base = _baseUrl;
-    if (base == null) throw Exception('Backend not configured');
 
     final resp = await http
         .post(
@@ -120,9 +102,12 @@ class CognitoAuthService implements AuthService {
         .timeout(const Duration(seconds: 15));
 
     final data = jsonDecode(resp.body) as Map<String, dynamic>;
+    final error = (data['error'] as String? ?? '').toLowerCase();
 
-    if (resp.statusCode == 403 &&
-        (data['error'] as String? ?? '').contains('not verified')) {
+    if ((resp.statusCode == 403 || resp.statusCode == 400) &&
+        (error.contains('not verified') ||
+            error.contains('unconfirmed') ||
+            error.contains('verify'))) {
       throw Exception('__unverified__');
     }
 
@@ -150,7 +135,6 @@ class CognitoAuthService implements AuthService {
   @override
   Future<AppUser?> createAccount(String email, String password) async {
     final base = _baseUrl;
-    if (base == null) throw Exception('Backend not configured');
 
     final resp = await http
         .post(
@@ -161,12 +145,16 @@ class CognitoAuthService implements AuthService {
         .timeout(const Duration(seconds: 15));
 
     final data = jsonDecode(resp.body) as Map<String, dynamic>;
+    final error = data['error'] as String? ?? '';
 
     if (resp.statusCode == 200 || resp.statusCode == 201) {
       // Signup succeeded — user needs to verify email
       return null; // Signal that verification is needed
-    } else if (resp.statusCode == 409) {
-      throw Exception('An account with this email already exists. Please sign in or verify your email.');
+    } else if (resp.statusCode == 409 ||
+        resp.statusCode == 400 ||
+        error.contains('UsernameExistsException') ||
+        error.toLowerCase().contains('already exists')) {
+      throw Exception('An account with this email already exists.');
     } else {
       throw Exception(data['error'] ?? 'Signup failed');
     }
@@ -175,7 +163,6 @@ class CognitoAuthService implements AuthService {
   @override
   Future<bool> verifyEmail(String email, String code) async {
     final base = _baseUrl;
-    if (base == null) throw Exception('Backend not configured');
 
     final resp = await http
         .post(

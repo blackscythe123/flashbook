@@ -7,7 +7,6 @@ import '../state/auth_provider.dart';
 import '../state/book_provider.dart';
 import '../state/bookmark_provider.dart';
 import '../state/reading_progress_provider.dart';
-import '../theme/app_colors.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
@@ -140,8 +139,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppColors.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -155,7 +154,7 @@ class _SplashScreenState extends State<SplashScreen>
                   style: GoogleFonts.syne(
                     fontSize: 36,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: cs.onSurface,
                     letterSpacing: -1.0,
                   ),
                 ),
@@ -169,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                     width: 48 * _lineWidth.value,
                     height: 2,
                     decoration: BoxDecoration(
-                      color: AppColors.accent,
+                      color: cs.primary,
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),
@@ -180,3 +179,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+

@@ -3,23 +3,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 /// Manages API configuration including backend URL.
-/// Supports both demo mode (mock data) and live mode (real backend).
 class ApiConfig extends ChangeNotifier {
   static const String _backendUrlKey = 'backend_url';
-  // NEW (paste your ApiUrl):
   static const String prodUrl =
       "https://lnvkdza1u2.execute-api.ap-south-1.amazonaws.com/Prod/";
 
-  String? _backendUrl;
+  String _backendUrl = prodUrl;
   bool _isConnected = false;
   bool _isChecking = false;
   String? _lastError;
 
-  /// Current backend URL (null = demo mode)
-  String? get backendUrl => _backendUrl;
+  /// Current backend URL (always live)
+  String get backendUrl => _backendUrl;
 
-  /// Whether we're in demo mode (no backend URL)
-  bool get isDemoMode => _backendUrl == null || _backendUrl!.isEmpty;
+  /// Live API is permanently enabled.
+  bool get isDemoMode => false;
 
   /// Whether backend connection is verified
   bool get isConnected => _isConnected;
@@ -31,27 +29,20 @@ class ApiConfig extends ChangeNotifier {
   String? get lastError => _lastError;
 
   /// Full API base URL
-  String? get apiBaseUrl {
-    if (_backendUrl == null || _backendUrl!.isEmpty) return null;
-    // Ensure URL doesn't have trailing slash
-    return _backendUrl!.endsWith('/')
-        ? _backendUrl!.substring(0, _backendUrl!.length - 1)
-        : _backendUrl;
-  }
+  String get apiBaseUrl =>
+      _backendUrl.endsWith('/')
+          ? _backendUrl.substring(0, _backendUrl.length - 1)
+          : _backendUrl;
 
-  /// Initialize with Hardcoded Prod URL, fallback to Demo if fails
+  /// Initialize with hardcoded production URL.
   Future<void> initializeWithFallback() async {
     _isChecking = true;
     notifyListeners();
 
     try {
       debugPrint('ApiConfig: Testing connection to PROD_URL: $prodUrl');
-
-      // Handle potential trailing slash in PROD_URL
-      final baseUrl =
-          prodUrl.endsWith('/')
-            ? prodUrl.substring(0, prodUrl.length - 1)
-            : prodUrl;
+      _backendUrl = prodUrl;
+      final baseUrl = apiBaseUrl;
 
       final response = await http
           .get(Uri.parse('$baseUrl/health'))
@@ -59,30 +50,26 @@ class ApiConfig extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         debugPrint('ApiConfig: Connection successful!');
-        _backendUrl = prodUrl;
         _isConnected = true;
         _lastError = null;
       } else {
         throw Exception('Status code: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint(
-        'ApiConfig: Connection failed ($e). Falling back to Demo Mode.',
-      );
-      _backendUrl = null; // Demo Mode
+      debugPrint('ApiConfig: Connection failed ($e).');
       _isConnected = false;
-      _lastError = 'Connection failed. Using Demo Mode.';
+      _lastError = 'Connection failed. Live API is required.';
     } finally {
       _isChecking = false;
       notifyListeners();
     }
   }
 
-  /// Load saved backend URL from storage (Legacy - kept for reference or dev override)
+  /// Load saved backend URL from storage if available, otherwise use prod URL.
   Future<void> loadSavedUrl() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _backendUrl = prefs.getString(_backendUrlKey);
+      _backendUrl = prefs.getString(_backendUrlKey) ?? prodUrl;
       notifyListeners();
     } catch (e) {
       debugPrint('Failed to load saved URL: $e');
@@ -91,14 +78,9 @@ class ApiConfig extends ChangeNotifier {
 
   /// Set and save backend URL
   Future<void> setBackendUrl(String? url) async {
-    // Aggressively clean URL: remove ALL whitespace
-    _backendUrl = url?.replaceAll(RegExp(r'\s+'), '');
-
-    // Auto-fix common typos if possible (optional but helpful)
-    if (_backendUrl != null) {
-      if (_backendUrl!.endsWith('.aop')) {
-        _backendUrl = _backendUrl!.replaceAll('.aop', '.app');
-      }
+    _backendUrl = (url ?? prodUrl).replaceAll(RegExp(r'\s+'), '');
+    if (_backendUrl.endsWith('.aop')) {
+      _backendUrl = _backendUrl.replaceAll('.aop', '.app');
     }
 
     _isConnected = false;
@@ -106,11 +88,7 @@ class ApiConfig extends ChangeNotifier {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (_backendUrl != null && _backendUrl!.isNotEmpty) {
-        await prefs.setString(_backendUrlKey, _backendUrl!);
-      } else {
-        await prefs.remove(_backendUrlKey);
-      }
+      await prefs.setString(_backendUrlKey, _backendUrl);
     } catch (e) {
       debugPrint('Failed to save URL: $e');
     }
@@ -132,9 +110,9 @@ class ApiConfig extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Clear URL and switch to demo mode
+  /// Reset URL to production API.
   Future<void> clearAndUseDemo() async {
-    await setBackendUrl(null);
+    await setBackendUrl(prodUrl);
     _isConnected = false;
     _lastError = null;
     notifyListeners();

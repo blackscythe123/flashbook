@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/note.dart';
 import '../state/state.dart';
-import '../theme/app_colors.dart';
 import '../widgets/note_input_dialog.dart';
 
 class NotesScreen extends StatefulWidget {
@@ -21,11 +20,11 @@ class _NotesScreenState extends State<NotesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Notes'),
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Consumer2<NoteProvider, BookProvider>(
         builder: (context, noteProvider, bookProvider, child) {
           final currentBook = bookProvider.currentBook;
@@ -40,7 +39,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     Icon(
                       Icons.note_outlined,
                       size: 64,
-                      color: AppColors.textPrimary.withValues(alpha: 0.3),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -65,7 +64,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     Icon(
                       Icons.note_add_outlined,
                       size: 64,
-                      color: AppColors.accent.withValues(alpha: 0.5),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -76,7 +75,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     Text(
                       'Add notes while reading to see them here',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textPrimary.withValues(alpha: 0.6),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -103,10 +102,10 @@ class _NotesScreenState extends State<NotesScreen> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 0,
-      color: AppColors.surface,
+      color: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.border, width: 1),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -117,7 +116,7 @@ class _NotesScreenState extends State<NotesScreen> {
             Text(
               note.cardTitle,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: AppColors.accent,
+                color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 2,
@@ -129,7 +128,7 @@ class _NotesScreenState extends State<NotesScreen> {
             Text(
               note.noteText,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 height: 1.5,
               ),
             ),
@@ -143,7 +142,7 @@ class _NotesScreenState extends State<NotesScreen> {
                   child: Text(
                     'Saved ${_formatDate(note.updatedAt)}',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textPrimary.withValues(alpha: 0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -152,7 +151,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     // Edit button
                     IconButton(
                       icon: const Icon(Icons.edit, size: 18),
-                      color: AppColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -162,8 +161,18 @@ class _NotesScreenState extends State<NotesScreen> {
                             onSave: (newText) {
                               if (newText.isNotEmpty) {
                                 noteProvider.updateNote(note.id, newText);
+                                final cs = Theme.of(context).colorScheme;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Note updated')),
+                                  SnackBar(
+                                    backgroundColor: cs.surface,
+                                    content: Text(
+                                      'Note updated',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(color: cs.onSurface),
+                                    ),
+                                  ),
                                 );
                               }
                             },
@@ -175,7 +184,7 @@ class _NotesScreenState extends State<NotesScreen> {
                     // Delete button
                     IconButton(
                       icon: const Icon(Icons.delete, size: 18),
-                      color: AppColors.accent,
+                      color: Theme.of(context).colorScheme.primary,
                       onPressed: () {
                         showDialog(
                           context: context,
@@ -189,14 +198,24 @@ class _NotesScreenState extends State<NotesScreen> {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.accent,
-                                  foregroundColor: AppColors.textPrimary,
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context).colorScheme.onSurface,
                                 ),
                                 onPressed: () {
                                   noteProvider.deleteNote(note.id);
                                   Navigator.pop(context);
+                                  final cs = Theme.of(context).colorScheme;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Note deleted')),
+                                    SnackBar(
+                                      backgroundColor: cs.surface,
+                                      content: Text(
+                                        'Note deleted',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(color: cs.onSurface),
+                                      ),
+                                    ),
                                   );
                                 },
                                 child: const Text('Delete'),

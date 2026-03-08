@@ -68,15 +68,17 @@ class AuthProvider extends ChangeNotifier {
     try {
       _user = await _authService!.signInWithEmail(email, password);
       _authState = AuthState.authenticated;
+      _pendingVerificationEmail = null;
       return true;
     } catch (e) {
       final msg = e.toString().replaceFirst('Exception: ', '');
       if (msg == '__unverified__') {
-        // Account exists but email not verified — go to verification screen
-        _pendingVerificationEmail = email;
-        _authState = AuthState.needsVerification;
-        _errorMessage = null;
+        _authState = AuthState.unauthenticated;
+        _pendingVerificationEmail = null;
+        _errorMessage =
+            'Please verify your email first. Check your inbox.';
       } else {
+        _authState = AuthState.unauthenticated;
         _errorMessage = msg;
       }
       return false;
@@ -100,12 +102,14 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       final msg = e.toString().replaceFirst('Exception: ', '');
-      if (msg.contains('already exists')) {
-        // Account exists but may be unverified — go to verification screen
-        _pendingVerificationEmail = email;
-        _authState = AuthState.needsVerification;
-        _errorMessage = null;
+      if (msg.toLowerCase().contains('already exists') ||
+          msg.contains('UsernameExistsException') ||
+          msg.contains('409')) {
+        _authState = AuthState.unauthenticated;
+        _pendingVerificationEmail = null;
+        _errorMessage = 'An account with this email already exists.';
       } else {
+        _authState = AuthState.unauthenticated;
         _errorMessage = msg;
       }
       return false;

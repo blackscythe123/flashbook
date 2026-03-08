@@ -114,6 +114,10 @@ class BookProvider extends ChangeNotifier {
 
   /// Set API configuration for live mode
   void setApiConfig(ApiConfig config) {
+    if (identical(_apiConfig, config) && _apiClient != null) {
+      return;
+    }
+    _apiClient?.dispose();
     _apiConfig = config;
     _apiClient = BackendApiClient(config);
     notifyListeners();

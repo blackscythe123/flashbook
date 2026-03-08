@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_colors.dart';
 import '../models/models.dart';
 import '../state/state.dart';
 import 'package:http/http.dart' as http;
@@ -44,7 +43,7 @@ class LearningCard extends StatefulWidget {
     this.isFirst = false,
     this.isLast = false,
     this.isLoading = false,
-    this.fontSize = 18.0,
+    this.fontSize = 15.0,
     this.isBold = false,
   });
 
@@ -109,9 +108,12 @@ class _LearningCardState extends State<LearningCard> {
         if (status.isPermanentlyDenied) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please enable photo permission in settings'),
-                backgroundColor: AppColors.warning,
+              SnackBar(
+                content: Text(
+                  'Please enable photo permission in settings',
+                  style: GoogleFonts.plusJakartaSans(color: Colors.white),
+                ),
+                backgroundColor: Color(0xFFF59E0B),
               ),
             );
           }
@@ -122,9 +124,14 @@ class _LearningCardState extends State<LearningCard> {
 
       // Show loading
       if (mounted) {
+        final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Downloading image...'),
+          SnackBar(
+            backgroundColor: cs.surface,
+            content: Text(
+              'Downloading image...',
+              style: GoogleFonts.plusJakartaSans(color: cs.onSurface),
+            ),
             duration: Duration(seconds: 1),
           ),
         );
@@ -150,9 +157,12 @@ class _LearningCardState extends State<LearningCard> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image saved to gallery!'),
-            backgroundColor: AppColors.success,
+          SnackBar(
+            content: Text(
+              'Image saved to gallery!',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
+            ),
+            backgroundColor: Color(0xFF22C55E),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -164,8 +174,9 @@ class _LearningCardState extends State<LearningCard> {
           SnackBar(
             content: Text(
               'Failed to save: ${e.toString().replaceAll('Exception: ', '')}',
+              style: GoogleFonts.plusJakartaSans(color: Colors.white),
             ),
-            backgroundColor: AppColors.accent,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 3),
           ),
@@ -176,12 +187,13 @@ class _LearningCardState extends State<LearningCard> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     if (widget.isLoading || widget.block.tag == 'LOADING') {
       return _buildLoadingCard(context);
     }
 
     return Container(
-      color: _hasImage ? null : Theme.of(context).scaffoldBackgroundColor,
+      color: _hasImage ? null : cs.surface,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -207,7 +219,10 @@ class _LearningCardState extends State<LearningCard> {
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          _hasImage
+                              ? CrossAxisAlignment.start
+                              : CrossAxisAlignment.center,
                       children: [
                         // Tag
                         if (widget.block.tag != null)
@@ -217,53 +232,104 @@ class _LearningCardState extends State<LearningCard> {
 
                         const SizedBox(height: 16),
 
-                        // Headline
-                        Text(
-                              widget.block.headline,
-                              style: GoogleFonts.syne(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                                letterSpacing: -0.3,
-                                shadows: const [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    offset: Offset(0, 1),
-                                    blurRadius: 8,
-                                  ),
-                                ],
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(delay: 100.ms, duration: 400.ms)
-                            .slideY(begin: 0.1, end: 0),
+                        Padding(
+                          padding:
+                              _hasImage
+                                  ? EdgeInsets.zero
+                                  : const EdgeInsets.only(right: 72),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              crossAxisAlignment:
+                                  _hasImage
+                                      ? CrossAxisAlignment.start
+                                      : CrossAxisAlignment.center,
+                              children: [
+                                // Headline
+                                Text(
+                                      widget.block.headline,
+                                      textAlign:
+                                          _hasImage
+                                              ? TextAlign.start
+                                              : TextAlign.center,
+                                      style: GoogleFonts.syne(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: _hasImage ? Colors.white : cs.onSurface,
+                                        letterSpacing: -0.3,
+                                        shadows:
+                                            _hasImage
+                                                ? [
+                                                  const Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(0, 1),
+                                                    blurRadius: 12,
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black.withValues(alpha: 0.5),
+                                                    offset: const Offset(0, 0),
+                                                    blurRadius: 20,
+                                                  ),
+                                                ]
+                                                : null,
+                                      ),
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 100.ms, duration: 400.ms)
+                                    .slideY(begin: 0.1, end: 0),
 
-                        const SizedBox(height: 20),
+                                const SizedBox(height: 20),
 
-                        // Content text
-                        _needsLyricFlow
-                            ? LyricFlowWidget(
-                              text: widget.block.content,
-                              fontSize: 15,
-                              textColor: AppColors.textPrimary,
-                              hasImageBackground: _hasImage,
-                            )
-                            : Text(
-                              widget.block.content,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
-                                height: 1.6,
-                                shadows: const [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    offset: Offset(0, 1),
-                                    blurRadius: 6,
-                                  ),
-                                ],
-                              ),
-                            ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                                // Content text
+                                _needsLyricFlow
+                                    ? LyricFlowWidget(
+                                      text: widget.block.content,
+                                      fontSize: widget.fontSize,
+                                      textAlign:
+                                          _hasImage
+                                              ? TextAlign.start
+                                              : TextAlign.center,
+                                      textColor:
+                                          _hasImage
+                                              ? Colors.white
+                                              : Theme.of(context).colorScheme.onSurface,
+                                      hasImageBackground: _hasImage,
+                                    )
+                                    : Text(
+                                      widget.block.content,
+                                      textAlign:
+                                          _hasImage
+                                              ? TextAlign.start
+                                              : TextAlign.center,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: widget.fontSize,
+                                        fontWeight:
+                                            widget.isBold
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                        color: _hasImage ? Colors.white : cs.onSurface,
+                                        height: 1.6,
+                                        shadows:
+                                            _hasImage
+                                                ? [
+                                                  const Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(0, 1),
+                                                    blurRadius: 12,
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black.withValues(alpha: 0.5),
+                                                    offset: const Offset(0, 0),
+                                                    blurRadius: 20,
+                                                  ),
+                                                ]
+                                                : null,
+                                      ),
+                                    ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+                              ],
+                            ),
+                          ),
+                        ),
 
                         // Takeaway box
                         if (widget.block.takeaway != null) ...[
@@ -328,9 +394,11 @@ class _LearningCardState extends State<LearningCard> {
         fit: BoxFit.cover,
         placeholder:
             (context, url) => Container(
-              color: AppColors.background,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.accent),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
         errorWidget: (context, url, error) => _buildErrorWidget(),
@@ -340,7 +408,7 @@ class _LearningCardState extends State<LearningCard> {
 
   Widget _buildErrorWidget() {
     return Container(
-      color: AppColors.background,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -348,12 +416,14 @@ class _LearningCardState extends State<LearningCard> {
             Icon(
               Icons.broken_image_rounded,
               size: 48,
-              color: AppColors.textMuted,
+              color: Theme.of(context).colorScheme.secondary,
             ),
             const SizedBox(height: 8),
             Text(
               'Image unavailable',
-              style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted),
+              style: GoogleFonts.plusJakartaSans(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
             ),
           ],
         ),
@@ -364,18 +434,36 @@ class _LearningCardState extends State<LearningCard> {
   /// Overlay tint for text readability on image backgrounds
   Widget _buildGradientOverlay() {
     return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.7),
-            ],
-            stops: [0.3, 1.0],
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.5),
+                  Colors.black.withValues(alpha: 0.85),
+                ],
+                stops: const [0.0, 0.5, 1.0],
+              ),
+            ),
           ),
-        ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.4),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.3],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -395,7 +483,7 @@ class _LearningCardState extends State<LearningCard> {
               height: 50,
               child: CircularProgressIndicator(
                 strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
               ),
             ).animate(onPlay: (c) => c.repeat()).rotate(duration: 2.seconds),
             const SizedBox(height: 24),
@@ -451,10 +539,11 @@ class _LearningCardState extends State<LearningCard> {
   }
 
   Widget _buildProgressIndicator() {
+    final primary = Theme.of(context).colorScheme.primary;
     return Container(
       height: 3,
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.1),
+        color: primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
       child: FractionallySizedBox(
@@ -462,7 +551,7 @@ class _LearningCardState extends State<LearningCard> {
         widthFactor: widget.progress,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.accent,
+            color: primary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -476,13 +565,13 @@ class _LearningCardState extends State<LearningCard> {
       decoration: BoxDecoration(
         color:
             _hasImage
-                ? AppColors.textPrimary.withValues(alpha: 0.2)
+                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)
                 : Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
-                  ? AppColors.textPrimary.withValues(alpha: 0.3)
+                  ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3)
                   : Theme.of(
                     context,
                   ).colorScheme.primary.withValues(alpha: 0.3),
@@ -493,7 +582,7 @@ class _LearningCardState extends State<LearningCard> {
         style: GoogleFonts.plusJakartaSans(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          color: _hasImage ? Colors.white70 : Theme.of(context).colorScheme.secondary,
           letterSpacing: 2.0,
         ),
       ),
@@ -506,13 +595,13 @@ class _LearningCardState extends State<LearningCard> {
       decoration: BoxDecoration(
         color:
             _hasImage
-                ? AppColors.textPrimary.withValues(alpha: 0.15)
-                : Theme.of(context).cardColor,
+                ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)
+                : Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color:
               _hasImage
-                  ? AppColors.textPrimary.withValues(alpha: 0.2)
+                  ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2)
                   : Theme.of(context).dividerColor.withValues(alpha: 0.3),
         ),
       ),
@@ -527,7 +616,7 @@ class _LearningCardState extends State<LearningCard> {
               letterSpacing: 1.5,
               color:
                   _hasImage
-                      ? AppColors.textPrimary.withValues(alpha: 0.7)
+                      ? Colors.white70
                       : Theme.of(
                         context,
                       ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
@@ -541,15 +630,15 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? AppColors.textPrimary
+                    ? Colors.white
                       : Theme.of(context).textTheme.bodyMedium?.color,
               height: 1.5,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: AppColors.background.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 12,
                         ),
                       ]
                       : null,
@@ -569,7 +658,7 @@ class _LearningCardState extends State<LearningCard> {
           decoration: BoxDecoration(
             color:
                 _hasImage
-                    ? AppColors.textPrimary.withValues(alpha: 0.15)
+                    ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15)
                     : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -580,14 +669,14 @@ class _LearningCardState extends State<LearningCard> {
               fontWeight: FontWeight.w500,
               color:
                   _hasImage
-                      ? AppColors.textPrimary
+                    ? Colors.white
                       : Theme.of(context).textTheme.bodySmall?.color,
               shadows:
                   _hasImage
                       ? [
                         Shadow(
-                          color: AppColors.background.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 12,
                         ),
                       ]
                       : null,
@@ -632,8 +721,17 @@ class _LearningCardState extends State<LearningCard> {
                                   existingNote.id,
                                   noteText,
                                 );
+                                final cs = Theme.of(context).colorScheme;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Note updated')),
+                                  SnackBar(
+                                    backgroundColor: cs.surface,
+                                    content: Text(
+                                      'Note updated',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                  ),
                                 );
                               } else {
                                 const uuid = Uuid();
@@ -644,8 +742,17 @@ class _LearningCardState extends State<LearningCard> {
                                   cardTitle: widget.block.headline,
                                   noteText: noteText,
                                 );
+                                final cs = Theme.of(context).colorScheme;
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Note saved')),
+                                  SnackBar(
+                                    backgroundColor: cs.surface,
+                                    content: Text(
+                                      'Note saved',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: cs.onSurface,
+                                      ),
+                                    ),
+                                  ),
                                 );
                               }
                             }
@@ -692,12 +799,15 @@ class _LearningCardState extends State<LearningCard> {
                             wasBookmarked
                                 ? Icons.bookmark_remove_rounded
                                 : Icons.check_circle_rounded,
-                            color: AppColors.textPrimary,
+                            color: Colors.white,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             wasBookmarked ? 'Bookmark removed' : 'Bookmarked!',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -705,8 +815,8 @@ class _LearningCardState extends State<LearningCard> {
                       duration: const Duration(seconds: 2),
                       backgroundColor:
                           wasBookmarked
-                              ? AppColors.textMuted
-                              : AppColors.accent,
+                              ? Theme.of(context).colorScheme.secondary
+                              : Theme.of(context).colorScheme.primary,
                     ),
                   );
                 },
@@ -727,9 +837,14 @@ class _LearningCardState extends State<LearningCard> {
           _buildActionButton(
             icon: Icons.share_rounded,
             onTap: () {
+              final cs = Theme.of(context).colorScheme;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Share feature coming soon'),
+                SnackBar(
+                  backgroundColor: cs.surface,
+                  content: Text(
+                    'Share feature coming soon',
+                    style: GoogleFonts.plusJakartaSans(color: cs.onSurface),
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -740,9 +855,14 @@ class _LearningCardState extends State<LearningCard> {
           _buildActionButton(
             icon: Icons.more_vert_rounded,
             onTap: () {
+              final cs = Theme.of(context).colorScheme;
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('More options coming soon'),
+                SnackBar(
+                  backgroundColor: cs.surface,
+                  content: Text(
+                    'More options coming soon',
+                    style: GoogleFonts.plusJakartaSans(color: cs.onSurface),
+                  ),
                   behavior: SnackBarBehavior.floating,
                 ),
               );
@@ -761,7 +881,7 @@ class _LearningCardState extends State<LearningCard> {
     return Material(
       color:
           _hasImage
-              ? AppColors.background.withValues(alpha: 0.3)
+              ? Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.3)
               : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
       elevation: _hasImage ? 0 : 2,
@@ -777,9 +897,9 @@ class _LearningCardState extends State<LearningCard> {
             icon,
             color:
                 isActive
-                    ? AppColors.warning
+                    ? const Color(0xFFF59E0B)
                     : (_hasImage
-                        ? AppColors.textPrimary
+                        ? Theme.of(context).colorScheme.onSurface
                         : Theme.of(
                           context,
                         ).iconTheme.color?.withValues(alpha: 0.6)),
@@ -813,3 +933,4 @@ class _LearningCardState extends State<LearningCard> {
         .fadeOut(delay: 2.seconds);
   }
 }
+

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Lyric Flow Widget - Displays text like song lyrics flowing on screen.
 /// Each line appears with a staggered animation, creating an immersive
@@ -118,21 +117,23 @@ class _LyricFlowWidgetState extends State<LyricFlowWidget>
   @override
   Widget build(BuildContext context) {
     final textColor =
-        widget.textColor ?? AppColors.textPrimary.withValues(alpha: 0.85);
+      widget.hasImageBackground
+        ? Colors.white
+        : (widget.textColor ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85));
 
     // Text shadows for image backgrounds
     final textShadows =
         widget.hasImageBackground
             ? [
-              Shadow(
-                color: AppColors.background.withValues(alpha: 0.7),
-                blurRadius: 6,
-                offset: const Offset(0, 1),
+              const Shadow(
+                color: Colors.black,
+                blurRadius: 12,
+                offset: Offset(0, 1),
               ),
               Shadow(
-                color: AppColors.background.withValues(alpha: 0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 20,
+                offset: const Offset(0, 0),
               ),
             ]
             : <Shadow>[];
@@ -221,7 +222,7 @@ class LyricFlowPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = textColor ?? AppColors.textPrimary.withValues(alpha: 0.85);
+    final color = textColor ?? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.85);
 
     return Text(
       text,
@@ -234,3 +235,4 @@ class LyricFlowPreview extends StatelessWidget {
     );
   }
 }
+

@@ -9,6 +9,7 @@ class ReadingProgressProvider extends ChangeNotifier {
   final StorageService _storageService;
 
   ReadingProgress? _currentProgress;
+  List<ReadingProgress> _allProgress = [];
   bool _isLoading = false;
   String _userId = 'demo_user';
   BackendApiClient? _apiClient;
@@ -22,12 +23,17 @@ class ReadingProgressProvider extends ChangeNotifier {
   double get progressPercentage => _currentProgress?.progressPercentage ?? 0;
   int get currentBlockIndex => _currentProgress?.currentBlockIndex ?? 0;
   int get totalBlocksRead => _currentProgress?.totalBlocksRead ?? 0;
+  int get totalCardsRead => _allProgress.fold<int>(
+    0,
+    (sum, p) => sum + p.totalBlocksRead,
+  );
   int get readingStreak => _currentProgress?.readingStreak ?? 0;
 
   /// Set user ID for storage operations
   void setUserId(String userId) {
     _userId = userId;
     _storageService.initializeDemoData(userId);
+    _refreshAllProgress();
   }
 
   /// Inject API client for backend sync
@@ -42,6 +48,7 @@ class ReadingProgressProvider extends ChangeNotifier {
 
     try {
       _currentProgress = await _storageService.getProgress(_userId, bookId);
+      _allProgress = await _storageService.getAllProgress(_userId);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -104,6 +111,7 @@ class ReadingProgressProvider extends ChangeNotifier {
   Future<void> _saveProgress() async {
     if (_currentProgress == null) return;
     await _storageService.saveProgress(_userId, _currentProgress!);
+    await _refreshAllProgress(notify: false);
 
     // Sync to backend (fire-and-forget)
     if (_apiClient != null) {
@@ -152,6 +160,14 @@ class ReadingProgressProvider extends ChangeNotifier {
   /// Reset progress
   void reset() {
     _currentProgress = null;
+    _allProgress = [];
     notifyListeners();
+  }
+
+  Future<void> _refreshAllProgress({bool notify = true}) async {
+    _allProgress = await _storageService.getAllProgress(_userId);
+    if (notify) {
+      notifyListeners();
+    }
   }
 }

@@ -1,9 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../screens/processing_screen.dart';
 
 Future<void> pickAndUploadPDF(BuildContext context) async {
+  final cs = Theme.of(context).colorScheme;
   try {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -23,13 +25,13 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => ProcessingScreen(
-          fileBytes: file.bytes,
-          fileName: file.name,
-        ),
+        pageBuilder:
+            (_, __, ___) =>
+                ProcessingScreen(fileBytes: file.bytes, fileName: file.name),
         transitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (_, animation, __, child) =>
-            FadeTransition(opacity: animation, child: child),
+        transitionsBuilder:
+            (_, animation, __, child) =>
+                FadeTransition(opacity: animation, child: child),
       ),
     );
   } catch (e) {
@@ -37,8 +39,14 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to open file: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Text(
+            'Upload failed: ${e.toString()}',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: cs.error,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
         ),
