@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 
 /// Bottom navigation bar for the app.
 /// Provides quick access to main sections: Home, Add, and Saved.
@@ -16,11 +15,12 @@ class AppBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: const Border(
-          top: BorderSide(color: AppColors.divider, width: 1),
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: colorScheme.outline, width: 1),
         ),
       ),
       child: SafeArea(
@@ -29,13 +29,20 @@ class AppBottomNavigation extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(icon: Icons.home_rounded, label: 'Home', index: 0),
               _buildNavItem(
+                context: context,
+                icon: Icons.home_rounded,
+                label: 'Home',
+                index: 0,
+              ),
+              _buildNavItem(
+                context: context,
                 icon: Icons.add_circle_outline_rounded,
                 label: 'Add',
                 index: 1,
               ),
               _buildNavItem(
+                context: context,
                 icon: Icons.bookmark_border_rounded,
                 label: 'Saved',
                 index: 2,
@@ -48,11 +55,14 @@ class AppBottomNavigation extends StatelessWidget {
   }
 
   Widget _buildNavItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required int index,
   }) {
     final isSelected = currentIndex == index;
+    final colorScheme = Theme.of(context).colorScheme;
+    final iconColor = isSelected ? colorScheme.primary : colorScheme.secondary;
 
     return GestureDetector(
       onTap: () => onTap(index),
@@ -65,7 +75,7 @@ class AppBottomNavigation extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? AppColors.accent : AppColors.textMuted,
+              color: iconColor,
             ),
             const SizedBox(height: 4),
             Text(
@@ -73,7 +83,7 @@ class AppBottomNavigation extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? AppColors.accent : AppColors.textMuted,
+                color: iconColor,
               ),
             ),
           ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 import 'library_screen.dart';
 import 'search_screen.dart';
 import 'bookmark_screen.dart';
@@ -26,15 +25,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDark ? AppColors.navBackground : AppColors.navBackground,
+          color: colorScheme.surface,
           border: Border(
-            top: BorderSide(color: AppColors.divider),
+            top: BorderSide(color: colorScheme.outline),
           ),
         ),
         child: SafeArea(
@@ -91,11 +90,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected
-        ? AppColors.accent
-        : (Theme.of(context).brightness == Brightness.dark
-            ? AppColors.textSecondary
-            : AppColors.textMuted);
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = isSelected ? colorScheme.primary : colorScheme.secondary;
 
     return GestureDetector(
       onTap: onTap,
@@ -111,7 +107,7 @@ class _NavItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color:
                     isSelected
-                        ? AppColors.accentDim
+                        ? colorScheme.primaryContainer
                         : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),

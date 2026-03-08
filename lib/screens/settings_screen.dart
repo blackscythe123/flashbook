@@ -31,18 +31,64 @@ class SettingsScreen extends StatelessWidget {
           _SectionHeader(title: 'Appearance')
               .animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 8),
-          _SettingsTile(
-            icon: Icons.dark_mode_rounded,
-            iconColor: AppColors.textMuted,
-            title: 'Dark Mode',
-            subtitle: 'Easier on the eyes at night',
-            trailing: Consumer<ThemeProvider>(
-              builder: (ctx, theme, _) => Switch(
-                value: theme.isDarkMode,
-                onChanged: null,
-                activeThumbColor: AppColors.accent,
-              ),
-            ),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      themeProvider.isDarkMode
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Appearance',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            themeProvider.isDarkMode
+                                ? 'Dark mode'
+                                : 'Light mode',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: themeProvider.isDarkMode,
+                      onChanged: (_) => themeProvider.toggleTheme(),
+                      activeThumbColor: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                ),
+              );
+            },
           ).animate().fadeIn(delay: 80.ms, duration: 400.ms),
 
           const SizedBox(height: 24),

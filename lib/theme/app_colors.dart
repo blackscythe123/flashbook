@@ -34,3 +34,36 @@ class AppColors {
   static const Color shimmerBase      = Color(0xFF1A1A1A);
   static const Color shimmerHighlight = Color(0xFF2A2A2A);
 }
+
+class AppColorsLight {
+  AppColorsLight._();
+
+  // Backgrounds
+  static const Color background  = Color(0xFFFFFFFF);
+  static const Color surface     = Color(0xFFF5F5F5);
+  static const Color elevated    = Color(0xFFEEEEEE);
+  static const Color overlay     = Color(0xFFE5E5E5);
+
+  // Accent - navy blue
+  static const Color accent      = Color(0xFF0B3061);
+  static const Color accentDim   = Color(0x220B3061);
+  static const Color accentHover = Color(0xFF0D3875);
+
+  // Text
+  static const Color textPrimary   = Color(0xFF0A0A0A);
+  static const Color textSecondary = Color(0xFF555555);
+  static const Color textMuted     = Color(0xFF999999);
+  static const Color textDisabled  = Color(0xFFCCCCCC);
+
+  // Utility
+  static const Color divider  = Color(0xFFE0E0E0);
+  static const Color border   = Color(0xFFD5D5D5);
+  static const Color success  = Color(0xFF16A34A);
+  static const Color warning  = Color(0xFFD97706);
+  static const Color error    = Color(0xFFC41E24);
+
+  // Semantic
+  static const Color cardBackground  = surface;
+  static const Color inputBackground = elevated;
+  static const Color navBackground   = surface;
+}

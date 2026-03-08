@@ -328,9 +328,11 @@ class _LearningCardState extends State<LearningCard> {
         fit: BoxFit.cover,
         placeholder:
             (context, url) => Container(
-              color: AppColors.background,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.accent),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
             ),
         errorWidget: (context, url, error) => _buildErrorWidget(),
@@ -340,7 +342,7 @@ class _LearningCardState extends State<LearningCard> {
 
   Widget _buildErrorWidget() {
     return Container(
-      color: AppColors.background,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -348,12 +350,14 @@ class _LearningCardState extends State<LearningCard> {
             Icon(
               Icons.broken_image_rounded,
               size: 48,
-              color: AppColors.textMuted,
+              color: Theme.of(context).colorScheme.secondary,
             ),
             const SizedBox(height: 8),
             Text(
               'Image unavailable',
-              style: GoogleFonts.plusJakartaSans(color: AppColors.textMuted),
+              style: GoogleFonts.plusJakartaSans(
+                color: Theme.of(context).colorScheme.secondary,
+              ),
             ),
           ],
         ),
@@ -451,10 +455,11 @@ class _LearningCardState extends State<LearningCard> {
   }
 
   Widget _buildProgressIndicator() {
+    final primary = Theme.of(context).colorScheme.primary;
     return Container(
       height: 3,
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.1),
+        color: primary.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(2),
       ),
       child: FractionallySizedBox(
@@ -462,7 +467,7 @@ class _LearningCardState extends State<LearningCard> {
         widthFactor: widget.progress,
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.accent,
+            color: primary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -493,7 +498,7 @@ class _LearningCardState extends State<LearningCard> {
         style: GoogleFonts.plusJakartaSans(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          color: Theme.of(context).colorScheme.secondary,
           letterSpacing: 2.0,
         ),
       ),
@@ -692,7 +697,7 @@ class _LearningCardState extends State<LearningCard> {
                             wasBookmarked
                                 ? Icons.bookmark_remove_rounded
                                 : Icons.check_circle_rounded,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             size: 18,
                           ),
                           const SizedBox(width: 8),
@@ -705,8 +710,8 @@ class _LearningCardState extends State<LearningCard> {
                       duration: const Duration(seconds: 2),
                       backgroundColor:
                           wasBookmarked
-                              ? AppColors.textMuted
-                              : AppColors.accent,
+                              ? Theme.of(context).colorScheme.secondary
+                              : Theme.of(context).colorScheme.primary,
                     ),
                   );
                 },
@@ -761,7 +766,7 @@ class _LearningCardState extends State<LearningCard> {
     return Material(
       color:
           _hasImage
-              ? AppColors.background.withValues(alpha: 0.3)
+              ? Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.3)
               : Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
       elevation: _hasImage ? 0 : 2,

@@ -11,7 +11,7 @@ class AppTheme {
   //   substitute for PolySans on Google Fonts)
   // Body/UI: Plus Jakarta Sans
 
-  static TextTheme get _textTheme => TextTheme(
+  static TextTheme get _darkTextTheme => TextTheme(
     displayLarge: GoogleFonts.syne(
       fontSize: 36, fontWeight: FontWeight.w700,
       color: AppColors.textPrimary, letterSpacing: -1.0,
@@ -70,11 +70,70 @@ class AppTheme {
     ),
   );
 
+  static TextTheme get _lightTextTheme => TextTheme(
+    displayLarge: GoogleFonts.syne(
+      fontSize: 36, fontWeight: FontWeight.w700,
+      color: AppColorsLight.textPrimary, letterSpacing: -1.0,
+    ),
+    displayMedium: GoogleFonts.syne(
+      fontSize: 28, fontWeight: FontWeight.w700,
+      color: AppColorsLight.textPrimary, letterSpacing: -0.5,
+    ),
+    displaySmall: GoogleFonts.syne(
+      fontSize: 22, fontWeight: FontWeight.w600,
+      color: AppColorsLight.textPrimary, letterSpacing: -0.3,
+    ),
+    headlineMedium: GoogleFonts.syne(
+      fontSize: 20, fontWeight: FontWeight.w600,
+      color: AppColorsLight.textPrimary,
+    ),
+    headlineSmall: GoogleFonts.syne(
+      fontSize: 18, fontWeight: FontWeight.w600,
+      color: AppColorsLight.textPrimary,
+    ),
+    titleLarge: GoogleFonts.plusJakartaSans(
+      fontSize: 17, fontWeight: FontWeight.w600,
+      color: AppColorsLight.textPrimary,
+    ),
+    titleMedium: GoogleFonts.plusJakartaSans(
+      fontSize: 15, fontWeight: FontWeight.w600,
+      color: AppColorsLight.textPrimary, letterSpacing: 0.1,
+    ),
+    titleSmall: GoogleFonts.plusJakartaSans(
+      fontSize: 13, fontWeight: FontWeight.w500,
+      color: AppColorsLight.textSecondary,
+    ),
+    bodyLarge: GoogleFonts.plusJakartaSans(
+      fontSize: 16, fontWeight: FontWeight.w400,
+      color: AppColorsLight.textPrimary, height: 1.6,
+    ),
+    bodyMedium: GoogleFonts.plusJakartaSans(
+      fontSize: 14, fontWeight: FontWeight.w400,
+      color: AppColorsLight.textSecondary, height: 1.5,
+    ),
+    bodySmall: GoogleFonts.plusJakartaSans(
+      fontSize: 12, fontWeight: FontWeight.w400,
+      color: AppColorsLight.textMuted, height: 1.4,
+    ),
+    labelLarge: GoogleFonts.plusJakartaSans(
+      fontSize: 15, fontWeight: FontWeight.w600,
+      color: AppColorsLight.textPrimary, letterSpacing: 0.2,
+    ),
+    labelMedium: GoogleFonts.plusJakartaSans(
+      fontSize: 12, fontWeight: FontWeight.w500,
+      color: AppColorsLight.textSecondary, letterSpacing: 0.4,
+    ),
+    labelSmall: GoogleFonts.plusJakartaSans(
+      fontSize: 11, fontWeight: FontWeight.w500,
+      color: AppColorsLight.textMuted, letterSpacing: 0.6,
+    ),
+  );
+
   static ThemeData get dark => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColors.background,
-    textTheme: _textTheme,
+    textTheme: _darkTextTheme,
 
     colorScheme: const ColorScheme.dark(
       surface:      AppColors.surface,
@@ -342,6 +401,270 @@ class AppTheme {
     ),
 
     // -- Page Transitions ---------------
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
+  );
+
+  static ThemeData get light => ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColorsLight.background,
+    textTheme: _lightTextTheme,
+
+    colorScheme: const ColorScheme.light(
+      surface:      AppColorsLight.surface,
+      surfaceContainerHighest: AppColorsLight.elevated,
+      primary:      AppColorsLight.accent,
+      primaryContainer: AppColorsLight.accentDim,
+      onPrimary:    Colors.white,
+      onSurface:    AppColorsLight.textPrimary,
+      secondary:    AppColorsLight.textSecondary,
+      onSecondary:  AppColorsLight.textPrimary,
+      error:        AppColorsLight.error,
+      onError:      Colors.white,
+      outline:      AppColorsLight.border,
+    ),
+
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColorsLight.background,
+      foregroundColor: AppColorsLight.textPrimary,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: true,
+      titleTextStyle: GoogleFonts.syne(
+        fontSize: 18, fontWeight: FontWeight.w600,
+        color: AppColorsLight.textPrimary,
+      ),
+      iconTheme: const IconThemeData(
+        color: AppColorsLight.textPrimary, size: 24,
+      ),
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: AppColorsLight.background,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    ),
+
+    cardTheme: CardThemeData(
+      color: AppColorsLight.surface,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColorsLight.border, width: 1),
+      ),
+    ),
+
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColorsLight.accent,
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: AppColorsLight.elevated,
+        disabledForegroundColor: AppColorsLight.textMuted,
+        elevation: 0,
+        minimumSize: const Size(double.infinity, 52),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        textStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 15, fontWeight: FontWeight.w600,
+          letterSpacing: 0.2,
+        ),
+      ),
+    ),
+
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColorsLight.textPrimary,
+        side: const BorderSide(color: AppColorsLight.border, width: 1.5),
+        minimumSize: const Size(double.infinity, 52),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        textStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 15, fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: AppColorsLight.accent,
+        textStyle: GoogleFonts.plusJakartaSans(
+          fontSize: 14, fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColorsLight.elevated,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColorsLight.border, width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColorsLight.border, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColorsLight.accent, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColorsLight.error, width: 1.5),
+      ),
+      hintStyle: GoogleFonts.plusJakartaSans(
+        color: AppColorsLight.textMuted, fontSize: 14,
+      ),
+      labelStyle: GoogleFonts.plusJakartaSans(
+        color: AppColorsLight.textSecondary, fontSize: 14,
+      ),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20, vertical: 16,
+      ),
+    ),
+
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return AppColorsLight.accent;
+        return AppColorsLight.elevated;
+      }),
+      checkColor: WidgetStateProperty.all(Colors.white),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      side: const BorderSide(color: AppColorsLight.border, width: 1.5),
+    ),
+
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return AppColorsLight.accent;
+        return AppColorsLight.textMuted;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return AppColorsLight.accentDim;
+        return AppColorsLight.elevated;
+      }),
+    ),
+
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColorsLight.surface,
+      selectedItemColor: AppColorsLight.accent,
+      unselectedItemColor: AppColorsLight.textMuted,
+      elevation: 0,
+      type: BottomNavigationBarType.fixed,
+      showSelectedLabels: true,
+      showUnselectedLabels: true,
+    ),
+
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColorsLight.surface,
+      indicatorColor: AppColorsLight.accentDim,
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const IconThemeData(color: AppColorsLight.accent, size: 24);
+        }
+        return const IconThemeData(color: AppColorsLight.textMuted, size: 24);
+      }),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return GoogleFonts.plusJakartaSans(
+            fontSize: 11, fontWeight: FontWeight.w600,
+            color: AppColorsLight.accent,
+          );
+        }
+        return GoogleFonts.plusJakartaSans(
+          fontSize: 11, fontWeight: FontWeight.w500,
+          color: AppColorsLight.textMuted,
+        );
+      }),
+    ),
+
+    dividerTheme: const DividerThemeData(
+      color: AppColorsLight.divider,
+      thickness: 1,
+      space: 1,
+    ),
+
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: AppColorsLight.elevated,
+      contentTextStyle: GoogleFonts.plusJakartaSans(
+        color: AppColorsLight.textPrimary, fontSize: 14,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      behavior: SnackBarBehavior.floating,
+    ),
+
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColorsLight.surface,
+      modalBackgroundColor: AppColorsLight.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      elevation: 0,
+    ),
+
+    dialogTheme: DialogThemeData(
+      backgroundColor: AppColorsLight.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColorsLight.border, width: 1),
+      ),
+      titleTextStyle: GoogleFonts.syne(
+        fontSize: 18, fontWeight: FontWeight.w600,
+        color: AppColorsLight.textPrimary,
+      ),
+      contentTextStyle: GoogleFonts.plusJakartaSans(
+        fontSize: 14, color: AppColorsLight.textSecondary, height: 1.5,
+      ),
+    ),
+
+    chipTheme: ChipThemeData(
+      backgroundColor: AppColorsLight.elevated,
+      selectedColor: AppColorsLight.accentDim,
+      labelStyle: GoogleFonts.plusJakartaSans(
+        fontSize: 12, fontWeight: FontWeight.w500,
+        color: AppColorsLight.textPrimary,
+      ),
+      side: const BorderSide(color: AppColorsLight.border, width: 1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+    ),
+
+    listTileTheme: const ListTileThemeData(
+      tileColor: Colors.transparent,
+      selectedTileColor: AppColorsLight.accentDim,
+      iconColor: AppColorsLight.textSecondary,
+      textColor: AppColorsLight.textPrimary,
+      contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+    ),
+
+    tabBarTheme: TabBarThemeData(
+      labelColor: AppColorsLight.textPrimary,
+      unselectedLabelColor: AppColorsLight.textMuted,
+      indicatorColor: AppColorsLight.accent,
+      indicatorSize: TabBarIndicatorSize.label,
+      labelStyle: GoogleFonts.plusJakartaSans(
+        fontSize: 14, fontWeight: FontWeight.w600,
+      ),
+      unselectedLabelStyle: GoogleFonts.plusJakartaSans(
+        fontSize: 14, fontWeight: FontWeight.w400,
+      ),
+    ),
+
+    iconTheme: const IconThemeData(
+      color: AppColorsLight.textPrimary, size: 24,
+    ),
+
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.android: CupertinoPageTransitionsBuilder(),

@@ -28,9 +28,9 @@ class FlashbookApp extends StatelessWidget {
           return MaterialApp(
             title: 'Flashbook',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.dark,
+            theme: AppTheme.light,
             darkTheme: AppTheme.dark,
-            themeMode: ThemeMode.dark,
+            themeMode: themeProvider.themeMode,
             home: const SplashScreen(),
           );
         },
