@@ -31,8 +31,46 @@
 
   <title>flashbook</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* ── Desktop: center the app in a mobile-sized frame ─────────────────── */
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* On desktop (>600px wide), constrain to a phone-sized column */
+    @media (min-width: 600px) {
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+      }
+
+      /* Flutter mounts into this element */
+      #flutter_target {
+        width: 390px;          /* iPhone 14 Pro width */
+        max-width: 430px;
+        min-height: 100vh;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 60px rgba(255,255,255,0.08);
+      }
+    }
+
+    /* On real mobile: fill the whole screen */
+    @media (max-width: 599px) {
+      #flutter_target {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div id="flutter_target"></div>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
