@@ -91,7 +91,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
-  void _resumeBook(Map<String, dynamic> book) {
+  Future<void> _resumeBook(Map<String, dynamic> book) async {
     // Set the book in BookProvider and navigate to learning feed
     final bookProvider = context.read<BookProvider>();
     final bookId = book['book_id'] as String? ?? '';
@@ -111,7 +111,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    bookProvider.resumeFromLibrary(
+    await bookProvider.resumeFromLibrary(
       bookId: bookId,
       title: title,
       s3Key: s3Key,
@@ -123,9 +123,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
 
     // Use push (not pushReplacement) so back button returns here
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const LearningFeedScreen()));
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LearningFeedScreen(bookId: bookId),
+      ),
+    );
   }
 
   void _openBookDetail(Map<String, dynamic> book) async {

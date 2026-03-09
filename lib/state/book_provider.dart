@@ -42,6 +42,9 @@ class BookProvider extends ChangeNotifier {
   // Resume position (global block index) set when opening from library
   int _resumeBlockIndex = 0;
 
+  // Monotonic token to ignore stale async book-load responses.
+  int _bookLoadRequestToken = 0;
+
   // Loading state for chapters
   bool _isLoadingChapter = false;
   int? _loadingChapterIndex;
@@ -1047,7 +1050,7 @@ class BookProvider extends ChangeNotifier {
   }
 
   /// Resume reading a book from the library (already uploaded to S3).
-  void resumeFromLibrary({
+  Future<void> resumeFromLibrary({
     required String bookId,
     required String title,
     required String s3Key,
@@ -1056,7 +1059,25 @@ class BookProvider extends ChangeNotifier {
     required int currentChapterIndex,
     int currentBlockIndex = 0,
     Map<String, String>? imageUrls,
-  }) {
+  }) async {
+    final switchingBook = _currentBook?.id != null && _currentBook!.id != bookId;
+    final requestToken = ++_bookLoadRequestToken;
+
+    if (switchingBook) {
+      // Clear in-memory reading state before selecting a different book.
+      _currentBook = null;
+      _rawChunks.clear();
+      _processedChapters.clear();
+      _processingChapters.clear();
+      _resumeBlockIndex = 0;
+      _isLoadingChapter = false;
+      _loadingChapterIndex = null;
+      _loadingStartTime = null;
+      _loadingError = null;
+      _imageUrls.clear();
+      notifyListeners();
+    }
+
     _currentBookId = bookId;
     _currentBookTitle = title;
     _s3Key = s3Key;
@@ -1092,7 +1113,13 @@ class BookProvider extends ChangeNotifier {
     debugPrint(
       'BookProvider: Loading book $bookId from S3 (page $pagesExtracted of $totalPages)',
     );
-    _loadFromS3(startPage: 0, pageCount: 50);
+    await _loadFromS3(
+      startPage: 0,
+      pageCount: 50,
+      requestedBookId: bookId,
+      requestedS3Key: s3Key,
+      requestToken: requestToken,
+    );
   }
 
   /// Compute global block index from chapter+block indices.
@@ -1113,17 +1140,28 @@ class BookProvider extends ChangeNotifier {
   Future<void> _loadFromS3({
     required int startPage,
     required int pageCount,
+    required String requestedBookId,
+    required String requestedS3Key,
+    required int requestToken,
   }) async {
-    if (_apiClient == null || _s3Key == null) return;
+    if (_apiClient == null) return;
     _isLoading = true;
     notifyListeners();
 
     try {
       final batchData = await _apiClient!.extractBatch(
-        s3Key: _s3Key!,
+        s3Key: requestedS3Key,
         startPage: startPage,
         pageCount: pageCount,
       );
+
+      if (requestToken != _bookLoadRequestToken ||
+          _currentBookId != requestedBookId) {
+        debugPrint(
+          'BookProvider: Ignoring stale load response for $requestedBookId',
+        );
+        return;
+      }
 
       final text = batchData['text'] as String? ?? '';
       final endPage = (batchData['end_page'] as num).toInt();
@@ -1132,14 +1170,16 @@ class BookProvider extends ChangeNotifier {
       await _initializeLazyLoading(
         text,
         fileName: _currentBookTitle ?? 'book',
-        bookId: _currentBookId,
+        bookId: requestedBookId,
       );
     } catch (e) {
       _errorMessage = 'Failed to load pages: $e';
       debugPrint('BookProvider: S3 load error: $e');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (requestToken == _bookLoadRequestToken) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 

@@ -67,17 +67,20 @@ class _LearningFeedScreenState extends State<LearningFeedScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('Loading feed for bookId: ${widget.bookId ?? 'provider-current'}');
     _pageController = PageController(initialPage: widget.initialCardIndex ?? 0);
 
     // Ensure requested book is loaded when opening from bookmarks.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final bookProvider = context.read<BookProvider>();
       if (widget.bookId != null) {
+        final loadingRequestedBook =
+            bookProvider.isLoading && bookProvider.currentBookId == widget.bookId;
         final needsLoad =
             bookProvider.currentBook == null ||
             bookProvider.currentBook!.id != widget.bookId ||
             bookProvider.allBlocks.isEmpty;
-        if (needsLoad) {
+        if (needsLoad && !loadingRequestedBook) {
           await _loadRequestedBookWithRetry(bookProvider);
         }
       }
