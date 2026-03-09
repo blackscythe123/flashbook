@@ -175,6 +175,16 @@ class BookProvider extends ChangeNotifier {
     }
   }
 
+  /// Lookup a book from the fetched backend library list by id.
+  Map<String, dynamic>? getUserBookById(String bookId) {
+    for (final book in _userBooks) {
+      if ((book['book_id'] as String? ?? '') == bookId) {
+        return book;
+      }
+    }
+    return null;
+  }
+
   /// Delete a book by id via backend API and keep local state in sync.
   Future<void> deleteBook(String bookId) async {
     if (_apiClient == null || _apiConfig == null || _apiConfig!.isDemoMode) {

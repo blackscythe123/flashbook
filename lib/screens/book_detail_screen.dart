@@ -5,17 +5,99 @@ import 'package:provider/provider.dart';
 
 import '../state/state.dart';
 import 'home_screen.dart';
+import 'learning_feed_screen.dart';
+import 'processing_screen.dart';
 
 /// Book detail / preview screen before entering the reel reader.
 class BookDetailScreen extends StatelessWidget {
   final Map<String, dynamic> book;
-  final VoidCallback onResume;
 
   const BookDetailScreen({
     super.key,
     required this.book,
-    required this.onResume,
   });
+
+  bool _isReadyStatus(String status) {
+    return status == 'ready' || status == 'complete' || status == 'reading';
+  }
+
+  Future<void> _resumeAndOpenFeed(
+    BuildContext context,
+    Map<String, dynamic> bookData,
+  ) async {
+    final bookProvider = context.read<BookProvider>();
+    final bookId = bookData['book_id'] as String? ?? '';
+    final title = bookData['title'] as String? ?? 'Untitled';
+    final s3Key = bookData['s3_key'] as String? ?? '';
+    final totalPages = (bookData['total_pages'] as num?)?.toInt() ?? 0;
+    final pagesExtracted = (bookData['pages_extracted'] as num?)?.toInt() ?? 0;
+    final chapterIndex =
+        (bookData['current_chapter_index'] as num?)?.toInt() ?? 0;
+    final blockIndex = (bookData['current_block_index'] as num?)?.toInt() ?? 0;
+
+    Map<String, String>? imageUrls;
+    final rawImageUrls = bookData['image_urls'];
+    if (rawImageUrls is Map) {
+      imageUrls = rawImageUrls.map(
+        (k, v) => MapEntry(k.toString(), v.toString()),
+      );
+    }
+
+    await bookProvider.resumeFromLibrary(
+      bookId: bookId,
+      title: title,
+      s3Key: s3Key,
+      totalPages: totalPages,
+      pagesExtracted: pagesExtracted,
+      currentChapterIndex: chapterIndex,
+      currentBlockIndex: blockIndex,
+      imageUrls: imageUrls,
+    );
+
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => LearningFeedScreen(
+              bookId: bookId,
+              initialCardIndex: blockIndex,
+            ),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
+  Future<void> _handleContinueTap(BuildContext context) async {
+    final bookId = book['book_id'] as String? ?? '';
+    if (bookId.isEmpty) return;
+
+    final bookProvider = context.read<BookProvider>();
+    var latestBook = bookProvider.getUserBookById(bookId) ?? book;
+    if (bookProvider.userBooks.isEmpty) {
+      await bookProvider.fetchBooks();
+      if (!context.mounted) return;
+      latestBook = bookProvider.getUserBookById(bookId) ?? latestBook;
+    }
+
+    final status = (latestBook['status'] as String? ?? '').toLowerCase();
+    final pagesExtracted =
+        (latestBook['pages_extracted'] as num?)?.toInt() ?? 0;
+    final hasCardsInMemory =
+        bookProvider.currentBook?.id == bookId && bookProvider.allBlocks.isNotEmpty;
+    final hasCards = hasCardsInMemory || pagesExtracted > 0;
+
+    if (_isReadyStatus(status) && hasCards) {
+      await _resumeAndOpenFeed(context, latestBook);
+      return;
+    }
+
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ProcessingScreen(bookId: bookId)),
+    );
+  }
 
   Future<void> _confirmAndDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -364,7 +446,7 @@ class BookDetailScreen extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onResume,
+            onTap: () => _handleContinueTap(context),
             borderRadius: BorderRadius.circular(16),
             child: Center(
               child: Row(

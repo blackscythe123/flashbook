@@ -6,6 +6,7 @@ import '../services/services.dart';
 import '../state/state.dart';
 import 'book_detail_screen.dart';
 import 'learning_feed_screen.dart';
+import 'processing_screen.dart';
 
 /// Library screen — shows the user's uploaded books with progress.
 /// From here the user can resume reading or upload a new book.
@@ -91,6 +92,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
     }
   }
 
+  bool _isReadyStatus(String status) {
+    return status == 'ready' || status == 'complete' || status == 'reading';
+  }
+
+  bool _hasGeneratedCards(
+    Map<String, dynamic> book,
+    BookProvider bookProvider,
+  ) {
+    final bookId = book['book_id'] as String? ?? '';
+    final pagesExtracted = (book['pages_extracted'] as num?)?.toInt() ?? 0;
+    final hasCardsInMemory =
+        bookProvider.currentBook?.id == bookId && bookProvider.allBlocks.isNotEmpty;
+    return hasCardsInMemory || pagesExtracted > 0;
+  }
+
   Future<void> _resumeBook(Map<String, dynamic> book) async {
     // Set the book in BookProvider and navigate to learning feed
     final bookProvider = context.read<BookProvider>();
@@ -131,13 +147,38 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
+  Future<void> _continueFromLibrary(Map<String, dynamic> book) async {
+    final bookProvider = context.read<BookProvider>();
+    final bookId = book['book_id'] as String? ?? '';
+    if (bookId.isEmpty) return;
+
+    var latestBook = bookProvider.getUserBookById(bookId) ?? book;
+    if (bookProvider.userBooks.isEmpty) {
+      await bookProvider.fetchBooks();
+      latestBook = bookProvider.getUserBookById(bookId) ?? latestBook;
+    }
+
+    final status = (latestBook['status'] as String? ?? '').toLowerCase();
+    final isReady = _isReadyStatus(status);
+    final hasCards = _hasGeneratedCards(latestBook, bookProvider);
+
+    if (isReady && hasCards) {
+      await _resumeBook(latestBook);
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProcessingScreen(bookId: bookId)),
+    );
+  }
+
   void _openBookDetail(Map<String, dynamic> book) async {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder:
             (_) => BookDetailScreen(
               book: book,
-              onResume: () => _resumeBook(book),
             ),
       ),
     );
@@ -621,7 +662,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => _openBookDetail(book),
+          onTap: () => _continueFromLibrary(book),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(

@@ -50,7 +50,46 @@ class _ProcessingScreenState extends State<ProcessingScreen>
     );
 
     // Start processing after the first frame to avoid setState during build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final bookProvider = context.read<BookProvider>();
+
+      if (widget.bookId != null && widget.fileBytes == null) {
+        var libraryBook = bookProvider.getUserBookById(widget.bookId!);
+        if (libraryBook == null) {
+          await bookProvider.fetchBooks();
+          if (!mounted) return;
+          libraryBook = bookProvider.getUserBookById(widget.bookId!);
+        }
+
+        if (libraryBook != null) {
+          final status = (libraryBook['status'] as String? ?? '').toLowerCase();
+          final pagesExtracted =
+              (libraryBook['pages_extracted'] as num?)?.toInt() ?? 0;
+          final isReady =
+              status == 'ready' || status == 'complete' || status == 'reading';
+          final hasCardsInMemory =
+              bookProvider.currentBook?.id == widget.bookId &&
+              bookProvider.allBlocks.isNotEmpty;
+          final hasCards = hasCardsInMemory || pagesExtracted > 0;
+
+          if (isReady && hasCards) {
+            final initialCardIndex =
+                (libraryBook['current_block_index'] as num?)?.toInt() ?? 0;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (_) => LearningFeedScreen(
+                      bookId: widget.bookId,
+                      initialCardIndex: initialCardIndex,
+                    ),
+              ),
+            );
+            return;
+          }
+        }
+      }
+
       _startProcessing();
     });
   }
