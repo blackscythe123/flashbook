@@ -150,7 +150,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: SlideTransition(
                 position: _logoSlide,
                 child: Text(
-                  'flashbook',
+                  'Flashbook',
                   style: GoogleFonts.syne(
                     fontSize: 36,
                     fontWeight: FontWeight.w700,
