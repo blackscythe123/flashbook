@@ -1,19 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '../state/state.dart';
+import 'home_screen.dart';
 
 /// Book detail / preview screen before entering the reel reader.
 class BookDetailScreen extends StatelessWidget {
   final Map<String, dynamic> book;
   final VoidCallback onResume;
-  final VoidCallback onDelete;
 
   const BookDetailScreen({
     super.key,
     required this.book,
     required this.onResume,
-    required this.onDelete,
   });
+
+  Future<void> _confirmAndDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            title: Text(
+              'Delete Book',
+              style: GoogleFonts.libreBaskerville(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            content: Text(
+              'Delete this book? This cannot be undone.',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.outline,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(
+                  'Delete',
+                  style: GoogleFonts.inter(
+                    color: Theme.of(context).colorScheme.error,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final bookId = book['book_id'] as String? ?? '';
+    if (bookId.isEmpty) return;
+
+    try {
+      await context.read<BookProvider>().deleteBook(bookId);
+      if (!context.mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      final cs = Theme.of(context).colorScheme;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: cs.error,
+          content: Text(
+            'Failed to delete: $e',
+            style: GoogleFonts.plusJakartaSans(color: Colors.white),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,20 +184,17 @@ class BookDetailScreen extends StatelessWidget {
                   // Delete option
                   Center(
                     child: TextButton.icon(
-                      onPressed: () {
-                        onDelete();
-                        Navigator.pop(context, 'deleted');
-                      },
+                      onPressed: () => _confirmAndDelete(context),
                       icon: Icon(
                         Icons.delete_outline_rounded,
                         size: 18,
-                        color: Theme.of(context).colorScheme.error,
+                        color: cs.error,
                       ),
                       label: Text(
                         'Delete Book',
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          color: Theme.of(context).colorScheme.error,
+                          color: cs.error,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

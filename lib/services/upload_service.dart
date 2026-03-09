@@ -18,8 +18,9 @@ Future<void> pickAndUploadPDF(BuildContext context) async {
 
     final file = result.files.first;
     // On web, accessing file.path throws — check bytes only on web
-    if (kIsWeb ? file.bytes == null : (file.path == null && file.bytes == null))
+    if (kIsWeb ? file.bytes == null : (file.path == null && file.bytes == null)) {
       return;
+    }
     if (!context.mounted) return;
 
     Navigator.push(

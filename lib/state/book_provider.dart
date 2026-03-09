@@ -172,6 +172,24 @@ class BookProvider extends ChangeNotifier {
     }
   }
 
+  /// Delete a book by id via backend API and keep local state in sync.
+  Future<void> deleteBook(String bookId) async {
+    if (_apiClient == null || _apiConfig == null || _apiConfig!.isDemoMode) {
+      throw Exception('Delete is unavailable without live API connection');
+    }
+
+    await _apiClient!.deleteBook(bookId);
+
+    _userBooks.removeWhere((b) => (b['book_id'] as String? ?? '') == bookId);
+
+    if (_currentBookId == bookId || _currentBook?.id == bookId) {
+      await clearCurrentBook();
+      return;
+    }
+
+    notifyListeners();
+  }
+
   /// Select a book to read
   void selectBook(Book book) {
     _currentBook = book;

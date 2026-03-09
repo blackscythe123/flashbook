@@ -135,7 +135,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
             (_) => BookDetailScreen(
               book: book,
               onResume: () => _resumeBook(book),
-              onDelete: () => _deleteBook(book['book_id'] as String? ?? ''),
             ),
       ),
     );

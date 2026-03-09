@@ -8,7 +8,6 @@ import '../state/auth_provider.dart';
 import '../state/book_provider.dart';
 import '../state/bookmark_provider.dart';
 import '../state/reading_progress_provider.dart';
-import '../theme/app_colors.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -355,8 +354,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         icon: Icons.email_outlined,
                       ),
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty)
+                        if (v == null || v.trim().isEmpty) {
                           return 'Email is required';
+                        }
                         if (!v.contains('@')) return 'Enter a valid email';
                         return null;
                       },
@@ -388,10 +388,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty)
+                        if (v == null || v.isEmpty) {
                           return 'Password is required';
-                        if (_isSignUp && v.length < 8)
+                        }
+                        if (_isSignUp && v.length < 8) {
                           return 'Min 8 characters';
+                        }
                         return null;
                       },
                     ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
