@@ -72,6 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success) {
         _pendingSignupEmail = email;
         _pendingSignupPassword = password;
+        // Auth provider now sets authState = needsVerification.
+        // The build() method will show the OTP section automatically — just return.
+        return;
       }
     } else {
       success = await auth.signInWithEmail(email, password);
@@ -80,8 +83,33 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (!success) {
+      // Auth provider set needsVerification (unverified email) — save
+      // credentials so _verify() can auto-sign-in after OTP, then let
+      // Consumer<AuthProvider> rebuild to show the OTP form.
+      if (auth.authState == AuthState.needsVerification) {
+        _pendingSignupEmail = email;
+        _pendingSignupPassword = password;
+        return;
+      }
+
       final error = auth.errorMessage;
       if (error != null && error.isNotEmpty) {
+        // User exists but email not verified — auth provider already set
+        // authState = needsVerification, so the OTP form will appear.
+        // Save credentials so _verify() can auto-sign-in after OTP.
+        if (error == 'Please verify your email first. Check your inbox.') {
+          _pendingSignupEmail = email;
+          _pendingSignupPassword = password;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Check your inbox for a verification code.'),
+              backgroundColor: Color(0xFF1D4ED8),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+
         final cs = Theme.of(context).colorScheme;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -199,6 +227,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
+
+    // Wire providers before navigating (same as login flow)
+    final apiConfig = context.read<ApiConfig>();
+    final bookProvider = context.read<BookProvider>();
+    final progressProvider = context.read<ReadingProgressProvider>();
+    final bookmarkProvider = context.read<BookmarkProvider>();
+    bookProvider.setApiConfig(apiConfig);
+    bookProvider.setTokenGetter(() => auth.idToken);
+    progressProvider.setUserId(auth.userId);
+    bookmarkProvider.setUserId(auth.userId);
+    final progressClient = BackendApiClient(apiConfig);
+    progressClient.setTokenGetter(() => auth.idToken);
+    progressProvider.setApiClient(progressClient);
 
     Navigator.pushAndRemoveUntil(
       context,

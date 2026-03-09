@@ -73,10 +73,9 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       final msg = e.toString().replaceFirst('Exception: ', '');
       if (msg == '__unverified__') {
-        _authState = AuthState.unauthenticated;
-        _pendingVerificationEmail = null;
-        _errorMessage =
-            'Please verify your email first. Check your inbox.';
+        _authState = AuthState.needsVerification;
+        _pendingVerificationEmail = email;
+        _errorMessage = null;
       } else {
         _authState = AuthState.unauthenticated;
         _errorMessage = msg;
