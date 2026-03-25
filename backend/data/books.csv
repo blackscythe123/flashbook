@@ -1,0 +1,11 @@
+id,title,description
+0,Machine Learning Basics,Introduction to machine learning concepts algorithms and model evaluation
+1,FastAPI Backend Development,Building robust backend APIs using FastAPI Python and async patterns
+2,Data Engineering Pipelines,Designing scalable ETL pipelines data ingestion and warehousing workflows
+3,Deep Learning Fundamentals,Neural network fundamentals backpropagation and deep learning applications
+4,Database Systems,Relational database design SQL queries indexing and performance optimization
+5,Cloud Computing Essentials,Cloud architecture deployment scalability and distributed service design
+6,System Design Patterns,Load balancing caching reliability and high availability system design
+7,Flutter App Development,Mobile application development with Flutter widgets and state management
+8,DevOps and CI CD,Continuous integration continuous delivery Docker Kubernetes and monitoring
+9,Generative AI Applications,Prompt engineering retrieval augmented generation and LLM evaluation

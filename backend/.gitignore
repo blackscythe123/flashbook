@@ -55,3 +55,7 @@ Thumbs.db
 
 # Static images
 static/images
+
+# ML experiment artifacts
+mlruns/
+optuna_optimization_history.html

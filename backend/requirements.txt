@@ -26,3 +26,4 @@ gunicorn==23.0.0
 scikit-learn==1.6.1
 mlflow==2.19.0
 optuna==4.2.0
+plotly==5.24.1

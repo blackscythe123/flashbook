@@ -230,13 +230,14 @@ This backend now includes a simple, modular content-based recommendation pipelin
 
 ### What it does
 
-- Uses a small dummy dataset (`ml/data.py`) with book title/content pairs.
+- Uses a structured dataset file (`data/books.csv`) with book title + description.
 - Converts content to TF-IDF vectors (`ml/recommendation.py`).
 - Computes cosine similarity and returns top similar books.
 
 ### Files
 
-- `ml/data.py`: demo dataset (10 entries)
+- `data/books.csv`: structured recommendation dataset (10 entries)
+- `ml/data.py`: CSV loader with fallback dataset
 - `ml/recommendation.py`: recommendation and scoring utilities
 - `ml/mlflow_experiments.py`: experiment tracking for parameter grid
 - `ml/optuna_tuning.py`: Optuna-based hyperparameter tuning
@@ -274,6 +275,209 @@ Expected output includes:
 
 - best parameters (`max_features`, `ngram_range`)
 - best average cosine similarity score
+
+## Detailed Implementation Log (MLflow + Optuna)
+
+This section summarizes the full implementation done in this repository for assignment documentation.
+
+### 1. Problem Framing
+
+We implemented a **content-based recommendation system** (not a supervised classifier/regressor).
+
+- Input: book metadata text (title + description/content)
+- Representation: TF-IDF vectors
+- Ranking logic: cosine similarity
+- Output: top-k most similar books
+
+This is valid applied ML for recommendation where labels are unavailable.
+
+### 2. Dataset Design
+
+A structured mini dataset was formalized in:
+
+- `backend/data/books.csv`
+
+Schema:
+
+- `id`
+- `title`
+- `description`
+
+Why this matters:
+
+- Improves viva clarity when asked, "what data was used?"
+- Converts informal hardcoded examples into a reusable, auditable dataset
+- Aligns with user-content style recommendation workflows
+
+### 3. Data Loader Layer
+
+Implemented in:
+
+- `backend/ml/data.py`
+
+Responsibilities:
+
+- Loads records from `data/books.csv`
+- Maps `title + description` into recommendation-ready fields (`title`, `content`)
+- Provides fallback dataset if CSV is missing (keeps demo robust)
+
+### 4. Recommendation Engine
+
+Implemented in:
+
+- `backend/ml/recommendation.py`
+
+Functions:
+
+- `build_similarity_matrix(max_features, ngram_range)`
+  - TF-IDF vectorization using scikit-learn
+  - cosine similarity matrix generation
+- `average_cosine_similarity(max_features, ngram_range)`
+  - simple scalar metric for experiment comparison
+- `get_recommendations(book_index, top_k)`
+  - returns top similar titles with scores
+
+### 5. API Integration
+
+Implemented in:
+
+- `backend/src/api/recommendations.py`
+- `backend/src/api/__init__.py`
+- `backend/main.py`
+
+Route:
+
+- `GET /recommend/{book_index}`
+
+Response includes:
+
+- recommended titles
+- detailed list with score and index
+
+### 6. MLflow Experiment Tracking
+
+Implemented in:
+
+- `backend/ml/mlflow_experiments.py`
+
+Tracked experiment:
+
+- `flashbook-recommendation`
+
+Grid:
+
+- `max_features`: 20, 50, 100
+- `ngram_range`: (1,1), (1,2)
+
+Logged each run:
+
+- Parameters: `max_features`, `ngram_range`
+- Metric: `average_cosine_similarity`
+
+Important reliability fix:
+
+- Explicit tracking URI now points to `backend/mlruns` so runs are always written/read from one location.
+- This prevents empty-dashboard confusion caused by multiple `mlruns` directories.
+
+Recommended dashboard command:
+
+```bash
+mlflow ui --host 127.0.0.1 --port 5000 --backend-store-uri file:///C:/Desktop/Folders/College/SEM-4/flashbook/backend/mlruns
+```
+
+### 7. Optuna Hyperparameter Optimization
+
+Implemented in:
+
+- `backend/ml/optuna_tuning.py`
+
+Objective:
+
+- maximize `average_cosine_similarity`
+
+Search space:
+
+- `max_features`: 10 to 200
+- `ngram_range`: 1 or 2 (implemented as `(1, ngram_range)`)
+
+Result output:
+
+- best parameter set
+- best score
+
+### 8. Optuna Visualization Support
+
+Dependency added:
+
+- `plotly`
+
+Why:
+
+- `optuna.visualization.plot_optimization_history(study)` requires Plotly.
+
+Generated artifact (runtime output, not source):
+
+- `backend/optuna_optimization_history.html`
+
+### 9. Dependency Updates
+
+Updated in:
+
+- `backend/requirements.txt`
+
+Added:
+
+- `scikit-learn`
+- `mlflow`
+- `optuna`
+- `plotly`
+
+### 10. Repository Hygiene for Experiments
+
+Updated ignore rules:
+
+- `.gitignore`
+- `backend/.gitignore`
+
+Ignored generated artifacts:
+
+- `mlruns/`
+- `backend/mlruns/`
+- `backend/optuna_optimization_history.html`
+
+Reason:
+
+- keep version control clean and store only reproducible source/config files
+
+### 11. Validation Checklist
+
+Validated during implementation:
+
+- Dependency installation from `requirements.txt`
+- MLflow script execution and run logging
+- MLflow API-based run count verification
+- Optuna tuning execution and best result print
+- Recommendation function output (`get_recommendations(0)`)
+- FastAPI route response for `/recommend/{book_index}`
+
+### 12. Suggested Documentation Tables
+
+For assignment report, include:
+
+1. MLflow run comparison table
+   - columns: `max_features`, `ngram_range`, `average_cosine_similarity`
+2. Baseline vs optimized table
+   - baseline: fixed TF-IDF setting
+   - optimized: Optuna best setting
+
+### 13. Viva-Safe Positioning
+
+Use this framing:
+
+- Dataset: structured metadata dataset (`books.csv`), representing user/content corpus
+- Model: TF-IDF + cosine similarity (content-based recommendation)
+- MLflow: experiment tracking for vectorizer configuration impact
+- Optuna: hyperparameter optimization for recommendation quality metric
 
 ## License
 

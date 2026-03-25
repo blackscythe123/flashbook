@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import mlflow
 
 try:
@@ -12,6 +14,8 @@ except ImportError:
 
 def run_experiments() -> None:
     """Run a small parameter grid and log runs to MLflow."""
+    tracking_uri = (Path(__file__).resolve().parents[1] / "mlruns").as_uri()
+    mlflow.set_tracking_uri(tracking_uri)
     mlflow.set_experiment("flashbook-recommendation")
 
     max_features_options = [20, 50, 100]
