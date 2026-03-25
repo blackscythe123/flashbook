@@ -79,6 +79,31 @@ curl -X POST http://localhost:8080/generateSummary \
 
 ## API Reference
 
+### GET /recommend/{book_index}
+
+Returns similar books from a small dummy content dataset using TF-IDF + cosine similarity.
+
+**Path Parameter:**
+- `book_index`: index of the base book in the dummy dataset (`0` to `9`)
+
+**Query Parameter:**
+- `top_k` (optional): number of recommendations to return (`1` to `10`, default `3`)
+
+**Response (example):**
+```json
+{
+  "book_index": 0,
+  "recommendations": [
+    "FastAPI Backend Development",
+    "Machine Learning Foundations",
+    "Data Engineering Pipelines"
+  ],
+  "details": [
+    {"index": 5, "title": "FastAPI Backend Development", "score": 0.15}
+  ]
+}
+```
+
 ### POST /generateSummary
 
 Transform book chapter text into structured learning slides.
@@ -198,6 +223,57 @@ firebase deploy --only functions
 - Add rate limiting middleware
 - Add authentication
 - Queue long-running jobs
+
+## ML Recommendation System
+
+This backend now includes a simple, modular content-based recommendation pipeline in `backend/ml/`.
+
+### What it does
+
+- Uses a small dummy dataset (`ml/data.py`) with book title/content pairs.
+- Converts content to TF-IDF vectors (`ml/recommendation.py`).
+- Computes cosine similarity and returns top similar books.
+
+### Files
+
+- `ml/data.py`: demo dataset (10 entries)
+- `ml/recommendation.py`: recommendation and scoring utilities
+- `ml/mlflow_experiments.py`: experiment tracking for parameter grid
+- `ml/optuna_tuning.py`: Optuna-based hyperparameter tuning
+
+### Run Recommendation API
+
+```bash
+cd backend
+python main.py
+```
+
+Open:
+
+- `http://localhost:8080/docs`
+- `GET /recommend/{book_index}`
+
+### Run MLflow Experiments
+
+```bash
+cd backend
+python -m ml.mlflow_experiments
+mlflow ui --port 5000
+```
+
+Then open `http://localhost:5000` to inspect runs under experiment `flashbook-recommendation`.
+
+### Run Optuna Tuning
+
+```bash
+cd backend
+python -m ml.optuna_tuning
+```
+
+Expected output includes:
+
+- best parameters (`max_features`, `ngram_range`)
+- best average cosine similarity score
 
 ## License
 
